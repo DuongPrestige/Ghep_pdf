@@ -126,6 +126,14 @@
                             Command="{Binding DismissRecoveryCommand}" />
                 </StackPanel>
             </StatusBarItem>
+            <Separator />
+            <StatusBarItem HorizontalAlignment="Right"
+                           HorizontalContentAlignment="Right">
+                <TextBlock Text="{Binding AppVersionText}"
+                           Foreground="#64748B"
+                           FontWeight="SemiBold"
+                           Margin="12,0,8,0" />
+            </StatusBarItem>
         </StatusBar>
 
         <Grid>

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PDFPageComposer.App.Interfaces;
@@ -171,6 +172,8 @@ public partial class MainViewModel : ObservableObject
     public bool HasSourceFiles => SourceFiles.Count > 0;
 
     public bool HasSourceSearch => !string.IsNullOrWhiteSpace(SourceSearchText);
+
+    public string AppVersionText => $"v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0"}";
 
     public string ExportProgressText => ExportProgressTotalPageCount > 0
         ? $"Đang xuất {ExportProgressPageCount}/{ExportProgressTotalPageCount} trang ({ExportProgressPercent}%)"
