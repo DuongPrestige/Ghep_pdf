@@ -649,13 +649,9 @@
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed" />
                                 <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding IsOutputPreviewMode}" Value="True" />
-                                            <Condition Binding="{Binding IsPreviewGridOpen}" Value="False" />
-                                        </MultiDataTrigger.Conditions>
+                                    <DataTrigger Binding="{Binding IsOutputPreviewMode}" Value="True">
                                         <Setter Property="Visibility" Value="Visible" />
-                                    </MultiDataTrigger>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
@@ -859,11 +855,26 @@
                                                         Margin="5"
                                                         HorizontalAlignment="Stretch"
                                                         Background="#F8FAFD"
-                                                        BorderBrush="#CBD5E1"
-                                                        BorderThickness="1"
                                                         behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         behaviors:LoadedCommandBehavior.CommandParameter="{Binding SourcePage}"
                                                         behaviors:LoadedCommandBehavior.UnloadedCommand="{Binding DataContext.CancelThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                    <Border.InputBindings>
+                                                        <MouseBinding Gesture="LeftClick"
+                                                                      Command="{Binding DataContext.SelectOutputPreviewItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                      CommandParameter="{Binding}" />
+                                                    </Border.InputBindings>
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="BorderBrush" Value="#CBD5E1" />
+                                                            <Setter Property="BorderThickness" Value="1" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsPreviewSelected}" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#2563EB" />
+                                                                    <Setter Property="BorderThickness" Value="3" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
                                                     <Grid>
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition Height="242" />

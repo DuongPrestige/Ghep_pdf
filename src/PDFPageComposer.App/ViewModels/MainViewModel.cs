@@ -230,7 +230,9 @@ public partial class MainViewModel : ObservableObject
         : [];
 
     public IReadOnlyList<OutputTrayItemView> CurrentOutputPreviewGridItems => OutputPreviewGridPages
-        .ElementAtOrDefault(OutputPreviewGridPageIndex)
+        .ElementAtOrDefault(OutputPreviewGridPageIndex)?
+        .Select(MarkCurrentOutputPreviewItem)
+        .ToList()
         ?? [];
 
     public OutputTrayItemView? CurrentOutputPreviewItem => IsOutputPreviewMode
@@ -743,6 +745,24 @@ public partial class MainViewModel : ObservableObject
             OutputPreviewGridPageIndex + delta,
             0,
             OutputPreviewGridPageCount - 1);
+        NotifyPreviewNavigationChanged();
+    }
+
+    [RelayCommand]
+    private void SelectOutputPreviewItem(OutputTrayItemView? itemView)
+    {
+        if (!IsOutputPreviewMode || itemView is null || itemView.SourcePage is null)
+        {
+            return;
+        }
+
+        var index = outputPreviewItems.FindIndex(item => item.Item.Id == itemView.Item.Id);
+        if (index < 0)
+        {
+            return;
+        }
+
+        SetOutputPreviewPage(index);
         NotifyPreviewNavigationChanged();
     }
 
@@ -1569,6 +1589,14 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(OutputPreviewGridPageCount));
         OnPropertyChanged(nameof(CanNavigatePreviewPrevious));
         OnPropertyChanged(nameof(CanNavigatePreviewNext));
+    }
+
+    private OutputTrayItemView MarkCurrentOutputPreviewItem(OutputTrayItemView item)
+    {
+        return item with
+        {
+            IsPreviewSelected = CurrentOutputPreviewItem?.Item.Id == item.Item.Id
+        };
     }
 
     private void RefreshOutputPreviewItems(int preferredIndex)

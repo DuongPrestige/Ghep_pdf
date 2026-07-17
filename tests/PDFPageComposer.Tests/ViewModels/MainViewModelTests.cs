@@ -967,6 +967,24 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public async Task SelectOutputPreviewItemCommand_selects_grid_item_without_opening_single_preview()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);
+        var viewModel = CreateViewModelWith(sourceFile);
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1, 2, 3);
+
+        await viewModel.PreviewOutputCommand.ExecuteAsync(null);
+        var secondItem = viewModel.CurrentOutputPreviewGridItems[1];
+
+        viewModel.SelectOutputPreviewItemCommand.Execute(secondItem);
+
+        Assert.True(viewModel.IsPreviewGridOpen);
+        Assert.Equal(1, viewModel.OutputPreviewIndex);
+        Assert.Same(sourceFile.Pages[1], viewModel.PreviewPage);
+        Assert.Equal([false, true, false], viewModel.CurrentOutputPreviewGridItems.Select(item => item.IsPreviewSelected));
+    }
+
+    [Fact]
     public async Task OutputPreview_current_item_commands_update_output_tray_and_preview_state()
     {
         var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);

@@ -13,3 +13,5 @@ artifacts/
 TestResults/
 *.nupkg
 *.snupkg
+.tmp-build-check/
+.tmp-test-check/

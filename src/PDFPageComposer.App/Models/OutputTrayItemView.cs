@@ -7,4 +7,7 @@ public sealed record OutputTrayItemView(
     int SourcePageNumber,
     SourcePdfPage? SourcePage,
     OutputGroup Group,
-    OutputPageItem Item);
+    OutputPageItem Item)
+{
+    public bool IsPreviewSelected { get; init; }
+}
