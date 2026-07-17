@@ -643,6 +643,38 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,0,12,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsOutputPreviewMode}" Value="True" />
+                                            <Condition Binding="{Binding IsPreviewGridOpen}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Button Content="Thêm bản sao"
+                                Padding="10,5"
+                                Margin="0,0,6,0"
+                                Command="{Binding DuplicateCurrentOutputPreviewItemCommand}" />
+                        <Button Content="Lên"
+                                Padding="10,5"
+                                Margin="0,0,6,0"
+                                Command="{Binding MoveCurrentOutputPreviewItemUpCommand}" />
+                        <Button Content="Xuống"
+                                Padding="10,5"
+                                Margin="0,0,6,0"
+                                Command="{Binding MoveCurrentOutputPreviewItemDownCommand}" />
+                        <Button Content="Xóa"
+                                Padding="10,5"
+                                Command="{Binding DeleteCurrentOutputPreviewItemCommand}" />
+                    </StackPanel>
                     <Button Content="Đóng"
                             Padding="10,5"
                             Command="{Binding ClosePreviewCommand}" />

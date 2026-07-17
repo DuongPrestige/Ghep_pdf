@@ -611,3 +611,14 @@ Completed: 2026-07-17
 Files changed: `src/PDFPageComposer.App/Interfaces/IUpdateService.cs`, `src/PDFPageComposer.App/Services/UpdateService.cs`, `src/PDFPageComposer.App/Models/AppUpdateManifest.cs`, `src/PDFPageComposer.App/Models/AppUpdateResult.cs`, `src/PDFPageComposer.App/Models/AppSettings.cs`, `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `src/PDFPageComposer.App/App.xaml.cs`, `tests/PDFPageComposer.Tests/Services/UpdateServiceTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `docs/UPDATE_RELEASE.md`
 Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 94 passing tests.
 Notes: Update packages must be zip files containing publish output at the zip root. `UpdateManifestUrl` is read from `%LOCALAPPDATA%\PDFPageComposer\settings.json`.
+
+### - [x] TASK-053 - Output preview editing
+
+- **Muc tieu:** Cho phep thao tac nhanh tren trang dang xem trong man `Xem truoc dau ra`.
+- **Dependency:** TASK-035, TASK-052.
+- **Acceptance criteria:** Khi xem mot trang dau ra cu the, co the them ban sao, di chuyen len/xuong va xoa trang hien tai; preview cap nhat dung thu tu/trang hien tai sau moi thao tac; khong them business logic vao code-behind; co test ViewModel cho luong thao tac trong preview.
+
+Completed: 2026-07-17
+Files changed: `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `latest.json`
+Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 95 passing tests.
+Notes: `v1.1.0` keeps grid preview for overview and shows editing controls only after opening a specific output page.

@@ -11,7 +11,9 @@ public sealed class UpdateServiceTests
     [Fact]
     public async Task CheckAndInstallUpdateAsync_reports_not_configured_when_manifest_url_is_missing()
     {
-        var service = new UpdateService(new InMemorySettingsService(new AppSettings()), new RecordingProcessLauncher());
+        var service = new UpdateService(
+            new InMemorySettingsService(new AppSettings { UpdateManifestUrl = string.Empty }),
+            new RecordingProcessLauncher());
 
         var result = await service.CheckAndInstallUpdateAsync(CancellationToken.None);
 

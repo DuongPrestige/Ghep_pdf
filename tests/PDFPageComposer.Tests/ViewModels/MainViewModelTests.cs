@@ -967,6 +967,37 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public async Task OutputPreview_current_item_commands_update_output_tray_and_preview_state()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);
+        var viewModel = CreateViewModelWith(sourceFile);
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1, 2);
+
+        await viewModel.PreviewOutputCommand.ExecuteAsync(null);
+        await viewModel.OpenOutputPreviewItemCommand.ExecuteAsync(viewModel.OutputPreviewGridItems.First());
+
+        await viewModel.DuplicateCurrentOutputPreviewItemCommand.ExecuteAsync(null);
+
+        Assert.Equal([1, 1, 2], viewModel.OutputTrayItems.Select(item => item.SourcePageNumber));
+        Assert.Equal(1, viewModel.OutputPreviewIndex);
+        Assert.Equal(3, viewModel.OutputPageCount);
+        Assert.Same(sourceFile.Pages[0], viewModel.PreviewPage);
+
+        await viewModel.MoveCurrentOutputPreviewItemDownCommand.ExecuteAsync(null);
+
+        Assert.Equal([1, 2, 1], viewModel.OutputTrayItems.Select(item => item.SourcePageNumber));
+        Assert.Equal(2, viewModel.OutputPreviewIndex);
+        Assert.Same(sourceFile.Pages[0], viewModel.PreviewPage);
+
+        await viewModel.DeleteCurrentOutputPreviewItemCommand.ExecuteAsync(null);
+
+        Assert.Equal([1, 2], viewModel.OutputTrayItems.Select(item => item.SourcePageNumber));
+        Assert.Equal(1, viewModel.OutputPreviewIndex);
+        Assert.Same(sourceFile.Pages[1], viewModel.PreviewPage);
+        Assert.True(viewModel.IsPreviewOpen);
+    }
+
+    [Fact]
     public async Task ExportPdfCommand_exports_output_and_opens_exported_file()
     {
         var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);

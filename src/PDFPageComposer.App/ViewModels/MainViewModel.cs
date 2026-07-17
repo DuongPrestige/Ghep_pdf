@@ -233,6 +233,12 @@ public partial class MainViewModel : ObservableObject
         .ElementAtOrDefault(OutputPreviewGridPageIndex)
         ?? [];
 
+    public OutputTrayItemView? CurrentOutputPreviewItem => IsOutputPreviewMode
+        ? outputPreviewItems.ElementAtOrDefault(OutputPreviewIndex)
+        : null;
+
+    public bool HasCurrentOutputPreviewItem => CurrentOutputPreviewItem is not null;
+
     public int OutputPreviewGridPageCount => IsPreviewGridOpen && IsOutputPreviewMode
         ? Math.Max(1, (int)Math.Ceiling(outputPreviewItems.Count / 14.0))
         : 0;
@@ -758,6 +764,78 @@ public partial class MainViewModel : ObservableObject
         SetOutputPreviewPage(index);
         NotifyPreviewNavigationChanged();
         await RenderPreviewAsync(cancellationToken);
+    }
+
+    [RelayCommand]
+    private async Task DuplicateCurrentOutputPreviewItemAsync(CancellationToken cancellationToken)
+    {
+        var item = CurrentOutputPreviewItem;
+        if (item is null)
+        {
+            return;
+        }
+
+        var targetIndex = OutputPreviewIndex + 1;
+        DuplicateOutputItem(item);
+        RefreshOutputPreviewItems(targetIndex);
+        if (!IsPreviewGridOpen && PreviewPage is not null)
+        {
+            await RenderPreviewAsync(cancellationToken);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteCurrentOutputPreviewItemAsync(CancellationToken cancellationToken)
+    {
+        var item = CurrentOutputPreviewItem;
+        if (item is null)
+        {
+            return;
+        }
+
+        var targetIndex = OutputPreviewIndex;
+        DeleteOutputItem(item);
+        RefreshOutputPreviewItems(targetIndex);
+        if (!IsPreviewGridOpen && PreviewPage is not null)
+        {
+            await RenderPreviewAsync(cancellationToken);
+        }
+    }
+
+    [RelayCommand]
+    private async Task MoveCurrentOutputPreviewItemUpAsync(CancellationToken cancellationToken)
+    {
+        var item = CurrentOutputPreviewItem;
+        if (item is null)
+        {
+            return;
+        }
+
+        var targetIndex = Math.Max(0, OutputPreviewIndex - 1);
+        MoveOutputItem(item, -1);
+        RefreshOutputPreviewItems(targetIndex);
+        if (!IsPreviewGridOpen && PreviewPage is not null)
+        {
+            await RenderPreviewAsync(cancellationToken);
+        }
+    }
+
+    [RelayCommand]
+    private async Task MoveCurrentOutputPreviewItemDownAsync(CancellationToken cancellationToken)
+    {
+        var item = CurrentOutputPreviewItem;
+        if (item is null)
+        {
+            return;
+        }
+
+        var targetIndex = OutputPreviewIndex + 1;
+        MoveOutputItem(item, 1);
+        RefreshOutputPreviewItems(targetIndex);
+        if (!IsPreviewGridOpen && PreviewPage is not null)
+        {
+            await RenderPreviewAsync(cancellationToken);
+        }
     }
 
     [RelayCommand]
@@ -1486,9 +1564,48 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(OutputPreviewGridItems));
         OnPropertyChanged(nameof(OutputPreviewGridPages));
         OnPropertyChanged(nameof(CurrentOutputPreviewGridItems));
+        OnPropertyChanged(nameof(CurrentOutputPreviewItem));
+        OnPropertyChanged(nameof(HasCurrentOutputPreviewItem));
         OnPropertyChanged(nameof(OutputPreviewGridPageCount));
         OnPropertyChanged(nameof(CanNavigatePreviewPrevious));
         OnPropertyChanged(nameof(CanNavigatePreviewNext));
+    }
+
+    private void RefreshOutputPreviewItems(int preferredIndex)
+    {
+        if (!IsOutputPreviewMode)
+        {
+            return;
+        }
+
+        outputPreviewItems = OutputTrayItems
+            .Where(item => item.SourcePage is not null)
+            .ToList();
+
+        if (outputPreviewItems.Count == 0)
+        {
+            previewRenderCancellation?.Cancel();
+            PreviewImage = null;
+            PreviewPage = null;
+            PreviewSourceFile = null;
+            PreviewState = ThumbnailState.NotRequested;
+            PreviewError = null;
+            IsPreviewOpen = false;
+            IsOutputPreviewMode = false;
+            IsPreviewGridOpen = false;
+            OutputPreviewIndex = 0;
+            OutputPreviewGridPageIndex = 0;
+            NotifyPreviewNavigationChanged();
+            return;
+        }
+
+        var nextIndex = Math.Clamp(preferredIndex, 0, outputPreviewItems.Count - 1);
+        OutputPreviewGridPageIndex = Math.Clamp(
+            OutputPreviewGridPageIndex,
+            0,
+            Math.Max(0, OutputPreviewGridPageCount - 1));
+        SetOutputPreviewPage(nextIndex);
+        NotifyPreviewNavigationChanged();
     }
 
     private void SetOutputPreviewPage(int index)
