@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+.vscode/
+.nuget-appdata/
+*.user
+*.suo
+*.cache
+*.log
+logs/
+publish/
+artifacts/
+TestResults/
+*.nupkg
+*.snupkg
