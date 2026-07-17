@@ -52,5 +52,8 @@ public sealed class AppSettingsServiceTests
 
         Assert.Equal(1, settings.Version);
         Assert.Null(settings.FoxitExecutablePath);
+        Assert.Equal(
+            "https://raw.githubusercontent.com/DuongPrestige/Ghep_pdf/main/latest.json",
+            settings.UpdateManifestUrl);
     }
 }

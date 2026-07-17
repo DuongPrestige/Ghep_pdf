@@ -10,5 +10,6 @@ public sealed class AppSettings
 
     public string? LastOpenDirectory { get; set; }
 
-    public string? UpdateManifestUrl { get; set; }
+    public string? UpdateManifestUrl { get; set; } =
+        "https://raw.githubusercontent.com/DuongPrestige/Ghep_pdf/main/latest.json";
 }
