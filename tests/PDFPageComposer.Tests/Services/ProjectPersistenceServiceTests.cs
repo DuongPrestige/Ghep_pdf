@@ -17,7 +17,7 @@ public sealed class ProjectPersistenceServiceTests
         [
             new OutputPageItem(Guid.NewGuid(), groupId, sourceFile.Id, 2),
             new OutputPageItem(Guid.NewGuid(), groupId, sourceFile.Id, 3)
-        ]);
+        ], "#059669");
         var state = ProjectStateMapper.FromSession([sourceFile], [group], thumbnailZoom: 1.25, lastExportPath: @"D:\Out\merged.pdf");
         var service = new ProjectPersistenceService();
 
@@ -32,6 +32,7 @@ public sealed class ProjectPersistenceServiceTests
             Assert.Equal(sourceFile.Id, loaded.SourceFiles[0].Id);
             Assert.Equal(sourceFile.FilePath, loaded.SourceFiles[0].FilePath);
             Assert.Single(loaded.OutputGroups);
+            Assert.Equal("#059669", loaded.OutputGroups[0].ColorHex);
             Assert.Equal([2, 3], loaded.OutputGroups[0].Items.Select(item => item.SourcePageNumber));
             Assert.Equal(1.25, loaded.UiState.ThumbnailZoom);
             Assert.Equal(@"D:\Out\merged.pdf", loaded.LastExportPath);
@@ -44,6 +45,50 @@ public sealed class ProjectPersistenceServiceTests
                 Directory.Delete(directory, recursive: true);
             }
         }
+    }
+
+    [Fact]
+    public void ProjectStateMapper_assigns_color_when_loading_older_project_groups()
+    {
+        var sourceFileId = Guid.NewGuid();
+        var groupId = Guid.NewGuid();
+        var state = new ProjectState
+        {
+            SourceFiles =
+            [
+                new ProjectSourceFile
+                {
+                    Id = sourceFileId,
+                    FilePath = @"D:\Docs\A.pdf",
+                    DisplayName = "A.pdf",
+                    PageCount = 1,
+                    FileSize = 1234,
+                    Fingerprint = "fingerprint"
+                }
+            ],
+            OutputGroups =
+            [
+                new ProjectOutputGroup
+                {
+                    Id = groupId,
+                    Name = "Group 1",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    Items =
+                    [
+                        new ProjectOutputPageItem
+                        {
+                            Id = Guid.NewGuid(),
+                            SourceFileId = sourceFileId,
+                            SourcePageNumber = 1
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var session = ProjectStateMapper.ToSession(state);
+
+        Assert.Equal("#2563EB", session.OutputGroups.Single().ColorHex);
     }
 
     [Fact]

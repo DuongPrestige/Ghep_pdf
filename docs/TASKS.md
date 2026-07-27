@@ -7,7 +7,7 @@
 | Backlog | 0 |
 | In Progress | 0 |
 | Blocked | 0 |
-| Done | 51 |
+| Done | 56 |
 
 Chỉ tối đa một task được ở trạng thái **In Progress**. `[ ]` là chưa hoàn thành, `[x]` là hoàn thành; trạng thái chi tiết ghi ngay dưới task khi bắt đầu hoặc bị chặn.
 
@@ -622,3 +622,36 @@ Completed: 2026-07-17
 Files changed: `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `latest.json`
 Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 95 passing tests.
 Notes: `v1.1.0` keeps grid preview for overview and shows editing controls only after opening a specific output page.
+
+### - [x] TASK-054 - Output group colors
+
+- **Muc tieu:** Gan mau rieng cho tung group trong Output Tray de nguoi dung de phan biet cac lan them trang.
+- **Dependency:** TASK-028, TASK-044, TASK-053.
+- **Acceptance criteria:** Moi group moi co mau hien thi rieng trong tray; duplicate group co mau moi; mau duoc giu qua undo/redo, project save/load va auto-save; khong anh huong thu tu export.
+
+Completed: 2026-07-27
+Files changed: `src/PDFPageComposer.App/Models/OutputGroup.cs`, `src/PDFPageComposer.App/Models/OutputTrayItemView.cs`, `src/PDFPageComposer.App/Models/ProjectState.cs`, `src/PDFPageComposer.App/Services/ProjectStateMapper.cs`, `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `tests/PDFPageComposer.Tests/Models/OutputGroupTests.cs`, `tests/PDFPageComposer.Tests/Services/ProjectPersistenceServiceTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `docs/TASKS.md`
+Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 99 passing tests.
+Notes: Group color is lightweight UI metadata stored as hex color; older project files without color receive a default palette color when loaded.
+
+### - [x] TASK-055 - Output add clears selection and group duplicate UI
+
+- **Muc tieu:** Hoan thien thao tac Output Tray: them nut nhan ban group, bo selection sau khi them vao dau ra, va hien so trang dang chon tren nut them.
+- **Dependency:** TASK-027, TASK-032, TASK-054.
+- **Acceptance criteria:** Sau khi bam **Them vao dau ra**, source pages vua them duoc bo chon va thong ke selection ve 0; toolbar hien so trang dang chon ngay tren nut add; nguoi dung co the nhan ban ca group tu Output Tray; co test ViewModel cho behavior moi.
+
+Completed: 2026-07-27
+Files changed: `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `docs/TASKS.md`
+Verification: `dotnet test PDFPageComposer.slnx --no-build /p:NuGetAudit=false` succeeded with 100 passing tests. `dotnet build PDFPageComposer.slnx --no-restore /p:NuGetAudit=false` succeeded with 0 errors; the environment still reports NU1900 vulnerability-feed warnings because it cannot reach `https://api.nuget.org/v3/index.json`.
+Notes: Group duplication logic already existed in ViewModel; this task exposes it in the tray row UI and aligns add-output behavior with the requested workflow.
+
+### - [x] TASK-056 - Publish update v1.2.0
+
+- **Muc tieu:** Build goi update moi va cap nhat manifest de user co the update len ban chua cac cai tien Output Tray.
+- **Dependency:** TASK-054, TASK-055.
+- **Acceptance criteria:** Tang app version; publish `win-x64` self-contained; zip publish output khong boc folder cha; tinh SHA256; cap nhat `latest.json`; push thay doi len git.
+
+Completed: 2026-07-28
+Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `latest.json`, `docs/TASKS.md`
+Verification: `dotnet publish .\src\PDFPageComposer.App\PDFPageComposer.App.csproj -c Release -r win-x64 --self-contained true --no-restore -o .\artifacts\publish-v1.2.0` succeeded; `artifacts\PDFPageComposer-v1.2.0.zip` contains `PDFPageComposer.App.exe`, `pdfium.dll`, `PDFiumCore.dll` at the zip root; SHA256 is `0E7F8CB5427F6192D30B21CF5B410F999CD1A5AC3ECF480864F76EE6E94156A8`; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 100 passing tests.
+Notes: `gh` CLI is not installed in this environment, so the release zip may still need to be uploaded manually to GitHub Releases tag `v1.2.0` unless git hosting automation handles release assets.

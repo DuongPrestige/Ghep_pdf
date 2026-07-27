@@ -32,4 +32,12 @@ public sealed class OutputGroupTests
         Assert.Equal(first.SourceFileId, second.SourceFileId);
         Assert.Equal(first.SourcePageNumber, second.SourcePageNumber);
     }
+
+    [Fact]
+    public void Output_group_preserves_display_color()
+    {
+        var group = new OutputGroup(Guid.NewGuid(), "Group 1", DateTimeOffset.UtcNow, [], "#059669");
+
+        Assert.Equal("#059669", group.ColorHex);
+    }
 }

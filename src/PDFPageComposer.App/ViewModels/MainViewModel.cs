@@ -12,6 +12,20 @@ namespace PDFPageComposer.App.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private const int HistoryLimit = 100;
+    private static readonly string[] OutputGroupColors =
+    [
+        "#2563EB",
+        "#059669",
+        "#D97706",
+        "#DC2626",
+        "#7C3AED",
+        "#0891B2",
+        "#C026D3",
+        "#65A30D",
+        "#EA580C",
+        "#4F46E5"
+    ];
+
     private readonly IFileDialogService fileDialogService;
     private readonly IPdfMetadataService pdfMetadataService;
     private readonly IPdfRenderService pdfRenderService;
@@ -150,6 +164,7 @@ public partial class MainViewModel : ObservableObject
             return new OutputTrayItemView(
                 index + 1,
                 entry.Group.Name,
+                entry.Group.ColorHex,
                 sourceFile?.DisplayName ?? "Thiếu file nguồn",
                 entry.Item.SourcePageNumber,
                 sourceFile?.Pages.FirstOrDefault(page => page.PageNumber == entry.Item.SourcePageNumber),
@@ -166,6 +181,10 @@ public partial class MainViewModel : ObservableObject
     public int OutputPageCount => OutputGroups.Sum(group => group.Items.Count);
 
     public bool HasSelectedPages => SelectedPageCount > 0;
+
+    public string SelectedPageSummary => SelectedPageCount > 0
+        ? $"Đang chọn {SelectedPageCount} trang"
+        : "Chưa chọn trang";
 
     public bool HasOutputPages => OutputPageCount > 0;
 
@@ -462,14 +481,17 @@ public partial class MainViewModel : ObservableObject
             groupId,
             $"Group {OutputGroups.Count + 1}",
             DateTimeOffset.UtcNow,
-            selectedPages.Select(page => new OutputPageItem(Guid.NewGuid(), groupId, page.SourceFileId, page.PageNumber)));
+            selectedPages.Select(page => new OutputPageItem(Guid.NewGuid(), groupId, page.SourceFileId, page.PageNumber)),
+            GetNextOutputGroupColor());
 
         OutputGroups.Add(group);
         foreach (var page in selectedPages)
         {
             page.OutputOccurrenceCount++;
+            page.IsSelected = false;
         }
 
+        selectionAnchor = null;
         NotifyStatisticsChanged();
         RenderStatus = $"Đã thêm {selectedPages.Count} trang vào đầu ra";
     }
@@ -1188,7 +1210,8 @@ public partial class MainViewModel : ObservableObject
                 Guid.NewGuid(),
                 duplicateGroupId,
                 item.SourceFileId,
-                item.SourcePageNumber)));
+                item.SourcePageNumber)),
+            GetNextOutputGroupColor());
         var index = OutputGroups.IndexOf(group);
         OutputGroups.Insert(index + 1, duplicate);
 
@@ -1447,6 +1470,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(SourceFileCount));
         OnPropertyChanged(nameof(SourcePageCount));
         OnPropertyChanged(nameof(SelectedPageCount));
+        OnPropertyChanged(nameof(SelectedPageSummary));
         OnPropertyChanged(nameof(OutputPageCount));
         OnPropertyChanged(nameof(OutputTrayItems));
         OnPropertyChanged(nameof(HasSelectedPages));
@@ -1600,6 +1624,15 @@ public partial class MainViewModel : ObservableObject
         {
             IsPreviewSelected = CurrentOutputPreviewItem?.Item.Id == item.Item.Id
         };
+    }
+
+    private string GetNextOutputGroupColor()
+    {
+        var usedColors = OutputGroups
+            .Select(group => group.ColorHex)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return OutputGroupColors.FirstOrDefault(color => !usedColors.Contains(color))
+            ?? OutputGroupColors[OutputGroups.Count % OutputGroupColors.Length];
     }
 
     private void RefreshOutputPreviewItems(int preferredIndex)
@@ -1839,6 +1872,7 @@ public partial class MainViewModel : ObservableObject
                 group.Id,
                 group.Name,
                 group.CreatedAt,
+                group.ColorHex,
                 group.IsCollapsed,
                 group.Items.Select(item => new OutputItemSnapshot(
                     item.Id,
@@ -1865,7 +1899,8 @@ public partial class MainViewModel : ObservableObject
                     item.Id,
                     item.GroupId,
                     item.SourceFileId,
-                    item.SourcePageNumber)))
+                    item.SourcePageNumber)),
+                groupSnapshot.ColorHex)
             {
                 IsCollapsed = groupSnapshot.IsCollapsed
             };
@@ -1900,6 +1935,7 @@ public partial class MainViewModel : ObservableObject
         Guid Id,
         string Name,
         DateTimeOffset CreatedAt,
+        string ColorHex,
         bool IsCollapsed,
         IReadOnlyList<OutputItemSnapshot> Items);
 

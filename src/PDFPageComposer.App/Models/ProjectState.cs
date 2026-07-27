@@ -38,6 +38,8 @@ public sealed class ProjectOutputGroup
 
     public DateTimeOffset CreatedAt { get; set; }
 
+    public string ColorHex { get; set; } = string.Empty;
+
     public bool IsCollapsed { get; set; }
 
     public List<ProjectOutputPageItem> Items { get; set; } = [];

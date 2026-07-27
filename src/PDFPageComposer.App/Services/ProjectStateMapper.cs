@@ -28,6 +28,7 @@ public static class ProjectStateMapper
                 Id = group.Id,
                 Name = group.Name,
                 CreatedAt = group.CreatedAt,
+                ColorHex = group.ColorHex,
                 IsCollapsed = group.IsCollapsed,
                 Items = group.Items.Select(item => new ProjectOutputPageItem
                 {
@@ -65,14 +66,21 @@ public static class ProjectStateMapper
             return sourceFile;
         }).ToList();
 
-        var outputGroups = projectState.OutputGroups.Select(group =>
+        var outputGroups = projectState.OutputGroups.Select((group, index) =>
         {
             var items = group.Items.Select(item => new OutputPageItem(
                 item.Id,
                 group.Id,
                 item.SourceFileId,
                 item.SourcePageNumber));
-            var outputGroup = new OutputGroup(group.Id, group.Name, group.CreatedAt, items);
+            var outputGroup = new OutputGroup(
+                group.Id,
+                group.Name,
+                group.CreatedAt,
+                items,
+                string.IsNullOrWhiteSpace(group.ColorHex)
+                    ? GetDefaultGroupColor(index)
+                    : group.ColorHex);
             outputGroup.IsCollapsed = group.IsCollapsed;
             return outputGroup;
         }).ToList();
@@ -82,6 +90,25 @@ public static class ProjectStateMapper
             outputGroups,
             projectState.UiState.ThumbnailZoom,
             projectState.LastExportPath);
+    }
+
+    private static string GetDefaultGroupColor(int index)
+    {
+        string[] colors =
+        [
+            "#2563EB",
+            "#059669",
+            "#D97706",
+            "#DC2626",
+            "#7C3AED",
+            "#0891B2",
+            "#C026D3",
+            "#65A30D",
+            "#EA580C",
+            "#4F46E5"
+        ];
+
+        return colors[index % colors.Length];
     }
 }
 

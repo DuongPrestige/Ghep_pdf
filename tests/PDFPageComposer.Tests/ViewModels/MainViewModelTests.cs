@@ -551,19 +551,35 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
-    public void AddSelectionToOutputCommand_does_not_clear_selection_and_updates_occurrences()
+    public void AddSelectionToOutputCommand_clears_selection_and_updates_occurrences()
     {
         var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);
         var viewModel = CreateViewModelWith(sourceFile);
         sourceFile.Pages[0].IsSelected = true;
 
         viewModel.AddSelectionToOutputCommand.Execute(null);
+        sourceFile.Pages[0].IsSelected = true;
         viewModel.AddSelectionToOutputCommand.Execute(null);
 
-        Assert.True(sourceFile.Pages[0].IsSelected);
+        Assert.False(sourceFile.Pages[0].IsSelected);
         Assert.Equal(2, sourceFile.Pages[0].OutputOccurrenceCount);
         Assert.Equal(2, viewModel.OutputGroups.Count);
         Assert.Equal(2, viewModel.OutputPageCount);
+        Assert.Equal(0, viewModel.SelectedPageCount);
+        Assert.Equal("Chưa chọn trang", viewModel.SelectedPageSummary);
+    }
+
+    [Fact]
+    public void SelectedPageSummary_updates_with_selection_count()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);
+        var viewModel = CreateViewModelWith(sourceFile);
+
+        Assert.Equal("Chưa chọn trang", viewModel.SelectedPageSummary);
+
+        viewModel.SelectPageCommand.Execute(new PageSelectionRequest(sourceFile.Pages[0], SelectionGesture.Toggle));
+
+        Assert.Equal("Đang chọn 1 trang", viewModel.SelectedPageSummary);
     }
 
     [Fact]
@@ -574,12 +590,29 @@ public sealed class MainViewModelTests
         sourceFile.Pages[0].IsSelected = true;
 
         viewModel.AddSelectionToOutputCommand.Execute(null);
+        sourceFile.Pages[0].IsSelected = true;
         viewModel.AddSelectionToOutputCommand.Execute(null);
 
         var items = viewModel.OutputGroups.SelectMany(group => group.Items).ToList();
         Assert.Equal(2, items.Select(item => item.Id).Distinct().Count());
         Assert.All(items, item => Assert.Equal(sourceFile.Id, item.SourceFileId));
         Assert.All(items, item => Assert.Equal(1, item.SourcePageNumber));
+    }
+
+    [Fact]
+    public void AddSelectionToOutputCommand_assigns_distinct_group_colors()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);
+        var viewModel = CreateViewModelWith(sourceFile);
+
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1);
+        sourceFile.Pages[0].IsSelected = false;
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 2);
+
+        Assert.Equal(2, viewModel.OutputGroups.Select(group => group.ColorHex).Distinct().Count());
+        Assert.Equal(
+            viewModel.OutputGroups.SelectMany(group => group.Items.Select(_ => group.ColorHex)),
+            viewModel.OutputTrayItems.Select(item => item.GroupColorHex));
     }
 
     [Fact]
@@ -722,6 +755,7 @@ public sealed class MainViewModelTests
         Assert.Equal(2, viewModel.OutputGroups.Count);
         var duplicate = viewModel.OutputGroups[1];
         Assert.NotEqual(original.Id, duplicate.Id);
+        Assert.NotEqual(original.ColorHex, duplicate.ColorHex);
         Assert.Equal([1, 2, 3], duplicate.Items.Select(item => item.SourcePageNumber));
         Assert.Empty(original.Items.Select(item => item.Id).Intersect(duplicate.Items.Select(item => item.Id)));
         Assert.All(sourceFile.Pages, page => Assert.Equal(2, page.OutputOccurrenceCount));
@@ -1070,7 +1104,7 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
-    public void ToggleSourceFileCollapseCommand_does_not_change_selection_or_output()
+    public void ToggleSourceFileCollapseCommand_does_not_change_output()
     {
         var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 2);
         var viewModel = CreateViewModelWith(sourceFile);
@@ -1080,7 +1114,7 @@ public sealed class MainViewModelTests
         viewModel.ToggleSourceFileCollapseCommand.Execute(sourceFile);
 
         Assert.True(sourceFile.IsCollapsed);
-        Assert.True(sourceFile.Pages[0].IsSelected);
+        Assert.False(sourceFile.Pages[0].IsSelected);
         Assert.Equal(1, sourceFile.Pages[0].OutputOccurrenceCount);
         Assert.Equal(1, viewModel.OutputPageCount);
 

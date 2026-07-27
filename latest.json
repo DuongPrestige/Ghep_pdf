@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.1.0/PDFPageComposer-v1.1.0.zip",
-  "sha256": "895A097E3DBA40F6A4B102F5F1019537C01E16061216D4E057A5278F13705D0D",
-  "notes": "Them thao tac them ban sao, di chuyen len/xuong va xoa ngay trong man Xem truoc dau ra"
+  "version": "1.2.0",
+  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.2.0/PDFPageComposer-v1.2.0.zip",
+  "sha256": "0E7F8CB5427F6192D30B21CF5B410F999CD1A5AC3ECF480864F76EE6E94156A8",
+  "notes": "Them mau phan biet group, nhan ban group tu Output Tray, bo chon sau khi them vao dau ra va hien so trang dang chon"
 }

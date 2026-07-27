@@ -43,10 +43,17 @@
                     Padding="12,6"
                     Margin="0,0,8,0"
                     Command="{Binding ClearAllSelectionCommand}" />
-            <Button Command="{Binding AddSelectionToOutputCommand}"
-                    Content="Thêm vào đầu ra"
-                    Padding="12,6"
-                    Margin="0,0,8,0" />
+            <StackPanel Margin="0,0,8,0"
+                        VerticalAlignment="Center">
+                <TextBlock Text="{Binding SelectedPageSummary}"
+                           FontSize="11"
+                           Foreground="#475569"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,2" />
+                <Button Command="{Binding AddSelectionToOutputCommand}"
+                        Content="Thêm vào đầu ra"
+                        Padding="12,6" />
+            </StackPanel>
             <Separator />
             <TextBlock Text="Zoom"
                        VerticalAlignment="Center"
@@ -475,15 +482,22 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="8" />
                                             <ColumnDefinition Width="36" />
                                             <ColumnDefinition Width="56" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding OutputIndex, StringFormat={}{0:00}}"
+                                        <Border Grid.RowSpan="2"
+                                                Width="4"
+                                                Background="{Binding GroupColorHex}"
+                                                CornerRadius="2"
+                                                HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding OutputIndex, StringFormat={}{0:00}}"
                                                    FontWeight="SemiBold"
-                                                   Foreground="#2563EB"
+                                                   Foreground="{Binding GroupColorHex}"
                                                    VerticalAlignment="Top" />
-                                        <Border Grid.Column="1"
+                                        <Border Grid.Column="2"
                                                 Grid.RowSpan="2"
                                                 Width="44"
                                                 Height="60"
@@ -505,7 +519,7 @@
                                                 </Image.Source>
                                             </Image>
                                         </Border>
-                                        <StackPanel Grid.Column="2">
+                                        <StackPanel Grid.Column="3">
                                             <TextBlock FontWeight="SemiBold">
                                                 <Run Text="Trang " />
                                                 <Run Text="{Binding SourcePageNumber, Mode=OneWay}" />
@@ -515,7 +529,7 @@
                                                        Foreground="#657084"
                                                        FontSize="11" />
                                             <TextBlock Text="{Binding GroupName}"
-                                                       Foreground="#94A3B8"
+                                                       Foreground="{Binding GroupColorHex}"
                                                        FontSize="11"
                                                        AllowDrop="True"
                                                        PreviewMouseMove="OnOutputGroupPreviewMouseMove"
@@ -523,7 +537,7 @@
                                                        Drop="OnOutputGroupDrop" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="1"
-                                                    Grid.Column="2"
+                                                    Grid.Column="3"
                                                     Orientation="Horizontal"
                                                     Margin="0,6,0,0">
                                         <Button Content="Xem"
@@ -556,6 +570,12 @@
                                                 Margin="0,0,8,0"
                                                 Command="{Binding DataContext.DeleteOutputItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}" />
+                                        <Button Content="Nhân group"
+                                                Height="26"
+                                                Padding="8,0"
+                                                Margin="0,0,6,0"
+                                                Command="{Binding DataContext.DuplicateOutputGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding Group}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -888,6 +908,9 @@
                                                             <RowDefinition Height="242" />
                                                             <RowDefinition Height="78" />
                                                         </Grid.RowDefinitions>
+                                                        <Border Height="5"
+                                                                Background="{Binding GroupColorHex}"
+                                                                VerticalAlignment="Top" />
                                                         <Border Margin="8"
                                                                 Background="#FFFFFF"
                                                                 BorderBrush="#E2E8F0"
