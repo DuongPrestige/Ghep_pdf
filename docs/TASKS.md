@@ -654,4 +654,4 @@ Notes: Group duplication logic already existed in ViewModel; this task exposes i
 Completed: 2026-07-28
 Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `latest.json`, `docs/TASKS.md`
 Verification: `dotnet publish .\src\PDFPageComposer.App\PDFPageComposer.App.csproj -c Release -r win-x64 --self-contained true --no-restore -o .\artifacts\publish-v1.2.0` succeeded; `artifacts\PDFPageComposer-v1.2.0.zip` contains `PDFPageComposer.App.exe`, `pdfium.dll`, `PDFiumCore.dll` at the zip root; SHA256 is `0E7F8CB5427F6192D30B21CF5B410F999CD1A5AC3ECF480864F76EE6E94156A8`; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 100 passing tests.
-Notes: `gh` CLI is not installed in this environment, so the release zip may still need to be uploaded manually to GitHub Releases tag `v1.2.0` unless git hosting automation handles release assets.
+Notes: Release asset `PDFPageComposer-v1.2.0.zip` was uploaded to GitHub Releases tag `v1.2.0` after the commit and tag were pushed.
