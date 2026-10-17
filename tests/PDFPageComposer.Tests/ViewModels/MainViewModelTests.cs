@@ -809,6 +809,37 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public void MoveOutputItemBeforeCommand_can_place_the_dragged_item_after_the_last_page()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);
+        var viewModel = CreateViewModelWith(sourceFile);
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1, 2, 3);
+        var source = viewModel.OutputTrayItems.ElementAt(0).Item;
+        var last = viewModel.OutputTrayItems.ElementAt(2).Item;
+
+        viewModel.MoveOutputItemBeforeCommand.Execute(new OutputItemMoveRequest(source, last, PlaceAfter: true));
+
+        Assert.Equal([2, 3, 1], viewModel.OutputGroups.Single().Items.Select(item => item.SourcePageNumber));
+    }
+
+    [Fact]
+    public async Task Dragging_inside_the_output_preview_grid_updates_the_grid()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);
+        var viewModel = CreateViewModelWith(sourceFile);
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1, 2, 3);
+        await viewModel.PreviewOutputCommand.ExecuteAsync(null);
+        viewModel.ShowPreviewGridCommand.Execute(null);
+        var grid = viewModel.AllOutputPreviewGridItems;
+        Assert.Equal([1, 2, 3], grid.Select(item => item.SourcePageNumber));
+
+        viewModel.MoveOutputItemBeforeCommand.Execute(new OutputItemMoveRequest(grid[2].Item, grid[0].Item));
+
+        Assert.Equal([3, 1, 2], viewModel.AllOutputPreviewGridItems.Select(item => item.SourcePageNumber));
+        Assert.True(viewModel.AllOutputPreviewGridItems[0].IsPreviewSelected);
+    }
+
+    [Fact]
     public void MoveOutputItemDownCommand_moves_item_across_group_boundary()
     {
         var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);

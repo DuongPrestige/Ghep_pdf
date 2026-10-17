@@ -257,6 +257,11 @@ public partial class MainViewModel : ObservableObject
         .ToList()
         ?? [];
 
+    /// <summary>Every output page for the scrolling "Xem tất cả" grid, the current one marked.</summary>
+    public IReadOnlyList<OutputTrayItemView> AllOutputPreviewGridItems => IsPreviewGridOpen && IsOutputPreviewMode
+        ? outputPreviewItems.Select(MarkCurrentOutputPreviewItem).ToList()
+        : [];
+
     public OutputTrayItemView? CurrentOutputPreviewItem => IsOutputPreviewMode
         ? outputPreviewItems.ElementAtOrDefault(OutputPreviewIndex)
         : null;
@@ -1285,8 +1290,8 @@ public partial class MainViewModel : ObservableObject
         var movedItem = target.Group.Id == source.Item.GroupId
             ? source.Item
             : new OutputPageItem(source.Item.Id, target.Group.Id, source.Item.SourceFileId, source.Item.SourcePageNumber);
-        var targetIndex = target.Group.Items.IndexOf(target.Item);
-        target.Group.Items.Insert(Math.Max(0, targetIndex), movedItem);
+        var targetIndex = target.Group.Items.IndexOf(target.Item) + (request.PlaceAfter ? 1 : 0);
+        target.Group.Items.Insert(Math.Clamp(targetIndex, 0, target.Group.Items.Count), movedItem);
 
         if (source.Group.Items.Count == 0)
         {
@@ -1295,6 +1300,12 @@ public partial class MainViewModel : ObservableObject
 
         NotifyStatisticsChanged();
         RenderStatus = "Đã thả trang đầu ra";
+
+        // Dragging inside the output preview grid: show the new order and keep the moved page selected.
+        var movedIndex = OutputTrayItems
+            .Select((item, index) => (item, index))
+            .FirstOrDefault(entry => entry.item.Item.Id == movedItem.Id).index;
+        RefreshOutputPreviewItems(movedIndex);
     }
 
     [RelayCommand]
@@ -1548,6 +1559,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(OutputPreviewGridItems));
         OnPropertyChanged(nameof(OutputPreviewGridPages));
         OnPropertyChanged(nameof(CurrentOutputPreviewGridItems));
+        OnPropertyChanged(nameof(AllOutputPreviewGridItems));
         OnPropertyChanged(nameof(OutputPreviewGridPageCount));
         NotifyPreviewNavigationChanged();
     }
@@ -1558,6 +1570,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(OutputPreviewGridItems));
         OnPropertyChanged(nameof(OutputPreviewGridPages));
         OnPropertyChanged(nameof(CurrentOutputPreviewGridItems));
+        OnPropertyChanged(nameof(AllOutputPreviewGridItems));
         OnPropertyChanged(nameof(OutputPreviewGridPageCount));
         NotifyPreviewNavigationChanged();
     }
@@ -1570,6 +1583,7 @@ public partial class MainViewModel : ObservableObject
     partial void OnOutputPreviewGridPageIndexChanged(int value)
     {
         OnPropertyChanged(nameof(CurrentOutputPreviewGridItems));
+        OnPropertyChanged(nameof(AllOutputPreviewGridItems));
         NotifyPreviewNavigationChanged();
     }
 
@@ -1641,6 +1655,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(OutputPreviewGridItems));
         OnPropertyChanged(nameof(OutputPreviewGridPages));
         OnPropertyChanged(nameof(CurrentOutputPreviewGridItems));
+        OnPropertyChanged(nameof(AllOutputPreviewGridItems));
         OnPropertyChanged(nameof(CurrentOutputPreviewItem));
         OnPropertyChanged(nameof(HasCurrentOutputPreviewItem));
         OnPropertyChanged(nameof(OutputPreviewGridPageCount));
