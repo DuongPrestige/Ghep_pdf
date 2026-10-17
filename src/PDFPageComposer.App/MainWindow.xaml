@@ -206,6 +206,7 @@
                             <TextBox Width="220"
                                      Height="26"
                                      VerticalContentAlignment="Center"
+                                     ToolTip="Tìm không dấu, không phân biệt hoa thường: dinh bac tìm ra đình bắc.pdf"
                                      Text="{Binding SourceSearchText, UpdateSourceTrigger=PropertyChanged}" />
                             <Button Content="Xóa"
                                     Padding="10,3"
@@ -300,7 +301,8 @@
                                                                 ToolTip="Bấm để chọn / bỏ chọn (Ctrl, Shift để chọn nhiều) · nháy đúp để xem lớn"
                                                                 MouseLeftButtonUp="OnThumbnailClick"
                                                                 MouseLeftButtonDown="OnThumbnailMouseLeftButtonDown"
-                                                                behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                behaviors:RenderWhenVisibleBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                behaviors:RenderWhenVisibleBehavior.CommandParameter="{Binding}"
                                                                 behaviors:LoadedCommandBehavior.CommandParameter="{Binding}"
                                                                 behaviors:LoadedCommandBehavior.UnloadedCommand="{Binding DataContext.CancelThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                                             <Border.Style>
@@ -465,8 +467,8 @@
                                         <Border Height="5" Background="{Binding GroupColorHex}" />
                                         <Grid Height="225"
                                               Margin="4"
-                                              behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                              behaviors:LoadedCommandBehavior.CommandParameter="{Binding SourcePage}">
+                                              behaviors:RenderWhenVisibleBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              behaviors:RenderWhenVisibleBehavior.CommandParameter="{Binding SourcePage}">
                                             <Image Stretch="Uniform">
                                                 <Image.Source>
                                                     <MultiBinding Converter="{StaticResource BgraImageConverter}">
@@ -646,7 +648,8 @@
                                             ToolTip="Bấm để chọn / bỏ chọn · nháy đúp để xem lớn"
                                             MouseLeftButtonUp="OnThumbnailClick"
                                             MouseLeftButtonDown="OnThumbnailMouseLeftButtonDown"
-                                            behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            behaviors:RenderWhenVisibleBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            behaviors:RenderWhenVisibleBehavior.CommandParameter="{Binding}"
                                             behaviors:LoadedCommandBehavior.CommandParameter="{Binding}"
                                             behaviors:LoadedCommandBehavior.UnloadedCommand="{Binding DataContext.CancelThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                         <Border.Style>
@@ -731,7 +734,8 @@
                                             DragOver="OnOutputItemDragOver"
                                             Drop="OnOutputItemDrop"
                                             ToolTip="Bấm để chọn · kéo thả để đổi vị trí (thả nửa trái = đứng trước, nửa phải = đứng sau) · nháy đúp để xem lớn"
-                                            behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            behaviors:RenderWhenVisibleBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            behaviors:RenderWhenVisibleBehavior.CommandParameter="{Binding SourcePage}"
                                             behaviors:LoadedCommandBehavior.CommandParameter="{Binding SourcePage}"
                                             behaviors:LoadedCommandBehavior.UnloadedCommand="{Binding DataContext.CancelThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                         <Border.InputBindings>

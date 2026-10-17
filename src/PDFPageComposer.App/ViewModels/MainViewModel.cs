@@ -147,7 +147,8 @@ public partial class MainViewModel : ObservableObject
                 return SourceFiles;
             }
 
-            return SourceFiles.Where(file => file.DisplayName.Contains(SourceSearchText, StringComparison.OrdinalIgnoreCase));
+            // Vietnamese-insensitive: "dinh bac" or "dinhbac" finds "đình bắc.pdf".
+            return SourceFiles.Where(file => PDFPageComposer.App.TikTok.TextNormalizer.MatchesSearch(file.DisplayName, SourceSearchText));
         }
     }
 

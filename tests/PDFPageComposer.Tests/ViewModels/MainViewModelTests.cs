@@ -435,6 +435,26 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public void SourceSearchText_ignores_vietnamese_diacritics_case_word_order_and_spaces()
+    {
+        var dinhBac = CreateSourceFile(@"D:\Docs\đình bắc.pdf", 1);
+        var quangHung = CreateSourceFile(@"D:\Docs\QUANG HÙNG 3.10.pdf", 1);
+        var viewModel = CreateViewModelWith(dinhBac, quangHung);
+
+        foreach (var query in new[] { "dinh bac", "DINH BAC", "bac dinh", "dinhbac", "đình" })
+        {
+            viewModel.SourceSearchText = query;
+            Assert.Equal([dinhBac], viewModel.FilteredSourceFiles);
+        }
+
+        viewModel.SourceSearchText = "hung 3.10";
+        Assert.Equal([quangHung], viewModel.FilteredSourceFiles);
+
+        viewModel.SourceSearchText = "dinh hung";
+        Assert.Empty(viewModel.FilteredSourceFiles);
+    }
+
+    [Fact]
     public void SourceSearchText_filters_source_files_by_display_name()
     {
         var first = CreateSourceFile(@"D:\Docs\alpha.pdf", 1);
