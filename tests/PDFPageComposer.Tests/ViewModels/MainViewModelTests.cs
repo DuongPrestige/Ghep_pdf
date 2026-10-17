@@ -24,6 +24,25 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public async Task ImportPdfFilesAsync_skips_files_already_in_the_list()
+    {
+        var metadata = new FakePdfMetadataService();
+        metadata.Add(@"D:\Docs\a.pdf", CreateSourceFile(@"D:\Docs\a.pdf", 2, "A"));
+        metadata.Add(@"D:\Docs\b.pdf", CreateSourceFile(@"D:\Docs\b.pdf", 1, "B"));
+        metadata.Add(@"E:\Copy\a - copy.pdf", CreateSourceFile(@"E:\Copy\a - copy.pdf", 2, "A"));
+        var viewModel = CreateViewModelWithServices(metadata: metadata);
+        await viewModel.ImportPdfFilesAsync([@"D:\Docs\a.pdf"], CancellationToken.None);
+
+        await viewModel.ImportPdfFilesAsync([@"d:\docs\A.pdf", @"E:\Copy\a - copy.pdf", @"D:\Docs\b.pdf"], CancellationToken.None);
+
+        Assert.Equal([@"D:\Docs\a.pdf", @"D:\Docs\b.pdf"], viewModel.SourceFiles.Select(file => file.FilePath));
+        Assert.Equal("Đã import 1/3 file PDF, bỏ qua 2 file đã có: A.pdf, a - copy.pdf", viewModel.RenderStatus);
+
+        await viewModel.ImportPdfFilesAsync([@"D:\Docs\b.pdf"], CancellationToken.None);
+        Assert.Equal("Không có file mới, bỏ qua 1 file đã có: b.pdf", viewModel.RenderStatus);
+    }
+
+    [Fact]
     public async Task ImportPdfFilesAsync_keeps_importing_after_file_error()
     {
         var metadata = new FakePdfMetadataService();
@@ -399,7 +418,7 @@ public sealed class MainViewModelTests
             .ToList();
         foreach (var path in paths)
         {
-            metadata.Add(path, CreateSourceFile(path, 50));
+            metadata.Add(path, CreateSourceFile(path, 50, path));
         }
 
         var render = new FakePdfRenderService();
@@ -1141,7 +1160,7 @@ public sealed class MainViewModelTests
         Assert.Equal(0.6, viewModel.ThumbnailZoom, precision: 3);
     }
 
-    private static SourcePdfFile CreateSourceFile(string path, int pageCount)
+    private static SourcePdfFile CreateSourceFile(string path, int pageCount, string fingerprint = "fingerprint")
     {
         var sourceFileId = Guid.NewGuid();
         var pages = Enumerable.Range(1, pageCount)
@@ -1150,7 +1169,7 @@ public sealed class MainViewModelTests
                 Width = 600,
                 Height = 800
             });
-        return new SourcePdfFile(sourceFileId, path, Path.GetFileName(path), pageCount, 1024, "fingerprint", pages: pages);
+        return new SourcePdfFile(sourceFileId, path, Path.GetFileName(path), pageCount, 1024, fingerprint, pages: pages);
     }
 
     private static MainViewModel CreateViewModelWith(params SourcePdfFile[] sourceFiles)

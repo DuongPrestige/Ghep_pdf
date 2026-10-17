@@ -37,6 +37,7 @@ public sealed class TikTokWindowService : ITikTokWindowService
 
         window.Closed += OnWindowClosed;
         openWindow = window;
+        window.WindowState = WindowState.Maximized;
         window.Show();
         window.Activate();
     }

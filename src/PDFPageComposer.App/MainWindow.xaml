@@ -12,6 +12,8 @@
         MinHeight="640"
         Width="1366"
         Height="768"
+        FontSize="14"
+        WindowState="Maximized"
         AllowDrop="True"
         DragOver="OnDragOver"
         Drop="OnDrop"
@@ -21,6 +23,25 @@
         <converters:BgraImageConverter x:Key="BgraImageConverter" />
         <converters:RenderedPageImageConverter x:Key="RenderedPageImageConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <Style x:Key="RowButton" TargetType="Button">
+            <Setter Property="Padding" Value="10,2" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+        </Style>
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="MinWidth" Value="28" />
+        </Style>
+        <Style x:Key="NumberBadge" TargetType="Border">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="MinWidth" Value="22" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
     </Window.Resources>
     <Grid PreviewMouseWheel="OnPreviewMouseWheel">
     <DockPanel Background="#F6F7F9">
@@ -151,9 +172,9 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="7*" />
+                <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="3*" MinWidth="280" />
+                <ColumnDefinition Width="2*" MinWidth="380" />
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
@@ -209,238 +230,181 @@
                             </Style>
                         </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#FFFFFF"
-                                            BorderBrush="#D9DEE8"
-                                            BorderThickness="1"
-                                            Padding="12"
-                                            Margin="0,0,0,12"
-                                            Height="250">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" MinWidth="180" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0"
-                                                            Margin="0,0,12,0">
-                                                    <TextBlock Text="{Binding DisplayName}"
-                                                               FontWeight="SemiBold"
-                                                               TextTrimming="CharacterEllipsis" />
-                                                    <TextBlock Foreground="#657084"
-                                                               FontSize="12">
-                                                        <Run Text="{Binding PageCount, Mode=OneWay}" />
-                                                        <Run Text=" trang" />
-                                                    </TextBlock>
-                                                </StackPanel>
-                                                <Button Grid.Column="2"
-                                                        Content="Xóa"
-                                                        Padding="10,4"
+                            <DataTemplate>
+                                <Border Background="#FFFFFF"
+                                        BorderBrush="#D9DEE8"
+                                        BorderThickness="1"
+                                        Padding="10"
+                                        Margin="0,0,0,10">
+                                    <DockPanel>
+                                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                <Button Content="Thu gọn"
+                                                        Style="{StaticResource RowButton}"
+                                                        ToolTip="Ẩn / hiện các trang của file"
+                                                        Command="{Binding DataContext.ToggleSourceFileCollapseCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Chọn tất cả"
+                                                        Style="{StaticResource RowButton}"
+                                                        Command="{Binding DataContext.SelectAllInFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Bỏ chọn"
+                                                        Style="{StaticResource RowButton}"
+                                                        Command="{Binding DataContext.ClearSelectionInFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Chọn lại"
+                                                        Style="{StaticResource RowButton}"
+                                                        ToolTip="Chọn lại file khi file đã bị di chuyển"
+                                                        Command="{Binding DataContext.RelinkSourceFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Xóa"
+                                                        Style="{StaticResource RowButton}"
+                                                        Foreground="#B91C1C"
                                                         Command="{Binding DataContext.RemoveSourceFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}" />
-                                                <StackPanel Grid.Column="1"
-                                                            Orientation="Horizontal"
-                                                            Margin="0,0,8,0">
-                                                    <Button Content="-"
-                                                            Padding="10,4"
-                                                            Margin="0,0,6,0"
-                                                            Command="{Binding DataContext.ToggleSourceFileCollapseCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}" />
-                                                    <Button Content="Chọn tất cả"
-                                                            Padding="10,4"
-                                                            Margin="0,0,6,0"
-                                                            Command="{Binding DataContext.SelectAllInFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}" />
-                                                    <Button Content="Bỏ chọn"
-                                                            Padding="10,4"
-                                                            Margin="0,0,6,0"
-                                                            Command="{Binding DataContext.ClearSelectionInFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}" />
-                                                    <Button Content="Chọn lại"
-                                                            Padding="10,4"
-                                                            Command="{Binding DataContext.RelinkSourceFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}" />
-                                                </StackPanel>
-                                            </Grid>
-                                            <ScrollViewer Grid.Row="1"
-                                                          Margin="0,12,0,0"
-                                                          HorizontalScrollBarVisibility="Auto"
-                                                          VerticalScrollBarVisibility="Disabled"
-                                                          PreviewMouseWheel="OnPageStripMouseWheel">
-                                                <ScrollViewer.Style>
-                                                    <Style TargetType="ScrollViewer">
-                                                        <Setter Property="Visibility" Value="Visible" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </ScrollViewer.Style>
-                                                <ItemsControl ItemsSource="{Binding Pages}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
+                                            </StackPanel>
+                                            <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                                <Run Text="{Binding DisplayName, Mode=OneWay}" FontWeight="SemiBold" />
+                                                <Run Text="   " />
+                                                <Run Text="{Binding PageCount, Mode=OneWay}" Foreground="#64748B" />
+                                                <Run Text=" trang" Foreground="#64748B" />
+                                            </TextBlock>
+                                        </DockPanel>
+                                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                      VerticalScrollBarVisibility="Disabled"
+                                                      PreviewMouseWheel="OnPageStripMouseWheel">
+                                            <ScrollViewer.Style>
+                                                <Style TargetType="ScrollViewer">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ScrollViewer.Style>
+                                            <ItemsControl ItemsSource="{Binding Pages}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
                                                         <Border Width="{Binding DataContext.ThumbnailCardWidth, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                MinHeight="{Binding DataContext.ThumbnailCardMinHeight, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                Margin="0,0,8,8"
-                                                                Background="#F8FAFD"
-                                                                BorderBrush="#CBD5E1"
-                                                                BorderThickness="1"
+                                                                Margin="0,0,8,4"
+                                                                BorderThickness="2"
+                                                                Cursor="Hand"
+                                                                ToolTip="Bấm để chọn / bỏ chọn (Ctrl, Shift để chọn nhiều) · nháy đúp để xem lớn"
                                                                 MouseLeftButtonUp="OnThumbnailClick"
                                                                 MouseLeftButtonDown="OnThumbnailMouseLeftButtonDown"
                                                                 behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                 behaviors:LoadedCommandBehavior.CommandParameter="{Binding}"
                                                                 behaviors:LoadedCommandBehavior.UnloadedCommand="{Binding DataContext.CancelThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                                                            <Grid>
-                                                                <Grid.RowDefinitions>
-                                                                    <RowDefinition Height="{Binding DataContext.ThumbnailPreviewHeight, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                                                    <RowDefinition Height="40" />
-                                                                </Grid.RowDefinitions>
-
-                                                                <Border Margin="8"
-                                                                        Background="#FFFFFF"
-                                                                        BorderBrush="#E2E8F0"
-                                                                        BorderThickness="1">
-                                                                    <Grid>
-                                                                        <Image Stretch="Uniform">
-                                                                            <Image.Source>
-                                                                                <MultiBinding Converter="{StaticResource BgraImageConverter}">
-                                                                                    <Binding Path="ThumbnailPixels" />
-                                                                                    <Binding Path="ThumbnailPixelWidth" />
-                                                                                    <Binding Path="ThumbnailPixelHeight" />
-                                                                                    <Binding Path="ThumbnailStride" />
-                                                                                </MultiBinding>
-                                                                            </Image.Source>
-                                                                        </Image>
-
-                                                                        <TextBlock Text="Đang render"
-                                                                                   HorizontalAlignment="Center"
-                                                                                   VerticalAlignment="Center"
-                                                                                   Foreground="#657084">
-                                                                            <TextBlock.Style>
-                                                                                <Style TargetType="TextBlock">
-                                                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                                                    <Style.Triggers>
-                                                                                        <DataTrigger Binding="{Binding ThumbnailState}" Value="{x:Static models:ThumbnailState.Loading}">
-                                                                                            <Setter Property="Visibility" Value="Visible" />
-                                                                                        </DataTrigger>
-                                                                                    </Style.Triggers>
-                                                                                </Style>
-                                                                            </TextBlock.Style>
-                                                                        </TextBlock>
-
-                                                                        <StackPanel HorizontalAlignment="Center"
-                                                                                    VerticalAlignment="Center">
-                                                                            <StackPanel.Style>
-                                                                                <Style TargetType="StackPanel">
-                                                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                                                    <Style.Triggers>
-                                                                                        <DataTrigger Binding="{Binding ThumbnailState}" Value="{x:Static models:ThumbnailState.Error}">
-                                                                                            <Setter Property="Visibility" Value="Visible" />
-                                                                                        </DataTrigger>
-                                                                                    </Style.Triggers>
-                                                                                </Style>
-                                                                            </StackPanel.Style>
-                                                                            <TextBlock Text="Lỗi render"
-                                                                                       Foreground="#B91C1C"
-                                                                                       HorizontalAlignment="Center" />
-                                                                            <Button Content="Thử lại"
-                                                                                    Padding="8,3"
-                                                                                    Margin="0,8,0,0"
-                                                                                    Command="{Binding DataContext.RetryThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                    CommandParameter="{Binding}" />
-                                                                        </StackPanel>
-                                                                    </Grid>
-                                                                </Border>
-
-                                                                <TextBlock HorizontalAlignment="Left"
-                                                                           Grid.Row="1"
-                                                                           Margin="8,4,54,0"
-                                                                           Foreground="#657084"
-                                                                           FontSize="11">
-                                                                    <Run Text="Trang " />
-                                                                    <Run Text="{Binding PageNumber, Mode=OneWay}" />
-                                                                    <LineBreak />
-                                                                    <Run Text="{Binding Width, StringFormat={}{0:0}, Mode=OneWay}" />
-                                                                    <Run Text="x" />
-                                                                    <Run Text="{Binding Height, StringFormat={}{0:0}, Mode=OneWay}" />
-                                                                </TextBlock>
-                                                                <Button Grid.Row="1"
-                                                                        Content="Xem"
-                                                                        HorizontalAlignment="Right"
-                                                                        VerticalAlignment="Center"
-                                                                        Margin="0,0,6,0"
-                                                                        Padding="7,2"
-                                                                        Command="{Binding DataContext.OpenPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding}" />
-
-                                                                <Border HorizontalAlignment="Right"
-                                                                        VerticalAlignment="Top"
-                                                                        Margin="0,4,4,0"
-                                                                        Background="#2563EB"
-                                                                        CornerRadius="9"
-                                                                        Padding="5,2">
-                                                                    <Border.Style>
-                                                                        <Style TargetType="Border">
-                                                                            <Setter Property="Visibility" Value="Visible" />
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding OutputOccurrenceCount}" Value="0">
-                                                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Border.Style>
-                                                                    <TextBlock Foreground="#FFFFFF"
-                                                                               FontSize="11"
-                                                                               FontWeight="SemiBold">
-                                                                        <Run Text="x" />
-                                                                        <Run Text="{Binding OutputOccurrenceCount, Mode=OneWay}" />
-                                                                    </TextBlock>
-                                                                </Border>
-
-                                                                <Border HorizontalAlignment="Left"
-                                                                        VerticalAlignment="Top"
-                                                                        Margin="4"
-                                                                        Width="22"
-                                                                        Height="22"
-                                                                        Background="#16A34A"
-                                                                        CornerRadius="11">
-                                                                    <Border.Style>
-                                                                        <Style TargetType="Border">
-                                                                            <Setter Property="Visibility" Value="Collapsed" />
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                                                    <Setter Property="Visibility" Value="Visible" />
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Border.Style>
-                                                                    <TextBlock Text="✓"
-                                                                               Foreground="#FFFFFF"
-                                                                               FontWeight="Bold"
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="BorderBrush" Value="#CBD5E1" />
+                                                                    <Setter Property="Background" Value="#F8FAFD" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                            <Setter Property="BorderBrush" Value="#2563EB" />
+                                                                            <Setter Property="Background" Value="#DBEAFE" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <StackPanel>
+                                                                <Grid Height="{Binding DataContext.ThumbnailPreviewHeight, RelativeSource={RelativeSource AncestorType=Window}}" Margin="4">
+                                                                    <Image Stretch="Uniform">
+                                                                        <Image.Source>
+                                                                            <MultiBinding Converter="{StaticResource BgraImageConverter}">
+                                                                                <Binding Path="ThumbnailPixels" />
+                                                                                <Binding Path="ThumbnailPixelWidth" />
+                                                                                <Binding Path="ThumbnailPixelHeight" />
+                                                                                <Binding Path="ThumbnailStride" />
+                                                                            </MultiBinding>
+                                                                        </Image.Source>
+                                                                    </Image>
+                                                                    <TextBlock Text="Đang tải…"
                                                                                HorizontalAlignment="Center"
-                                                                               VerticalAlignment="Center" />
-                                                                </Border>
-                                                            </Grid>
+                                                                               VerticalAlignment="Center"
+                                                                               Foreground="#657084"
+                                                                               FontSize="12">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding ThumbnailState}" Value="{x:Static models:ThumbnailState.Loading}">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                        <StackPanel.Style>
+                                                                            <Style TargetType="StackPanel">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding ThumbnailState}" Value="{x:Static models:ThumbnailState.Error}">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </StackPanel.Style>
+                                                                        <TextBlock Text="Lỗi hiển thị" Foreground="#B91C1C" FontSize="12" HorizontalAlignment="Center" />
+                                                                        <Button Content="Thử lại"
+                                                                                Padding="8,1"
+                                                                                Margin="0,6,0,0"
+                                                                                Command="{Binding DataContext.RetryThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                CommandParameter="{Binding}" />
+                                                                    </StackPanel>
+                                                                    <!-- How many times the page is already in the output tray. -->
+                                                                    <Border Style="{StaticResource NumberBadge}"
+                                                                            ToolTip="Số lần trang này có trong khay đầu ra">
+                                                                        <Border.Visibility>
+                                                                            <Binding Path="OutputOccurrenceCount">
+                                                                                <Binding.Converter>
+                                                                                    <converters:NonZeroToVisibilityConverter />
+                                                                                </Binding.Converter>
+                                                                            </Binding>
+                                                                        </Border.Visibility>
+                                                                        <TextBlock Foreground="#FFFFFF" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                            <Run Text="x" /><Run Text="{Binding OutputOccurrenceCount, Mode=OneWay}" />
+                                                                        </TextBlock>
+                                                                    </Border>
+                                                                    <Border HorizontalAlignment="Left"
+                                                                            VerticalAlignment="Top"
+                                                                            Margin="4"
+                                                                            Width="22"
+                                                                            Height="22"
+                                                                            Background="#2563EB"
+                                                                            CornerRadius="11"
+                                                                            Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <TextBlock Text="✓" Foreground="#FFFFFF" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                    </Border>
+                                                                </Grid>
+                                                                <DockPanel Margin="6,0,4,4">
+                                                                    <Button DockPanel.Dock="Right"
+                                                                            Content="Xem"
+                                                                            FontSize="12"
+                                                                            Padding="6,0"
+                                                                            Command="{Binding DataContext.OpenPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                            CommandParameter="{Binding}" />
+                                                                    <TextBlock FontSize="12" VerticalAlignment="Center">
+                                                                        <Run Text="Trang " /><Run Text="{Binding PageNumber, Mode=OneWay}" />
+                                                                    </TextBlock>
+                                                                </DockPanel>
+                                                            </StackPanel>
                                                         </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </ScrollViewer>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     </ListBox>
                 </Grid>
             </Border>
@@ -458,63 +422,50 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Khay đầu ra"
-                               FontSize="18"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,12" />
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#475569">
+                            <Run Text="{Binding OutputPageCount, Mode=OneWay}" /><Run Text=" trang" />
+                        </TextBlock>
+                        <TextBlock Text="Khay đầu ra" FontSize="18" FontWeight="SemiBold" />
+                    </DockPanel>
                     <ListBox x:Name="OutputTrayList"
                              Grid.Row="1"
                              ItemsSource="{Binding OutputTrayItems}"
                              SelectionMode="Extended"
-                             Background="#FFFFFF"
-                             BorderBrush="#D9DEE8"
+                             Background="#E2E8F0"
+                             BorderBrush="#CBD5E1"
                              BorderThickness="1"
-                             ScrollViewer.CanContentScroll="True"
-                             VirtualizingPanel.IsVirtualizing="True"
-                             VirtualizingPanel.VirtualizationMode="Recycling">
+                             Padding="4"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="2" />
+                                <Setter Property="Margin" Value="3" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Border Margin="8,6"
-                                        Padding="8"
-                                        BorderBrush="#E2E8F0"
-                                        BorderThickness="0,0,0,1"
+                                <Border Width="172"
+                                        Background="#FFFFFF"
+                                        BorderBrush="#94A3B8"
+                                        BorderThickness="1"
                                         AllowDrop="True"
+                                        ToolTip="Kéo thả để đổi vị trí · Ctrl/Shift để chọn nhiều"
                                         PreviewMouseMove="OnOutputItemPreviewMouseMove"
                                         DragOver="OnOutputItemDragOver"
                                         Drop="OnOutputItemDrop">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="36" />
-                                            <ColumnDefinition Width="56" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.RowSpan="2"
-                                                Width="4"
-                                                Background="{Binding GroupColorHex}"
-                                                CornerRadius="2"
-                                                HorizontalAlignment="Left" />
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding OutputIndex, StringFormat={}{0:00}}"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding GroupColorHex}"
-                                                   VerticalAlignment="Top" />
-                                        <Border Grid.Column="2"
-                                                Grid.RowSpan="2"
-                                                Width="44"
-                                                Height="60"
-                                                Background="#FFFFFF"
-                                                BorderBrush="#CBD5E1"
-                                                BorderThickness="1"
-                                                HorizontalAlignment="Left"
-                                                behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                behaviors:LoadedCommandBehavior.CommandParameter="{Binding SourcePage}">
-                                            <Image Stretch="Uniform"
-                                                   Margin="2">
+                                    <StackPanel>
+                                        <Border Height="5" Background="{Binding GroupColorHex}" />
+                                        <Grid Height="225"
+                                              Margin="4"
+                                              behaviors:LoadedCommandBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              behaviors:LoadedCommandBehavior.CommandParameter="{Binding SourcePage}">
+                                            <Image Stretch="Uniform">
                                                 <Image.Source>
                                                     <MultiBinding Converter="{StaticResource BgraImageConverter}">
                                                         <Binding Path="SourcePage.ThumbnailPixels" />
@@ -524,66 +475,50 @@
                                                     </MultiBinding>
                                                 </Image.Source>
                                             </Image>
-                                        </Border>
-                                        <StackPanel Grid.Column="3">
-                                            <TextBlock FontWeight="SemiBold">
-                                                <Run Text="Trang " />
-                                                <Run Text="{Binding SourcePageNumber, Mode=OneWay}" />
-                                            </TextBlock>
-                                            <TextBlock Text="{Binding SourceDisplayName}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       Foreground="#657084"
-                                                       FontSize="11" />
-                                            <TextBlock Text="{Binding GroupName}"
-                                                       Foreground="{Binding GroupColorHex}"
-                                                       FontSize="11"
-                                                       AllowDrop="True"
-                                                       PreviewMouseMove="OnOutputGroupPreviewMouseMove"
-                                                       DragOver="OnOutputGroupDragOver"
-                                                       Drop="OnOutputGroupDrop" />
+                                            <Border Style="{StaticResource NumberBadge}" ToolTip="Thứ tự trong file xuất">
+                                                <TextBlock Text="{Binding OutputIndex}" Foreground="#FFFFFF" FontSize="12" FontWeight="Bold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock FontSize="12" TextAlignment="Center" TextWrapping="Wrap" Margin="4,0">
+                                            <Run Text="{Binding SourceDisplayName, Mode=OneWay}" />
+                                            <Run Text=" · tr " /><Run Text="{Binding SourcePageNumber, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding GroupName}"
+                                                   Foreground="{Binding GroupColorHex}"
+                                                   FontSize="12"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="4,0"
+                                                   ToolTip="Kéo tên nhóm để chuyển cả nhóm"
+                                                   AllowDrop="True"
+                                                   PreviewMouseMove="OnOutputGroupPreviewMouseMove"
+                                                   DragOver="OnOutputGroupDragOver"
+                                                   Drop="OnOutputGroupDrop" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,2">
+                                            <Button Content="◀" Style="{StaticResource IconButton}" ToolTip="Đưa lên trước"
+                                                    Command="{Binding DataContext.MoveOutputItemUpCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="▶" Style="{StaticResource IconButton}" ToolTip="Đưa ra sau"
+                                                    Command="{Binding DataContext.MoveOutputItemDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="+" Style="{StaticResource IconButton}" ToolTip="Nhân bản trang này"
+                                                    Command="{Binding DataContext.DuplicateOutputItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="✕" Style="{StaticResource IconButton}" ToolTip="Bỏ trang này" Foreground="#B91C1C"
+                                                    Command="{Binding DataContext.DeleteOutputItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
                                         </StackPanel>
-                                        <StackPanel Grid.Row="1"
-                                                    Grid.Column="3"
-                                                    Orientation="Horizontal"
-                                                    Margin="0,6,0,0">
-                                        <Button Content="Xem"
-                                                Height="26"
-                                                Padding="8,0"
-                                                Margin="0,0,6,0"
-                                                Command="{Binding DataContext.OpenPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding SourcePage}" />
-                                        <Button Content="+"
-                                                Width="28"
-                                                Height="26"
-                                                Margin="0,0,4,0"
-                                                Command="{Binding DataContext.DuplicateOutputItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}" />
-                                        <Button Content="^"
-                                                Width="28"
-                                                Height="26"
-                                                Margin="0,0,4,0"
-                                                Command="{Binding DataContext.MoveOutputItemUpCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}" />
-                                        <Button Content="v"
-                                                Width="28"
-                                                Height="26"
-                                                Margin="0,0,4,0"
-                                                Command="{Binding DataContext.MoveOutputItemDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}" />
-                                        <Button Content="x"
-                                                Width="28"
-                                                Height="26"
-                                                Margin="0,0,8,0"
-                                                Command="{Binding DataContext.DeleteOutputItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}" />
-                                        <Button Content="Nhân group"
-                                                Height="26"
-                                                Padding="8,0"
-                                                Margin="0,0,6,0"
-                                                Command="{Binding DataContext.DuplicateOutputGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding Group}" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,6">
+                                            <Button Content="Xem" FontSize="12" Padding="8,0" Margin="2,0"
+                                                    Command="{Binding DataContext.OpenPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding SourcePage}" />
+                                            <Button Content="Nhân nhóm" FontSize="12" Padding="8,0" Margin="2,0"
+                                                    ToolTip="Nhân bản cả nhóm trang này"
+                                                    Command="{Binding DataContext.DuplicateOutputGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding Group}" />
                                         </StackPanel>
-                                    </Grid>
+                                    </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

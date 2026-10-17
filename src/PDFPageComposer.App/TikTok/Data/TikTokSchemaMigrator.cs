@@ -123,6 +123,9 @@ internal static class TikTokSchemaMigrator
             ALTER TABLE OrderFileOverride ADD COLUMN FirstPage INTEGER NOT NULL DEFAULT 1;
             ALTER TABLE PrintBatchItem ADD COLUMN FirstPage INTEGER NULL;
             """),
+        (6, """
+            ALTER TABLE OrderFileOverride ADD COLUMN FilePageCount INTEGER NULL;
+            """),
     ];
 
     public static int LatestVersion => Migrations[^1].Version;

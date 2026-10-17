@@ -198,8 +198,89 @@ public sealed partial class OrdersTabViewModel : ObservableObject
         row.IsReprint = !row.IsReprint;
     }
 
+    /// <summary>Set by the window: shows the "Xem trước file in" window modally.</summary>
+    public Action<PrintPreviewViewModel>? ShowPrintPreviewDialog { get; set; }
+
+    /// <summary>
+    /// "Xem trước file in": every page of the ticked orders in print order. Files can be changed per order and orders
+    /// can leave the batch; "Tạo file in" in the preview runs the normal print file export.
+    /// </summary>
+    [RelayCommand]
+    private async Task PreviewPrintFileAsync()
+    {
+        if (ShowPrintPreviewDialog is null)
+        {
+            return;
+        }
+
+        if (SelectedRows.Count == 0)
+        {
+            workspace.ShowError("Chưa chọn đơn nào để xem trước.");
+            return;
+        }
+
+        var preview = new PrintPreviewViewModel(
+            BuildSelectionPlan,
+            EditOrderFilesAsync,
+            orderId =>
+            {
+                if (allRows.FirstOrDefault(row => string.Equals(row.OrderId, orderId, StringComparison.Ordinal)) is { } row)
+                {
+                    row.IsSelected = false;
+                }
+            },
+            workspace.Services.PageRenderer,
+            CopyToClipboard);
+        ShowPrintPreviewDialog(preview);
+        if (preview.CreateRequested)
+        {
+            await CreatePrintFileCommand.ExecuteAsync(null);
+        }
+    }
+
+    private bool CopyToClipboard(string text)
+    {
+        try
+        {
+            workspace.Services.Clipboard.SetText(text);
+            return true;
+        }
+        catch (InvalidOperationException exception)
+        {
+            workspace.ShowError(exception.Message);
+            return false;
+        }
+    }
+
+    /// <summary>The plan "Tạo file in" would export now for the ticked orders.</summary>
+    private PrintPlan BuildSelectionPlan()
+    {
+        var selected = SelectedRows;
+        return workspace.Services.PlanBuilder.Build(
+            selected.Select(row => row.Order).ToList(),
+            workspace.SkuMap(),
+            workspace.Assets,
+            SelectedSeparatorMode.Value,
+            workspace.ClassificationOptions(allowReprint: selected.Any(row => row.IsReprint)));
+    }
+
+    private async Task EditOrderFilesAsync(string orderId)
+    {
+        if (allRows.FirstOrDefault(row => string.Equals(row.OrderId, orderId, StringComparison.Ordinal)) is { } row)
+        {
+            await ChooseFilesCommand.ExecuteAsync(row);
+        }
+    }
+
     /// <summary>Set by the window: shows the "Xem / chọn file in" dialog modally.</summary>
     public Action<OrderFilesViewModel>? ShowOrderFilesDialog { get; set; }
+
+    /// <summary>Page count of a PDF picked from outside the library (PDFsharp, so it never races the PDFium renderer).</summary>
+    public Func<string, int> CountPdfPages { get; set; } = path =>
+    {
+        using var document = PdfSharp.Pdf.IO.PdfReader.Open(path, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+        return document.PageCount;
+    };
 
     /// <summary>Disk check used by the dialog to hide library files that were deleted after the last scan.</summary>
     public Func<string, bool> FileExists { get; set; } = System.IO.File.Exists;
@@ -232,7 +313,10 @@ public sealed partial class OrdersTabViewModel : ObservableObject
             workspace.Aliases,
             plan.Orders.FirstOrDefault()?.Copies ?? [],
             services.PageRenderer,
-            FileExists);
+            FileExists,
+            services.FileDialogs.PickPdfFiles,
+            CountPdfPages,
+            CopyToClipboard);
         ShowOrderFilesDialog(dialog);
         if (dialog.Result == OrderFilesResult.Cancel)
         {

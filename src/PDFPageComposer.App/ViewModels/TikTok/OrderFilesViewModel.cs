@@ -22,17 +22,20 @@ public enum OrderFilesResult
 /// <summary>
 /// "Xem / chọn file in" of one order, laid out like the composer: every library file of the idol is a row of page
 /// thumbnails (click a page to add or remove it), and the right side shows the pages chosen for the selected set in
-/// print order. Saving turns each set into <see cref="FileOverride"/> runs of consecutive pages.
+/// print order. "Thêm file PDF ngoài" adds PDFs from anywhere on disk; they stay on top of the list whatever the filter.
+/// Saving turns each set into <see cref="FileOverride"/> runs of consecutive pages.
 /// </summary>
 public sealed partial class OrderFilesViewModel : ObservableObject
 {
-    private const int ThumbnailPixelWidth = 200;
-
     private readonly TikTokOrder order;
     private readonly IReadOnlyList<LibraryFileRowViewModel> library;
-    private readonly IPdfRenderService? renderer;
+    private readonly PageImageCache images;
     private readonly Func<string, bool> fileExists;
-    private readonly Dictionary<(string Path, int Page), Task<PdfPageRenderResult>> renderCache = [];
+    private readonly Func<IReadOnlyList<string>>? pickPdfFiles;
+    private readonly Func<string, int>? countPdfPages;
+    private readonly Func<string, bool>? copyText;
+    private readonly HashSet<string> libraryPaths;
+    private readonly List<LibraryFileRowViewModel> pinnedFiles = [];
 
     public OrderFilesViewModel(
         TikTokOrder order,
@@ -41,7 +44,10 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         IReadOnlyList<IdolAlias> aliases,
         IReadOnlyList<PrintPlanCopy> currentCopies,
         IPdfRenderService? renderer,
-        Func<string, bool>? fileExists = null)
+        Func<string, bool>? fileExists = null,
+        Func<IReadOnlyList<string>>? pickPdfFiles = null,
+        Func<string, int>? countPdfPages = null,
+        Func<string, bool>? copyText = null)
     {
         ArgumentNullException.ThrowIfNull(order);
         ArgumentNullException.ThrowIfNull(skus);
@@ -50,10 +56,14 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(currentCopies);
 
         this.order = order;
-        this.renderer = renderer;
+        images = new PageImageCache(renderer);
         this.fileExists = fileExists ?? File.Exists;
+        this.pickPdfFiles = pickPdfFiles;
+        this.countPdfPages = countPdfPages;
+        this.copyText = copyText;
 
         var valid = assets.Where(asset => asset.IsValid && asset.PageCount > 0).ToList();
+        libraryPaths = valid.Select(asset => asset.FilePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var existing = valid.Where(asset => this.fileExists(asset.FilePath)).ToList();
         MissingFileCount = valid.Count - existing.Count;
         library = existing
@@ -94,7 +104,18 @@ public sealed partial class OrderFilesViewModel : ObservableObject
             }
         }
 
+        foreach (var asset in currentCopies.Select(copy => copy.Asset).Where(asset => !libraryPaths.Contains(asset.FilePath)))
+        {
+            if (!pinnedFiles.Any(row => string.Equals(row.Asset.FilePath, asset.FilePath, StringComparison.OrdinalIgnoreCase)))
+            {
+                pinnedFiles.Add(new LibraryFileRowViewModel(asset, isExternal: true));
+            }
+        }
+
         Header = $"Đơn {order.OrderId} · {string.Join(" + ", order.Lines.Select(line => $"{line.VariationName} x{line.Quantity}"))}";
+        ProductsText = string.Join(
+            Environment.NewLine,
+            order.Lines.OrderBy(line => line.LineNo).Select(line => $"{line.ProductName} · {line.VariationName} x{line.Quantity}"));
         SelectedSlot = Slots.FirstOrDefault();
     }
 
@@ -104,6 +125,23 @@ public sealed partial class OrderFilesViewModel : ObservableObject
     public string Title => $"Xem / chọn file in · đơn {order.OrderId}";
 
     public string Header { get; }
+
+    /// <summary>Product name, variation and quantity of every line, one line each.</summary>
+    public string ProductsText { get; }
+
+    public bool CanCopy => copyText is not null;
+
+    [ObservableProperty]
+    private string copyStatus = string.Empty;
+
+    [RelayCommand]
+    private void CopyOrderId()
+    {
+        if (copyText?.Invoke(order.OrderId) == true)
+        {
+            CopyStatus = "Đã copy mã đơn.";
+        }
+    }
 
     /// <summary>Library files that are no longer on disk (the library needs a new scan); they are not listed.</summary>
     public int MissingFileCount { get; }
@@ -127,11 +165,20 @@ public sealed partial class OrderFilesViewModel : ObservableObject
     [ObservableProperty]
     private string filterText = string.Empty;
 
+    [ObservableProperty]
+    private string externalStatus = string.Empty;
+
+    public bool CanAddExternalFiles => pickPdfFiles is not null && countPdfPages is not null;
+
     public ObservableCollection<PageThumbViewModel>? SelectedPages => SelectedSlot?.Pages;
 
     public string SelectedSlotStatus => SelectedSlot is { } slot ? $"{slot.Title} · đã chọn {slot.StatusText}" : string.Empty;
 
-    public bool CanSave => Slots.Count > 0 && Slots.All(slot => slot.IsComplete) && MissingSelectedPage() is null;
+    /// <summary>
+    /// A set may hold more or fewer pages than its card count (e.g. 5 sheets for a 30-card order): that is only a
+    /// warning. Saving is blocked only by an empty set or a page of a file that is no longer on disk.
+    /// </summary>
+    public bool CanSave => Slots.Count > 0 && Slots.All(slot => slot.Pages.Count > 0) && MissingSelectedPage() is null;
 
     public string ValidationText
     {
@@ -142,9 +189,9 @@ public sealed partial class OrderFilesViewModel : ObservableObject
                 return "Đơn không có món ghép tự động nào.";
             }
 
-            if (Slots.FirstOrDefault(slot => !slot.IsComplete) is { } incomplete)
+            if (Slots.FirstOrDefault(slot => slot.Pages.Count == 0) is { } empty)
             {
-                return $"{incomplete.Title}: đang chọn {incomplete.StatusText}.";
+                return $"{empty.Title}: chưa chọn trang nào.";
             }
 
             return MissingSelectedPage() is { } missing
@@ -152,6 +199,16 @@ public sealed partial class OrderFilesViewModel : ObservableObject
                 : string.Empty;
         }
     }
+
+    /// <summary>Sets whose page count differs from their card count; saving is still allowed.</summary>
+    public string WarningText =>
+        string.Join(
+            " ",
+            Slots
+                .Where(slot => slot.Pages.Count > 0 && !slot.IsComplete)
+                .Select(slot => slot.Pages.Count > slot.RequiredPages
+                    ? $"{slot.Title}: đang chọn {slot.StatusText} (in nhiều hơn {slot.Pages.Count - slot.RequiredPages} tờ)."
+                    : $"{slot.Title}: đang chọn {slot.StatusText} (in ít hơn {slot.RequiredPages - slot.Pages.Count} tờ)."));
 
     partial void OnSelectedSlotChanged(FileSlotViewModel? value)
     {
@@ -165,16 +222,77 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         }
     }
 
-    partial void OnFilterTextChanged(string value)
+    partial void OnFilterTextChanged(string value) => RefreshLibraryList();
+
+    private void RefreshLibraryList()
     {
-        var filter = TextNormalizer.Normalize(value);
+        var filter = TextNormalizer.Normalize(FilterText);
         LibraryFiles.Clear();
-        foreach (var row in library.Where(row => filter.Length == 0 || row.SearchText.Contains(filter, StringComparison.Ordinal)))
+        foreach (var row in pinnedFiles)
+        {
+            LibraryFiles.Add(row);
+        }
+
+        foreach (var row in library.Where(row =>
+            !pinnedFiles.Contains(row) && (filter.Length == 0 || row.SearchText.Contains(filter, StringComparison.Ordinal))))
         {
             LibraryFiles.Add(row);
         }
 
         RefreshMarks();
+    }
+
+    /// <summary>
+    /// "Thêm file PDF ngoài…": PDFs picked anywhere on disk are listed on top. A picked file that is already in the
+    /// library is pinned on top as the library file.
+    /// </summary>
+    [RelayCommand]
+    private async Task AddExternalFilesAsync()
+    {
+        if (pickPdfFiles is null || countPdfPages is null)
+        {
+            return;
+        }
+
+        var added = 0;
+        var failed = new List<string>();
+        foreach (var path in pickPdfFiles())
+        {
+            if (pinnedFiles.Any(row => string.Equals(row.Asset.FilePath, path, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            if (library.FirstOrDefault(row => string.Equals(row.Asset.FilePath, path, StringComparison.OrdinalIgnoreCase)) is { } libraryRow)
+            {
+                pinnedFiles.Add(libraryRow);
+                added++;
+                continue;
+            }
+
+            try
+            {
+                var counter = countPdfPages;
+                var pages = await Task.Run(() => counter(path));
+                if (pages <= 0)
+                {
+                    throw new InvalidDataException("PDF không có trang nào.");
+                }
+
+                pinnedFiles.Add(new LibraryFileRowViewModel(PrintPlanBuilder.ExternalAsset(path, "FILE NGOÀI", pages), isExternal: true));
+                added++;
+            }
+            catch (Exception exception)
+            {
+                Log.Warning("Adding an external PDF failed with {ExceptionType}", exception.GetType().FullName);
+                failed.Add(Path.GetFileName(path));
+            }
+        }
+
+        RefreshLibraryList();
+        ExternalStatus = failed.Count == 0
+            ? added > 0 ? $"Đã thêm {added} file lên đầu danh sách." : string.Empty
+            : $"Không mở được: {string.Join(", ", failed)}.";
     }
 
     /// <summary>Each set as runs of consecutive pages of one file, Seq starting at 1 inside each set.</summary>
@@ -199,7 +317,14 @@ public sealed partial class OrderFilesViewModel : ObservableObject
                 if (runStart is not null)
                 {
                     overrides.Add(new FileOverride(
-                        order.OrderId, slot.SkuId, slot.CopyIndex, ++seq, runStart.Asset.FilePath, runLength, runStart.PageNumber));
+                        order.OrderId,
+                        slot.SkuId,
+                        slot.CopyIndex,
+                        ++seq,
+                        runStart.Asset.FilePath,
+                        runLength,
+                        runStart.PageNumber,
+                        libraryPaths.Contains(runStart.Asset.FilePath) ? null : runStart.Asset.PageCount));
                 }
 
                 runStart = page;
@@ -214,21 +339,14 @@ public sealed partial class OrderFilesViewModel : ObservableObject
     [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task RenderThumbnailAsync(PageThumbViewModel? thumb)
     {
-        if (thumb is null || thumb.Image is not null || thumb.HasError || renderer is null)
+        if (thumb is null || thumb.Image is not null || thumb.HasError || !images.CanRender)
         {
             return;
         }
 
-        var key = (thumb.Asset.FilePath, thumb.PageNumber);
-        if (!renderCache.TryGetValue(key, out var task))
-        {
-            task = renderer.RenderPageAsync(thumb.Asset.FilePath, thumb.PageNumber, ThumbnailPixelWidth, CancellationToken.None);
-            renderCache[key] = task;
-        }
-
         try
         {
-            thumb.Image = await task;
+            thumb.Image = await images.GetAsync(thumb.Asset.FilePath, thumb.PageNumber);
         }
         catch (Exception exception)
         {
@@ -337,6 +455,7 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         RefreshMarks();
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(ValidationText));
+        OnPropertyChanged(nameof(WarningText));
         OnPropertyChanged(nameof(SelectedSlotStatus));
     }
 
@@ -401,17 +520,22 @@ public sealed class FileSlotViewModel : ObservableObject
 /// <summary>One library file: a row of page thumbnails.</summary>
 public sealed class LibraryFileRowViewModel
 {
-    public LibraryFileRowViewModel(PdfAsset asset)
+    public LibraryFileRowViewModel(PdfAsset asset, bool isExternal = false)
     {
         ArgumentNullException.ThrowIfNull(asset);
         Asset = asset;
+        IsExternal = isExternal;
         FileName = Path.GetFileNameWithoutExtension(asset.FilePath);
-        InfoText = $"{asset.PageCount} trang · {asset.FileDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)}";
+        InfoText = isExternal
+            ? $"File ngoài kho · {asset.PageCount} trang · {Path.GetDirectoryName(asset.FilePath)}"
+            : $"{asset.PageCount} trang · {asset.FileDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)}";
         SearchText = TextNormalizer.Normalize(Path.GetFileName(asset.FilePath));
         Pages = Enumerable.Range(1, asset.PageCount).Select(page => new PageThumbViewModel(asset, page)).ToList();
     }
 
     public PdfAsset Asset { get; }
+
+    public bool IsExternal { get; }
 
     public string FileName { get; }
 

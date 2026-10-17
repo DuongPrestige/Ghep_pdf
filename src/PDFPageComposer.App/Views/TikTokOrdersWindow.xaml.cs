@@ -18,7 +18,9 @@ public partial class TikTokOrdersWindow : Window
         InitializeComponent();
         this.viewModel = viewModel;
         DataContext = viewModel;
-        viewModel.Orders.ShowOrderFilesDialog = dialog => new OrderFilesWindow(dialog) { Owner = this }.ShowDialog();
+        viewModel.Orders.ShowOrderFilesDialog = dialog => new OrderFilesWindow(dialog) { Owner = ActiveOwner() }.ShowDialog();
+        viewModel.Orders.ShowPrintPreviewDialog = preview =>
+            new PrintPreviewWindow(preview) { Owner = this, WindowState = WindowState.Maximized }.ShowDialog();
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -30,6 +32,9 @@ public partial class TikTokOrdersWindow : Window
 
         base.OnClosing(e);
     }
+
+    private Window ActiveOwner() =>
+        Application.Current?.Windows.OfType<Window>().FirstOrDefault(window => window.IsActive && window.IsVisible) ?? this;
 
     /// <summary>Double-clicking an order row copies its order id (not when the click hit a button or checkbox).</summary>
     private void OnOrderRowDoubleClick(object sender, MouseButtonEventArgs e)

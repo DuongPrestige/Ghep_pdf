@@ -69,6 +69,10 @@ public sealed class PrintPlanBuilder : IPrintPlanBuilder
         return new PrintPlan(planned, rejected, separatorMode);
     }
 
+    /// <summary>A PDF added from outside the library in the "Xem / chọn file" dialog.</summary>
+    public static PdfAsset ExternalAsset(string filePath, string idol, int pageCount) =>
+        new(filePath, idol, pageCount, DateOnly.MinValue, pageCount, default, IsValid: true, Error: null);
+
     /// <summary>Assigns files using pendingCursors only; the caller commits them when the whole order succeeds.</summary>
     private static PrintPlanOrder? TryPlanOrder(
         TikTokOrder order,
@@ -113,7 +117,12 @@ public sealed class PrintPlanBuilder : IPrintPlanBuilder
                     {
                         if (!assetsByPath.TryGetValue(choice.PdfAssetPath, out var chosenAsset))
                         {
-                            return null;
+                            if (choice.FilePageCount is not int filePages || filePages <= 0)
+                            {
+                                return null;
+                            }
+
+                            chosenAsset = ExternalAsset(choice.PdfAssetPath, idol, filePages);
                         }
 
                         var firstPage = Math.Clamp(choice.FirstPage, 1, chosenAsset.PageCount);

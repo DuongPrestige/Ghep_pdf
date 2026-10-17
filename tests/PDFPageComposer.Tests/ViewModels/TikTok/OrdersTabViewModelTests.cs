@@ -445,6 +445,9 @@ public sealed class OrdersTabViewModelTests : IDisposable
         orders.ShowOrderFilesDialog = dialog =>
         {
             shown = dialog;
+            dialog.CopyOrderIdCommand.Execute(null);
+            Assert.Equal("O1", harness.Clipboard.Text);
+            Assert.Contains("x1", dialog.ProductsText);
             if (result == OrderFilesResult.Save)
             {
                 dialog.SaveCommand.Execute(null);
@@ -474,6 +477,48 @@ public sealed class OrdersTabViewModelTests : IDisposable
         o1 = orders.AllRows.Single(row => row.OrderId == "O1");
         await WaitUntilAsync(() => o1.PlannedFilesText.Length > 0 && !o1.PlannedFilesText.Contains("tự chọn", StringComparison.Ordinal));
         Assert.False(orders.AllRows.Single(row => row.OrderId == "O3").CanChooseFiles);
+    }
+
+    [Fact]
+    public async Task Print_preview_lists_every_page_in_print_order_and_can_drop_an_order_before_printing()
+    {
+        await harness.SeedExampleAsync();
+        var viewModel = harness.CreateViewModel();
+        await viewModel.LoadCommand.ExecuteAsync(null);
+        var orders = viewModel.Orders;
+        harness.Dialogs.OutputPdf = @"D:\Out\x.pdf";
+        Assert.Equal(["O1", "O2"], orders.SelectedRows.Select(row => row.OrderId));
+        orders.SelectedSeparatorMode = orders.SeparatorModes.Single(option => option.Value == SeparatorMode.ComplexOnly);
+
+        PrintPreviewViewModel? shown = null;
+        orders.ShowPrintPreviewDialog = preview =>
+        {
+            shown = preview;
+            var all = preview.Orders.SelectMany(order => order.Pages).ToList();
+            Assert.Equal(Enumerable.Range(1, all.Count), all.Select(page => page.OutputNumber));
+            Assert.Equal(["O1", "O2"], preview.Orders.Select(order => order.OrderId));
+
+            // O2 (quantity 2) is complex: its blank separator page comes first.
+            Assert.True(preview.Orders[1].Pages[0].IsBlank);
+            Assert.Contains("trang trắng", preview.Summary);
+
+            preview.CopyOrderIdCommand.Execute(preview.Orders[1]);
+            Assert.Equal("O2", harness.Clipboard.Text);
+            preview.CopyAllOrderIdsCommand.Execute(null);
+            Assert.Equal("O1" + Environment.NewLine + "O2", harness.Clipboard.Text);
+            Assert.Equal("Đã copy 2 mã đơn.", preview.CopyStatus);
+
+            preview.RemoveOrderCommand.Execute(preview.Orders[1]);
+            Assert.Equal(["O1"], preview.Orders.Select(order => order.OrderId));
+            preview.CreatePrintFileCommand.Execute(null);
+        };
+
+        await orders.PreviewPrintFileCommand.ExecuteAsync(null);
+
+        Assert.NotNull(shown);
+        Assert.True(shown!.CreateRequested);
+        var exported = Assert.Single(harness.Exporter.Calls).Plan;
+        Assert.Equal(["O1"], exported.Orders.Select(order => order.Order.OrderId));
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)

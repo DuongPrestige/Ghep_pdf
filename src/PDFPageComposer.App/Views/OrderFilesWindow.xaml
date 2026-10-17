@@ -65,7 +65,20 @@
     <DockPanel Margin="12">
         <!-- Header: order, sets of the order (when more than one) and the selected set's status. -->
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-            <TextBlock Text="{Binding Header}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <DockPanel>
+                <Button DockPanel.Dock="Left"
+                        Content="Copy"
+                        FontSize="12"
+                        Padding="6,0"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        ToolTip="Copy mã đơn"
+                        Visibility="{Binding CanCopy, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Command="{Binding CopyOrderIdCommand}" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding CopyStatus}" Foreground="#15803D" VerticalAlignment="Center" Margin="12,0,0,0" />
+                <TextBlock Text="{Binding Header}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" />
+            </DockPanel>
+            <TextBlock Text="{Binding ProductsText}" Foreground="#475569" TextWrapping="Wrap" Margin="0,4,0,0" />
             <ListBox ItemsSource="{Binding Slots}"
                      SelectedItem="{Binding SelectedSlot}"
                      Margin="0,6,0,0"
@@ -105,7 +118,10 @@
                         IsEnabled="{Binding CanSave}"
                         Command="{Binding SaveCommand}" />
             </StackPanel>
-            <TextBlock Text="{Binding ValidationText}" Foreground="#B91C1C" VerticalAlignment="Center" TextWrapping="Wrap" Margin="12,0" />
+            <StackPanel VerticalAlignment="Center" Margin="12,0">
+                <TextBlock Text="{Binding ValidationText}" Foreground="#B91C1C" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding WarningText}" Foreground="#B45309" TextWrapping="Wrap" />
+            </StackPanel>
         </DockPanel>
 
         <Grid>
@@ -118,6 +134,13 @@
             <!-- Left: every library file as a row of pages; click a page to add/remove it. -->
             <DockPanel Grid.Column="0">
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <Button DockPanel.Dock="Right"
+                            Content="Thêm file PDF ngoài…"
+                            Padding="10,2"
+                            Margin="8,0,0,0"
+                            ToolTip="Chọn file PDF bất kỳ trên máy để lấy trang in cho đơn này"
+                            Visibility="{Binding CanAddExternalFiles, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Command="{Binding AddExternalFilesCommand}" />
                     <TextBlock DockPanel.Dock="Left"
                                Text="Kho file · bấm vào trang để chọn / bỏ chọn"
                                FontWeight="SemiBold"
@@ -128,6 +151,17 @@
                              Padding="4,2"
                              ToolTip="Lọc theo tên file (mặc định là idol của bộ đang chọn)" />
                 </DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{Binding ExternalStatus}" Foreground="#1D4ED8" Margin="0,0,0,4">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <ListBox x:Name="LibraryList"
                          ItemsSource="{Binding LibraryFiles}"
                          Background="Transparent"
@@ -146,7 +180,19 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#FFFFFF" BorderBrush="#D9DEE8" BorderThickness="1" Padding="10" Margin="0,0,0,10">
+                            <Border BorderThickness="1" Padding="10" Margin="0,0,0,10">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#FFFFFF" />
+                                        <Setter Property="BorderBrush" Value="#D9DEE8" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsExternal}" Value="True">
+                                                <Setter Property="Background" Value="#FFFBEB" />
+                                                <Setter Property="BorderBrush" Value="#F59E0B" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <DockPanel>
                                     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
                                         <Button DockPanel.Dock="Right"

@@ -386,6 +386,11 @@ public sealed class PrintPlanBuilderTests
         // No NHA QUE CA file exists, but the file chosen by hand is enough.
         Assert.Equal(5, Assert.Single(plan.Orders[1].Copies).PageCount);
 
+        // A file from outside the library is used with the page count saved with the choice.
+        var outside = chosen with { FileOverrides = [new FileOverride("O2", "NQC40", 1, 1, @"D:\ngoai\khach.pdf", 5, 2, FilePageCount: 8)] };
+        var outsideCopy = Assert.Single(Assert.Single(CreateBuilder().Build([orders[1]], skus, library, SeparatorMode.None, outside).Orders).Copies);
+        Assert.Equal((@"D:\ngoai\khach.pdf", 8, 2, 5), (outsideCopy.Asset.FilePath, outsideCopy.Asset.PageCount, outsideCopy.FirstPage, outsideCopy.PageCount));
+
         var gone = chosen with { FileOverrides = [new FileOverride("O2", "NQC40", 1, 1, @"C:\library\gone.pdf", 5)] };
         var rejected = CreateBuilder().Build([orders[1]], skus, library, SeparatorMode.None, gone);
         Assert.Equal(OrderCategory.MissingFile, Assert.Single(rejected.Rejected).Category);

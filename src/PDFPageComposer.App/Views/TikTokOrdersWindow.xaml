@@ -127,6 +127,23 @@
                                         Padding="10,3"
                                         ToolTip="Xuất danh sách đơn ra file CSV (mở bằng Excel)"
                                         Command="{Binding ExportOrderListCommand}" />
+                                <Border Width="1" Background="#CBD5E1" Margin="12,2" />
+                                <TextBlock Text="{Binding SelectionSummary}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,10,0" />
+                                <Button Content="Xem trước file in"
+                                        Padding="12,3"
+                                        Margin="0,0,6,0"
+                                        ToolTip="Xem mọi trang sẽ in theo đúng thứ tự, đổi file hoặc bỏ đơn trước khi tạo file in"
+                                        Command="{Binding PreviewPrintFileCommand}" />
+                                <Button Content="Tạo file in"
+                                        Padding="16,3"
+                                        FontWeight="SemiBold"
+                                        Background="#2563EB"
+                                        Foreground="#FFFFFF"
+                                        BorderBrush="#1D4ED8"
+                                        Command="{Binding CreatePrintFileCommand}" />
                             </StackPanel>
                             <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding CategoryFilters}">
                                 <ItemsControl.ItemsPanel>
@@ -175,16 +192,6 @@
                                               MinWidth="130"
                                               Margin="0,0,12,0" />
                                 </StackPanel>
-                                <Button DockPanel.Dock="Right"
-                                        Content="Tạo file in"
-                                        Padding="18,6"
-                                        FontWeight="SemiBold"
-                                        Command="{Binding CreatePrintFileCommand}" />
-                                <TextBlock DockPanel.Dock="Right"
-                                           Text="{Binding SelectionSummary}"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"
-                                           Margin="8,0,12,0" />
                                 <TextBlock Text="{Binding PlanSummary}"
                                            TextWrapping="Wrap"
                                            FontSize="11"
@@ -209,6 +216,17 @@
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.Resources>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#DBEAFE" />
+                                            <Setter Property="Foreground" Value="#0F172A" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
                             <DataGrid.RowStyle>
                                 <Style TargetType="DataGridRow">
                                     <Setter Property="ToolTip" Value="Nháy đúp để copy mã đơn" />
@@ -307,7 +325,7 @@
                                         <DataTemplate>
                                             <StackPanel>
                                                 <TextBlock Text="{Binding PlannedFilesText}" Style="{StaticResource WrapCell}" FontSize="13" Foreground="#334155" />
-                                                <Button Content="Xem / chọn file"
+                                                <Button Content="Chọn file"
                                                         FontSize="12"
                                                         Padding="8,1"
                                                         Margin="4,2,0,4"
@@ -320,7 +338,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Ghi chú" Width="1.4*">
+                                <DataGridTemplateColumn Header="Ghi chú" Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel>

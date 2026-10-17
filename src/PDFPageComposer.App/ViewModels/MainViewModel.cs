@@ -431,14 +431,28 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
+        // A file already in the list (same path, or same content copied elsewhere) is not added again.
         var imported = 0;
+        var duplicates = new List<string>();
         foreach (var filePath in validPaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (SourceFiles.Any(file => IsSamePath(file.FilePath, filePath)))
+            {
+                duplicates.Add(Path.GetFileName(filePath));
+                continue;
+            }
+
             try
             {
                 var sourceFile = await pdfMetadataService.ReadAsync(filePath, cancellationToken);
+                if (SourceFiles.Any(file => string.Equals(file.Fingerprint, sourceFile.Fingerprint, StringComparison.Ordinal)))
+                {
+                    duplicates.Add(Path.GetFileName(filePath));
+                    continue;
+                }
+
                 SourceFiles.Add(sourceFile);
                 imported++;
             }
@@ -453,7 +467,23 @@ public partial class MainViewModel : ObservableObject
         NotifyStatisticsChanged();
         RenderStatus = imported > 0
             ? $"Đã import {imported}/{validPaths.Count} file PDF"
-            : "Không import được file PDF nào";
+            : duplicates.Count > 0 ? "Không có file mới" : "Không import được file PDF nào";
+        if (duplicates.Count > 0)
+        {
+            RenderStatus += $", bỏ qua {duplicates.Count} file đã có: {string.Join(", ", duplicates)}";
+        }
+    }
+
+    private static bool IsSamePath(string first, string second)
+    {
+        try
+        {
+            return string.Equals(Path.GetFullPath(first), Path.GetFullPath(second), StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(HasSelectedPages))]

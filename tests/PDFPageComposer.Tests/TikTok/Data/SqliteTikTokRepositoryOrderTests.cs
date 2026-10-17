@@ -396,7 +396,7 @@ public sealed class SqliteTikTokRepositoryOrderTests
             CancellationToken.None);
         var first = new FileOverride("1", "SKU-A", 1, 1, @"C:\lib\A.pdf", 2);
         var second = new FileOverride("1", "SKU-A", 1, 2, @"C:\lib\B.pdf", 1, FirstPage: 3);
-        var other = new FileOverride("2", "SKU-A", 1, 1, @"C:\lib\C.pdf", 3);
+        var other = new FileOverride("2", "SKU-A", 1, 1, @"D:\ngoai\C.pdf", 3, FilePageCount: 7);
 
         await repository.SaveFileOverridesAsync("1", [second, first], CancellationToken.None);
         await repository.SaveFileOverridesAsync("2", [other], CancellationToken.None);

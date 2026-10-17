@@ -28,7 +28,7 @@ public sealed class SqliteTikTokRepositoryTests
         await fixture.Repository.InitializeAsync(CancellationToken.None);
 
         Assert.True(File.Exists(fixture.DatabasePath));
-        Assert.Equal(5, await fixture.CountAsync("SchemaVersion"));
+        Assert.Equal(6, await fixture.CountAsync("SchemaVersion"));
         Assert.Equal([shop], await fixture.Repository.GetShopsAsync(CancellationToken.None));
         foreach (var table in new[] { "Shop", "Sku", "IdolAlias", "PdfAsset", "ImportBatch", "\"Order\"", "OrderLine", "PrintBatch", "PrintBatchItem" })
         {

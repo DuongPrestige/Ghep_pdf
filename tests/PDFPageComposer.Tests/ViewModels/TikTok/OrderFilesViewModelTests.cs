@@ -1,3 +1,4 @@
+using System.IO;
 using PDFPageComposer.App.Interfaces;
 using PDFPageComposer.App.TikTok.Models;
 using PDFPageComposer.App.ViewModels.TikTok;
@@ -86,11 +87,24 @@ public sealed class OrderFilesViewModelTests
         viewModel.CloseRequested += (_, _) => closed++;
 
         viewModel.ClearSelectedSlotCommand.Execute(null);
-        viewModel.AddWholeFileCommand.Execute(viewModel.LibraryFiles.Single(row => row.Asset == Cody2));
-        Assert.Equal("2/3 trang", viewModel.Slots[0].StatusText);
-        Assert.Contains("2/3 trang", viewModel.ValidationText);
+        Assert.False(viewModel.CanSave);
+        Assert.Contains("chưa chọn trang nào", viewModel.ValidationText);
         viewModel.SaveCommand.Execute(null);
         Assert.Equal(0, closed);
+
+        // Fewer or more pages than the card count are allowed, with a warning.
+        viewModel.AddWholeFileCommand.Execute(viewModel.LibraryFiles.Single(row => row.Asset == Cody2));
+        Assert.Equal("2/3 trang", viewModel.Slots[0].StatusText);
+        Assert.True(viewModel.CanSave);
+        Assert.Equal(string.Empty, viewModel.ValidationText);
+        Assert.Contains("in ít hơn 1 tờ", viewModel.WarningText);
+        viewModel.AddWholeFileCommand.Execute(viewModel.LibraryFiles.Single(row => row.Asset == Cody1));
+        viewModel.TogglePageCommand.Execute(viewModel.LibraryFiles.Single(row => row.Asset == Cody9).Pages[0]);
+        Assert.Equal("4/3 trang", viewModel.Slots[0].StatusText);
+        Assert.True(viewModel.CanSave);
+        Assert.Contains("in nhiều hơn 1 tờ", viewModel.WarningText);
+        viewModel.TogglePageCommand.Execute(viewModel.LibraryFiles.Single(row => row.Asset == Cody9).Pages[0]);
+        viewModel.RemovePageCommand.Execute(viewModel.SelectedPages![2]);
 
         viewModel.RemovePageCommand.Execute(viewModel.SelectedPages![0]);
         Assert.Equal([2], viewModel.SelectedPages!.Select(page => page.PageNumber));
@@ -108,6 +122,45 @@ public sealed class OrderFilesViewModelTests
         Assert.True(viewModel.Slots[0].IsComplete);
         Assert.False(viewModel.CanSave);
         Assert.Contains("không còn trên ổ đĩa", viewModel.ValidationText);
+    }
+
+    [Fact]
+    public async Task Pdfs_added_from_outside_the_library_stay_on_top_and_save_their_page_count()
+    {
+        const string outside = @"D:\ngoai\ANH KHACH GUI.pdf";
+        var picked = new[] { outside, Cody9.FilePath, @"D:\ngoai\hong.pdf" };
+        var viewModel = new OrderFilesViewModel(
+            Order("O1", 0, [("CODY20", 1)]),
+            Skus(Auto("CODY20", "CODY", 20)),
+            [Cody1, Cody2, Cody9, Ivan3],
+            [],
+            [],
+            renderer: null,
+            fileExists: _ => true,
+            pickPdfFiles: () => picked,
+            countPdfPages: path => path.EndsWith("hong.pdf", StringComparison.Ordinal) ? throw new IOException("hỏng") : 4);
+        viewModel.FilterText = "IVAN";
+
+        Assert.True(viewModel.CanAddExternalFiles);
+        await viewModel.AddExternalFilesCommand.ExecuteAsync(null);
+
+        Assert.Equal([outside, Cody9.FilePath, Ivan3.FilePath], viewModel.LibraryFiles.Select(row => row.Asset.FilePath));
+        Assert.True(viewModel.LibraryFiles[0].IsExternal);
+        Assert.False(viewModel.LibraryFiles[1].IsExternal);
+        Assert.Equal(4, viewModel.LibraryFiles[0].Pages.Count);
+        Assert.Contains("hong.pdf", viewModel.ExternalStatus);
+
+        viewModel.TogglePageCommand.Execute(viewModel.LibraryFiles[0].Pages[1]);
+        viewModel.TogglePageCommand.Execute(viewModel.LibraryFiles[0].Pages[2]);
+        viewModel.TogglePageCommand.Execute(viewModel.LibraryFiles[1].Pages[0]);
+        Assert.True(viewModel.CanSave);
+
+        Assert.Equal(
+            [
+                new FileOverride("O1", "CODY20", 1, 1, outside, 2, 2, FilePageCount: 4),
+                new FileOverride("O1", "CODY20", 1, 2, Cody9.FilePath, 1, 1),
+            ],
+            viewModel.BuildOverrides());
     }
 
     private static OrderFilesViewModel Create(

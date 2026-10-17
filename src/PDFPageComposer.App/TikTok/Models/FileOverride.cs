@@ -4,6 +4,7 @@ namespace PDFPageComposer.App.TikTok.Models;
 /// One library file chosen by hand for one printed set (copy CopyIndex of line SkuId) of an order (TT-04, 2026-10-17).
 /// A set is the rows in Seq order; each row prints PagesUsed pages of its file starting at FirstPage.
 /// When a set has chosen files, the automatic newest-file choice is skipped for that set.
+/// FilePageCount is set for a file from outside the library (added in the dialog); null means a library file.
 /// </summary>
 public sealed record FileOverride(
     string OrderId,
@@ -12,7 +13,8 @@ public sealed record FileOverride(
     int Seq,
     string PdfAssetPath,
     int PagesUsed,
-    int FirstPage = 1);
+    int FirstPage = 1,
+    int? FilePageCount = null);
 
 public static class FileOverrides
 {

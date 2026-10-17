@@ -12,7 +12,7 @@ public sealed partial class SqliteTikTokRepository
             connection,
             null,
             """
-            SELECT OrderId, SkuId, CopyIndex, Seq, PdfAssetPath, PagesUsed, FirstPage
+            SELECT OrderId, SkuId, CopyIndex, Seq, PdfAssetPath, PagesUsed, FirstPage, FilePageCount
             FROM OrderFileOverride ORDER BY OrderId, SkuId, CopyIndex, Seq;
             """);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -26,7 +26,8 @@ public sealed partial class SqliteTikTokRepository
                 reader.GetInt32("Seq"),
                 reader.GetString("PdfAssetPath"),
                 reader.GetInt32("PagesUsed"),
-                reader.GetInt32("FirstPage")));
+                reader.GetInt32("FirstPage"),
+                reader.IsDBNull(reader.GetOrdinal("FilePageCount")) ? null : reader.GetInt32("FilePageCount")));
         }
 
         return overrides;
@@ -58,8 +59,8 @@ public sealed partial class SqliteTikTokRepository
                 connection,
                 transaction,
                 """
-                INSERT INTO OrderFileOverride(OrderId, SkuId, CopyIndex, Seq, PdfAssetPath, PagesUsed, FirstPage)
-                VALUES(@orderId, @skuId, @copyIndex, @seq, @path, @pagesUsed, @firstPage);
+                INSERT INTO OrderFileOverride(OrderId, SkuId, CopyIndex, Seq, PdfAssetPath, PagesUsed, FirstPage, FilePageCount)
+                VALUES(@orderId, @skuId, @copyIndex, @seq, @path, @pagesUsed, @firstPage, @filePageCount);
                 """,
                 cancellationToken,
                 ("@orderId", choice.OrderId),
@@ -68,7 +69,8 @@ public sealed partial class SqliteTikTokRepository
                 ("@seq", choice.Seq),
                 ("@path", choice.PdfAssetPath),
                 ("@pagesUsed", choice.PagesUsed),
-                ("@firstPage", choice.FirstPage)).ConfigureAwait(false);
+                ("@firstPage", choice.FirstPage),
+                ("@filePageCount", choice.FilePageCount)).ConfigureAwait(false);
         }
 
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
