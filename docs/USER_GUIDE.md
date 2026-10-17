@@ -1,61 +1,110 @@
 # Hướng Dẫn Sử Dụng Nhanh
 
-## Mở file PDF
+Áp dụng cho phiên bản 1.3.1. Ứng dụng mở ở chế độ toàn màn hình.
 
-1. Bấm **Them PDF** để chọn một hoặc nhiều file PDF.
+## Phần 1 — Ghép lẻ PDF
+
+### Mở file PDF
+
+1. Bấm **Thêm PDF** để chọn một hoặc nhiều file PDF.
 2. Hoặc kéo thả file PDF từ Windows Explorer vào cửa sổ ứng dụng.
-3. Nếu file lỗi, thiếu quyền đọc hoặc cần mật khẩu, ứng dụng sẽ báo lỗi cho từng file và tiếp tục xử lý các file còn lại.
+3. File đã có trong danh sách (cùng đường dẫn hoặc cùng nội dung) sẽ không được thêm lần nữa.
+4. Nếu file lỗi, thiếu quyền đọc hoặc cần mật khẩu, ứng dụng báo lỗi cho từng file và tiếp tục xử lý các file còn lại.
 
-## Xem và chọn trang
+### Tìm và chọn trang
 
-- Trang PDF hiển thị trong Source Workspace theo từng file.
-- Click một thumbnail để chọn hoặc bỏ chọn trang.
-- Giữ **Ctrl** để chọn/bỏ chọn từng trang rời rạc.
-- Giữ **Shift** để chọn một dải trang trong cùng file.
-- Dùng **Chon tat ca** hoặc **Bo chon** ở header file để thao tác nhanh theo file.
-- Dùng slider Zoom hoặc **Ctrl + con lăn** để đổi kích thước thumbnail.
+- Ô **Tìm** lọc theo tên file, không phân biệt dấu và hoa thường: gõ `dinh bac` sẽ ra `ĐÌNH BẮC.pdf`.
+- Click một thumbnail để chọn hoặc bỏ chọn trang. Giữ **Ctrl** để chọn từng trang rời rạc, **Shift** để chọn một dải trang.
+- Dùng **Chọn tất cả** hoặc **Bỏ chọn** ở header file để thao tác nhanh theo file; **Thu gọn** để ẩn các trang của file.
+- Dùng thanh Zoom hoặc **Ctrl + con lăn** để đổi kích thước thumbnail.
+- Thumbnail chỉ được tải khi cuộn tới, nên mở nhiều file vẫn nhẹ.
 
-## Preview lớn
+### Xem lớn
 
-- Bấm **Xem**, double click thumbnail hoặc nhấn **Enter** khi thumbnail đang focus để mở preview.
-- Trong preview có thể đi **Truoc/Sau**, **Fit Width**, **Fit Height**, zoom bằng nút +/- hoặc **Ctrl + con lăn**.
-- Bấm **Chon/bo chon** để đổi selection của chính trang đang preview.
-- Bấm **Dong** hoặc **Esc** để đóng preview.
+- Nháy đúp thumbnail để xem lớn; có **◀ Trước / Sau ▶**, **Vừa rộng**, **Vừa cao**, zoom +/−.
+- Bấm **Đóng** hoặc **Esc** để đóng.
 
-## Thêm trang vào đầu ra
+### Thêm trang vào đầu ra
 
 1. Chọn các trang cần ghép.
-2. Bấm **Them vao dau ra**.
-3. Mỗi lần thêm sẽ tạo một group mới ở cuối Output Tray.
-4. Trang nguồn có thể xuất hiện nhiều lần trong đầu ra.
+2. Bấm **Thêm vào đầu ra** hoặc nhấn phím **Enter**.
+3. Mỗi lần thêm tạo một nhóm mới (có màu riêng) ở cuối **Khay đầu ra**. Một trang nguồn có thể xuất hiện nhiều lần.
 
-## Sắp xếp và nhân bản đầu ra
+### Sắp xếp đầu ra
 
-- Trong Output Tray, thứ tự item là thứ tự trang trong file PDF xuất.
-- Dùng **+** để nhân bản một item.
-- Dùng **G+** để nhân bản cả group.
-- Dùng **^/v** để di chuyển item lên/xuống.
-- Dùng **G^/Gv** để di chuyển group lên/xuống.
-- Có thể kéo thả item hoặc group để đổi vị trí.
-- Dùng **x** để xóa item, **Gx** để xóa group, **G-** để thu gọn/mở group.
-- Dùng **Undo/Redo** để hoàn tác hoặc làm lại các thao tác chính.
+- Thứ tự trong Khay đầu ra là thứ tự trang trong file PDF xuất.
+- Kéo thả trang để đổi vị trí: thả vào nửa trái của trang đích là đứng trước, nửa phải là đứng sau. Kéo tên nhóm để chuyển cả nhóm.
+- **Nhân bản** thêm bản sao trang, **Nhân nhóm** nhân bản cả nhóm, **Xóa** bỏ trang.
+- **Hoàn tác / Làm lại** cho các thao tác chính.
 
-## File nguồn bị thiếu
+### Xem trước đầu ra
 
-- Khi mở/phục hồi phiên, file nguồn không còn ở đường dẫn cũ sẽ được đánh dấu thiếu.
-- Bấm **Relink** ở header file để chọn lại file nguồn.
-- Ứng dụng chỉ chấp nhận relink khi file mới khớp số trang và fingerprint với file đã import.
-- Output Tray không tự xóa item khi file nguồn bị thiếu.
+- Bấm **Xem trước đầu ra** để xem mọi trang sẽ xuất. **Lưới tất cả trang** xem dạng lưới, **Xem 1 trang** xem lớn trang đang chọn.
+- Trong màn xem trước có thể kéo thả đổi vị trí, nhân bản, đưa lên trước / ra sau, hoặc xóa trang.
 
-## Xuất PDF và mở bằng Foxit
+### File nguồn bị thiếu
 
-1. Kiểm tra lại thứ tự trang trong Output Tray.
-2. Bấm **Xuat PDF**.
-3. Ứng dụng không ghi đè PDF nguồn.
-4. File xuất giữ page object gốc, không rasterize trang.
-5. Sau khi xuất, ứng dụng có thể mở file bằng Foxit PDF Reader nếu tìm thấy hoặc dùng viewer mặc định của Windows.
+- Khi mở lại phiên, file nguồn không còn ở đường dẫn cũ sẽ được đánh dấu thiếu.
+- Bấm **Chọn lại** ở header file để chọn lại file. Ứng dụng chỉ chấp nhận khi file mới khớp số trang và nội dung với file cũ.
+- Khay đầu ra không tự xóa trang khi file nguồn bị thiếu.
 
-## Auto-save
+### Xuất PDF
 
-- Ứng dụng tự lưu recovery cục bộ khi phiên làm việc thay đổi.
-- Nếu lần trước ứng dụng đóng bất thường, khi mở lại sẽ có tùy chọn **Phuc hoi** hoặc **Bo qua** ở thanh trạng thái.
+1. Kiểm tra lại thứ tự trang.
+2. Bấm **Xuất PDF**. Ứng dụng không ghi đè PDF nguồn và không rasterize trang.
+3. Sau khi xuất, file được mở bằng Foxit PDF Reader nếu có, hoặc bằng trình xem mặc định của Windows.
+
+### Tự lưu
+
+- Ứng dụng tự lưu phiên làm việc. Nếu lần trước đóng bất thường, khi mở lại có nút **Phục hồi** hoặc **Bỏ qua** ở thanh trạng thái.
+
+## Phần 2 — Đơn TikTok
+
+Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
+
+### Cài đặt lần đầu
+
+1. Tab **Cài đặt**: thêm shop, chọn **Thư mục kho PDF** và thư mục lưu file in.
+2. Bấm **Quét kho** để đọc các file trong kho. Tên file theo mẫu `TÊN IDOL - 5 PAGE - 24.09.pdf`.
+3. Tab **Cấu hình SKU**: kiểm tra các SKU mới, bấm **Xác nhận gợi ý đã chọn**; sản phẩm không cần in (móc khóa, polaroid…) đặt **Bỏ qua**.
+
+### Quy trình hằng ngày
+
+1. Xuất file CSV đơn hàng từ TikTok Seller Center.
+2. Bấm **Import đơn** (hoặc kéo thả file .csv vào cửa sổ), chọn shop và chế độ:
+   - **File đầy đủ**: đơn của shop không còn trong file sẽ bị ẩn.
+   - **Bổ sung**: không ẩn đơn nào.
+3. Đơn đã làm file in ở lần trước tự được lọc ra, không bị in lại khi import file CSV mới.
+4. Tab **Đơn hàng** hiện đơn theo đúng thứ tự file CSV. Nháy đúp hoặc bấm nút copy để copy mã đơn.
+5. Bấm **Xem trước file in** để xem mọi trang sẽ in: **Đổi file** để chọn lại trang cho đơn, **Bỏ khỏi lô** để không in đơn đó lần này, **Copy mã tất cả đơn**.
+6. Bấm **Tạo file in**. File được mở bằng Foxit để in.
+7. Dùng **Xuất CSV** với phạm vi "Đơn chưa làm file in" để lấy danh sách mã đơn còn lại.
+
+### Cách chọn file ảnh
+
+- Mặc định bật **Luôn lấy ảnh mới nhất**: mỗi bộ card lấy từ file mới nhất của idol, thiếu trang thì lấy tiếp file cũ hơn.
+- File cuối chỉ lấy số trang đầu còn thiếu. Ví dụ Đình Bắc 20 card (3 tờ), file mới nhất có 5 trang → lấy 3 trang đầu của file đó.
+- Đơn mua nhiều bộ: bộ 2, bộ 3… lùi dần sang file cũ hơn để ảnh không trùng.
+
+### Tự chọn file cho một đơn
+
+- Ở cột **File in**, bấm nút xem để mở **Xem và tự chọn file**.
+- Bên trái là các file của idol; bấm vào trang để chọn, hoặc **Lấy cả file**. Bấm **Thêm file PDF ngoài…** để lấy trang từ file bất kỳ trên máy.
+- Có thể chọn nhiều hoặc ít trang hơn số card (ví dụ đơn 30 card bình thường 4 tờ, muốn in 5 tờ); ứng dụng chỉ cảnh báo.
+- Bấm **Lưu lựa chọn**. **Dùng lại chọn tự động** để bỏ lựa chọn tay.
+- Nếu file kho đã bị xóa khỏi ổ đĩa, bấm **Quét kho** rồi chọn lại.
+
+### Trang phân cách
+
+- Giữa các đơn phức tạp có một trang trắng để dễ tách đơn. Đổi ở **Trang trắng giữa đơn** (không chèn / chỉ đơn phức tạp / mọi đơn).
+
+### Xóa dữ liệu
+
+- Tab **Lịch sử**: **Xóa lần import** để xóa đơn của một file CSV đã import; **Xóa toàn bộ đơn** để làm sạch.
+- **Bỏ đánh dấu** một lô in để các đơn đó được in lại.
+
+## Cập nhật phần mềm
+
+- Bấm **Check update** trên thanh công cụ. Nếu có bản mới, ứng dụng tự tải, tự đóng, cài đè và mở lại.
+- Nếu vừa phát hành mà máy báo đang dùng bản mới nhất, đợi khoảng 5 phút rồi bấm lại.
+- Nên đặt ứng dụng trong thư mục có quyền ghi (ví dụ `D:\Apps\PDFPageComposer`), không đặt trong `Program Files`.

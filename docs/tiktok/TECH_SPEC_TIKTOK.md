@@ -105,13 +105,22 @@ ImportBatch(ImportId INTEGER PK, ShopId, FileName, Mode, ImportedAt,
         IsActive INTEGER, FirstImportId, LastSeenImportId,
         PrintedBatchId NULL, PrintedAt NULL, PrintedSource NULL /* Batch | SellerNote */,
         ChangedAfterPrint INTEGER DEFAULT 0,
-        NoteReviewedHash NULL /* SHA-256 của BuyerMessage + '\n' + SellerNote lúc bấm "Đã xem – cho phép ghép" */)
+        NoteReviewedHash NULL /* SHA-256 của BuyerMessage + '\n' + SellerNote lúc bấm "Đã xem – cho phép ghép" */,
+        SourceRow INTEGER DEFAULT 0 /* số dòng đầu tiên của đơn trong file CSV, dùng để hiển thị đúng thứ tự file */)
 OrderLine(OrderId, SkuId, LineNo, ProductName, VariationName, Quantity, PRIMARY KEY(OrderId, SkuId))
+
+/* File người dùng tự chọn cho một bộ card (dialog "Xem và tự chọn file") */
+OrderFileOverride(OrderId, SkuId, CopyIndex, Seq, PdfAssetPath, PagesUsed, FirstPage DEFAULT 1,
+                  FilePageCount NULL /* chỉ có với PDF ngoài kho */,
+                  PRIMARY KEY(OrderId, SkuId, CopyIndex, Seq))
 
 PrintBatch(BatchId TEXT PK, CreatedAt, OutputPath, SeparatorMode, OrderCount, PageCount, Status)
 PrintBatchItem(BatchId, Seq, OrderId, SkuId, CopyIndex, Quantity, PdfAssetPath, Warning NULL,
+               PagesUsed NULL, FirstPage NULL,
                PRIMARY KEY(BatchId, Seq))
 ```
+
+Migration hiện tại: **v6** (v3 `Order.SourceRow`; v4 bảng `OrderFileOverride`; v5 `FirstPage`; v6 `OrderFileOverride.FilePageCount`).
 
 - **Không có** cột người nhận, số điện thoại hay địa chỉ (AC-T07).
 - `PrintBatchItem.Quantity` là snapshot số lượng tại thời điểm in, dùng để phát hiện `ChangedAfterPrint`.
@@ -167,6 +176,25 @@ Test bắt buộc (kỳ vọng):
 
 ### 5.3. `OrderClassifier` (TT-08) và `PrintPlanBuilder` (TT-04 → TT-07)
 
+Từ v1.3.0, mặc định bật `AlwaysUseNewestFiles` (cài đặt "Luôn lấy ảnh mới nhất…"):
+
+```text
+orders = active, chưa in (hoặc In lại), sort theo TikTokOrderOrdering.InFileOrder
+         (LastSeenImportId, SourceRow, CreatedAt, OrderId) = đúng thứ tự file CSV
+for Auto line: pages = ceil(CardCount/9)
+    files = PdfAssetMatcher.FindIdolFiles(idol) // mọi file hợp lệ của idol, mới nhất trước
+    files rỗng → MissingFile
+    mỗi copy: bắt đầu lại từ file mới nhất của đơn; copy sau trong cùng đơn lùi tiếp sang file cũ hơn
+        remaining = pages
+        while remaining > 0: used = min(remaining, file.PageCount); lấy trang 1..used; remaining -= used
+    // Ví dụ: Đình Bắc 20 card (3 tờ), file mới nhất 5 trang → 3 trang đầu của file 5 trang
+FileOverrides (OrderFileOverride) của một copy thay hoàn toàn kết quả tự động:
+    mỗi đoạn trang FirstPage..FirstPage+PagesUsed-1, IsManualChoice = true;
+    đường dẫn ngoài kho + FilePageCount → PrintPlanBuilder.ExternalAsset; thiếu FilePageCount → chặn đơn
+```
+
+Khi tắt cài đặt trên, dùng thuật toán cũ (file đúng số trang, xoay vòng):
+
 ```text
 orders = active, chưa in (hoặc người dùng chọn In lại), sort CreatedAt ASC, OrderId ASC
 cursor = Dictionary<(idol,pages), int>       // reset mỗi lô
@@ -187,14 +215,17 @@ for order:
 ## 6. Xuất PDF
 
 - Tái sử dụng `IPdfExportService`: mỗi file kho là một `SourcePdfFile`, mỗi đơn là một `OutputGroup`.
-- Trang phân cách: PDFsharp vẽ một trang A4 và lưu thành PDF tạm. Cần bật `GlobalFontSettings.UseWindowsFontsUnderWindows = true` để hiển thị tiếng Việt; ⚠ phải kiểm tra font có dấu.
+- Trang phân cách: `SeparatorPageRenderer` tạo một trang A4 trắng (từ 2026-10-17 không in chữ để tiết kiệm mực).
+- `PrintBatchExporter` chỉ lấy các trang `FirstPage..LastPage` của mỗi copy và ghi `PagesUsed`, `FirstPage` vào `PrintBatchItem`.
 - Tên file gợi ý: `TIKTOK_<yyyyMMdd_HHmm>_<số đơn>don.pdf`.
 - Chỉ sau khi `ExportAsync` thành công mới ghi `PrintBatch` / `PrintBatchItem` và cập nhật `Order` trong một transaction, rồi mở Foxit.
 
 ## 7. UI (`TikTokOrdersWindow`)
 
 - **Thanh trên:** nút **Import đơn**. Nút này mở dialog gồm: chọn shop, chế độ *File đầy đủ* hoặc *Bổ sung*, chọn file (hỗ trợ kéo thả). Bên cạnh có nút Quét kho và Cài đặt.
-- **Tab Đơn hàng:** chip lọc theo nhóm (TT-08), lọc theo shop, lưới đơn (thời gian, shop, mã đơn, món, số tờ, file dự kiến, lý do, Buyer Message, Seller Note), nút "Đã xem – cho phép ghép" cho đơn nhóm Có ghi chú, checkbox chọn đơn, kiểu trang phân cách, nút **Tạo file in**.
+- **Tab Đơn hàng:** chip lọc theo nhóm (TT-08), lọc theo shop, lưới đơn gọn theo thứ tự file CSV (mã đơn, sản phẩm, phân loại, file in, nhãn nhóm, ghi chú), nút "Đã xem – cho phép ghép" cho đơn nhóm Có ghi chú, checkbox chọn đơn, kiểu trang phân cách. Copy mã đơn bằng nút hoặc nháy đúp. Góc trên bên phải: phạm vi và **Xuất CSV**, **Xem trước file in**, **Tạo file in**. Cửa sổ mở ở chế độ phóng to (`TikTokWindowService`).
+- **Dialog Xem và tự chọn file** (`OrderFilesWindow`, `OrderFilesViewModel`): bên trái là thư viện file của idol (ẩn file đã bị xóa khỏi ổ đĩa) và PDF ngoài kho được thêm vào; bên phải là các bộ card cần in. Chọn từng trang hoặc cả file, đổi thứ tự, cho phép nhiều hoặc ít trang hơn số card (có cảnh báo). Lưu thành `OrderFileOverride`; **Dùng lại chọn tự động** xóa lựa chọn tay.
+- **Dialog Xem trước file in** (`PrintPreviewWindow`, `PrintPreviewViewModel`): toàn bộ trang theo đơn (gồm trang trắng phân cách), sửa file, bỏ đơn khỏi lô, copy mã đơn, rồi tạo file in. Thumbnail render khi cuộn tới (`RenderWhenVisibleBehavior`) qua `PageImageCache`.
 - **Tab Cấu hình SKU:** lọc *Chưa cấu hình*; sửa Loại xử lý, Idol, Card; nút *Xác nhận gợi ý* hàng loạt; nút *Đặt cả sản phẩm là Bỏ qua*; quản lý alias.
 - **Tab Kho PDF:** danh sách file, trạng thái hợp lệ hoặc lỗi.
 - **Tab Lịch sử:** gồm lô import (kèm báo cáo) và lô in (mở file, xem chi tiết, bỏ đánh dấu, tạo lại, copy danh sách mã đơn).

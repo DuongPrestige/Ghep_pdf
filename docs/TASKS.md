@@ -738,17 +738,22 @@ Files changed: `src/PDFPageComposer.App/TikTok/**` (Models, Data, Import, Matchi
 Verification: `dotnet build PDFPageComposer.slnx --no-incremental`: 0 warnings, 0 errors; `dotnet test PDFPageComposer.slnx`: 300/300 passed (gồm test end-to-end với file CSV mẫu, test STA mở TikTokOrdersWindow, test DI). Đã mở app thật và mở cửa sổ "Đơn TikTok" bằng UI Automation: đủ 5 tab, tạo được `%LOCALAPPDATA%\PDFPageComposer\tiktok.db`.
 Notes: Làm bằng workflow nhiều agent, sau đó review đa góc nhìn kèm phản biện: 27 lỗi được xác nhận và đã sửa. Contract mở rộng: `OrderSourceResult.RejectedOrderIds` và overload `IOrderImportService.ImportAsync(..., protectedOrderIds, ...)`; đơn có dòng CSV lỗi bị loại nguyên đơn và không bị ẩn ở chế độ Full. Tên file in tự động thêm hậu tố _2, _3 nếu trùng. "In lại" bỏ qua cả chốt ghi chú đối với đơn đã in.
 
-### - [ ] TASK-069 — Kiểm thử thực tế và publish v1.3.0
+### - [x] TASK-069 — Kiểm thử thực tế và publish v1.3.0
 
 - **Mục tiêu:** Chạy với file xuất thật của 2 shop, sửa lỗi, cập nhật USER_GUIDE, publish bản update.
 - **Dependency:** TASK-068.
 - **Acceptance criteria:** Đạt AC-T01 đến AC-T07; `latest.json` được cập nhật.
 
-### - [ ] TASK-070 — (Phase sau) Chrome extension lấy đơn từ Seller Center
+Completed: 2026-10-17
+Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.0), `latest.json`, `docs/USER_GUIDE.md`, `docs/UPDATE_RELEASE.md`.
+Verification: Chạy với các file CSV xuất thật của người dùng (gồm file sau khi đã in, đơn chuyển "Đang chờ lấy hàng", file có đơn gắn cờ đỏ), so sánh file in dự kiến với file người dùng ghép tay; 378/378 test passed; publish `win-x64` self-contained, release `v1.3.0` trên GitHub, tải lại asset khớp SHA256 rồi mới cập nhật `latest.json`.
+Notes: Sửa lỗi phát hiện khi chạy thật được ghi ở TASK-072 → TASK-074. Cờ đỏ trên TikTok không có trong file CSV nên app không đọc được; đơn đã làm được nhận biết qua lịch sử lô in.
 
-- **Mục tiêu:** Extension (Manifest V3) đọc danh sách đơn chờ vận chuyển khi người dùng bấm nút, gửi vào app qua localhost; implement `IOrderSource` mới, dùng chung `OrderImportService`.
-- **Dependency:** TASK-069.
-- **Acceptance criteria:** Chỉ đọc, chạy khi người dùng bấm, không tự thao tác trên đơn; kết quả import giống với khi import file CSV cùng thời điểm.
+### - [~] TASK-070 — (Hủy) Chrome extension lấy đơn từ Seller Center
+
+Status: Cancelled (2026-10-17) — người dùng chọn quy trình chỉ dùng file CSV: xuất CSV từ TikTok → import → tạo file in và xuất mã đơn chưa làm → lần sau import CSV mới, đơn đã làm tự được lọc. Không dùng extension, không tự gắn cờ trên TikTok.
+
+- **Mục tiêu (cũ):** Extension (Manifest V3) đọc danh sách đơn chờ vận chuyển khi người dùng bấm nút, gửi vào app qua localhost.
 
 ### - [x] TASK-071 — Xuất danh sách đơn ra CSV (đánh dấu đơn đã làm file in)
 
@@ -760,3 +765,45 @@ Completed: 2026-10-17
 Files changed: `src/PDFPageComposer.App/TikTok/Export/OrderListExportModels.cs`, `OrderListExportBuilder.cs`, `OrderListCsvWriter.cs`, `OrderListExportService.cs` (mới); `src/PDFPageComposer.App/ViewModels/TikTok/OrderListExportRunner.cs`, `OrdersTabViewModel.OrderList.cs` (mới), `HistoryTabViewModel.cs`, `TikTokServices.cs`; `Views/TikTokOrdersWindow.xaml`; `Interfaces/IFileDialogService.cs` (`PickSaveCsvFile`), `Services/FileDialogService.cs`; `ServiceRegistration.cs`; `tests/PDFPageComposer.Tests/TikTok/Export/OrderListExportBuilderTests.cs`, `OrderListCsvWriterTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/OrderListExportViewModelTests.cs` (mới), `TikTokUiHarness.cs`, `ViewModels/MainViewModelTests.cs` (fake dialog); `docs/tiktok/PRD_TIKTOK.md` (TT-12).
 Verification: `dotnet test tests/PDFPageComposer.Tests/PDFPageComposer.Tests.csproj`: 355/355 passed (sau khi sửa theo review), build 0 warnings, 0 errors (gồm test STA mở TikTokOrdersWindow không lỗi binding và test DI).
 Notes: Không thêm method repository (dùng `GetOrdersAsync`, `GetOrdersByIdsAsync`, `GetImportBatchesAsync`, `GetPrintBatchItemsAsync`, `GetPrintBatchesAsync`, `GetPrintedItemsForOrdersAsync`). Trạng thái phân loại dùng `ClassificationOptions` hiện tại (không áp dụng "In lại"). "File kho đã dùng" lấy từ lô in hiện tại của đơn (`PrintedBatchId`); với phạm vi lô in, các cột Đã làm file in/Nguồn/Lô in/Thời gian in/File kho đã dùng lấy theo chính lô được chọn (kể cả đơn đã bỏ đánh dấu hoặc in lại ở lô khác), còn Trạng thái xử lý/Lý do theo phân loại hiện tại. File đã rời kho vẫn ghi "lấy N/M trang đầu" nhờ đọc M từ tên file. Ô chữ tự do bắt đầu bằng = + - @ được thêm dấu nháy đơn ở đầu để Excel không hiểu là công thức. "Đơn đã làm file in" gồm cả đơn không còn chờ vận chuyển (cột "Còn chờ vận chuyển" = Không). Tên file gợi ý `DS_DON_<DA_IN|TAT_CA|IMPORT_MOI|LO_<mã lô>>_<yyyyMMdd_HHmm>.csv`, thư mục mặc định là thư mục lưu file in.
+
+### - [x] TASK-072 — Luôn lấy ảnh mới nhất, tự chọn file, thứ tự CSV, xóa import
+
+- **Mục tiêu:** Sửa logic chọn file theo phản hồi khi chạy thật; cho người dùng tự chọn trang in; hiển thị đơn đúng thứ tự file CSV; xóa dữ liệu đã import.
+- **Dependency:** TASK-063, TASK-068.
+- **Acceptance criteria:** Mỗi bộ card ghép từ các file mới nhất của idol (file cuối chỉ lấy số trang đầu còn thiếu; mỗi đơn bắt đầu lại từ file mới nhất, bộ sau trong cùng đơn lùi sang file cũ hơn); dialog "Xem và tự chọn file" cho chọn trang, PDF ngoài kho, nhiều hoặc ít trang hơn số card; lựa chọn tay được lưu và dùng khi xuất; đơn hiện theo thứ tự dòng CSV; xóa một lần import hoặc toàn bộ đơn; trang phân cách là trang trắng; phạm vi xuất CSV "Đơn chưa làm file in".
+
+Completed: 2026-10-17
+Files changed: `TikTok/Matching/PdfAssetMatcher.cs`, `PrintPlanBuilder.cs`, `OrderClassifier.cs`, `TikTok/Models/PrintModels.cs`, `FileOverride.cs` (mới), `TikTokOrder.cs`, `TikTok/Data/TikTokSchemaMigrator.cs` (v3 → v6), `SqliteTikTokRepository.Orders.cs`, `.Overrides.cs` (mới), `.Printing.cs`, `TikTok/Import/OrderImportMerger.cs`, `TikTok/Export/PrintBatchExporter.cs`, `SeparatorPageRenderer.cs`, `OrderListExport*`, `Models/TikTokSettings.cs` (`AlwaysUseNewestFiles`), `ViewModels/TikTok/OrderFilesViewModel.cs` (mới), `OrdersTabViewModel.cs`, `OrderRowViewModel.cs`, `TikTokWorkspace.cs`, `Views/OrderFilesWindow.xaml` (mới), `Views/TikTokOrdersWindow.xaml`; test tương ứng.
+Verification: Test plan builder với ví dụ thật (Jack 50 card 2 bộ; Đình Bắc 20 card lấy 3 trang đầu của file 5 trang mới nhất); test repository cho override và xóa import; chạy harness với dữ liệu thật và chụp màn hình dialog.
+Notes: Cài đặt "Luôn lấy ảnh mới nhất" mặc định bật; tắt thì dùng lại thuật toán file đúng số trang, xoay vòng. File kho đã bị xóa khỏi ổ đĩa được ẩn khỏi dialog và chặn lưu nếu đang được chọn.
+
+### - [x] TASK-073 — Xem trước file in TikTok và giao diện tab Đơn hàng
+
+- **Mục tiêu:** Lưới đơn gọn, chữ to hơn, cột sản phẩm và phân loại riêng, copy mã đơn (nút, nháy đúp, copy tất cả); dialog "Xem trước file in" để sửa file, bỏ đơn khỏi lô trước khi tạo file in; nút xem trước và tạo file in ở góc trên bên phải; cửa sổ mở phóng to.
+- **Dependency:** TASK-072.
+- **Acceptance criteria:** Xem trước đúng thứ tự file in, gồm trang trắng phân cách; thumbnail chỉ render khi cuộn tới; có test ViewModel và test STA mở cửa sổ.
+
+Completed: 2026-10-17
+Files changed: `ViewModels/TikTok/PrintPreviewViewModel.cs`, `PageImageCache.cs` (mới), `Views/PrintPreviewWindow.xaml(.cs)` (mới), `Behaviors/RenderWhenVisibleBehavior.cs` (mới), `Views/TikTokOrdersWindow.xaml`, `Services/TikTokWindowService.cs`, `ViewModels/TikTok/TikTokServices.cs` (`PageRenderer`); test tương ứng.
+Verification: 378/378 test passed; kiểm tra giao diện bằng harness chụp màn hình với dữ liệu thật.
+
+### - [x] TASK-074 — Làm mới giao diện ghép lẻ
+
+- **Mục tiêu:** Giao diện chính đồng bộ với các dialog TikTok: thẻ bo góc, chữ 14px, mở toàn màn hình; khay đầu ra dạng lưới; màn xem trước đầu ra mới có kéo thả; phím Enter thêm vào đầu ra; không thêm file nguồn trùng; tìm file không dấu; chỉ render thumbnail khi cuộn tới.
+- **Dependency:** TASK-055.
+- **Acceptance criteria:** Kéo thả đặt trước hoặc sau trang đích; file trùng đường dẫn hoặc fingerprint bị bỏ qua có thông báo; `dinh bac` tìm ra `đình bắc.pdf`; có test ViewModel.
+
+Completed: 2026-10-17
+Files changed: `MainWindow.xaml(.cs)`, `ViewModels/MainViewModel.cs`, `Models/OutputItemMoveRequest.cs` (`PlaceAfter`), `Converters/NonZeroToVisibilityConverter.cs` (mới), `Behaviors/RenderWhenVisibleBehavior.cs`, `TikTok/TextNormalizer.cs` (`MatchesSearch`); `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `Behaviors/RenderWhenVisibleBehaviorTests.cs`.
+Verification: 378/378 test passed; đo với 115 trang trong khay chỉ render 33 trang đang hiển thị.
+
+### - [x] TASK-075 — Logo và publish v1.3.1
+
+- **Mục tiêu:** Thêm logo cho exe, taskbar và các cửa sổ; phát hành bản update.
+- **Dependency:** TASK-069.
+- **Acceptance criteria:** Icon nhiều kích thước (16–256 px); `latest.json` trỏ tới v1.3.1.
+
+Completed: 2026-10-17
+Files changed: `src/PDFPageComposer.App/Assets/app.ico` (mới), `PDFPageComposer.App.csproj` (`ApplicationIcon`, 1.3.1), các cửa sổ (`Icon`), `docs/assets/logo.png`, `README.md`, `latest.json`.
+Verification: Publish `win-x64` self-contained chạy được (FileVersion 1.3.1.0); release `v1.3.1` trên GitHub, asset tải lại khớp SHA256 `067A4C34A65ED50B8332A1C0B35AFAF2DEDEA26EAF883C6AB04D500051D16CA3`; link raw `latest.json` trả về 1.3.1.
+Notes: Chưa thử luồng Check update trên máy khác.

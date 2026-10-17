@@ -99,6 +99,15 @@ Hỗ trợ:
 - Collapse và di chuyển group.
 - Hiển thị tổng số trang, cập nhật số thứ tự sau mọi thay đổi.
 
+### Cập nhật v1.3
+
+- Cửa sổ chính mở ở chế độ phóng to; chữ 14px; các vùng là thẻ bo góc giống dialog TikTok.
+- Output Tray hiển thị dạng lưới thumbnail (WrapPanel), màu theo group. Kéo thả: thả vào nửa trái trang đích là đứng trước, nửa phải là đứng sau; kéo tên group để chuyển cả group.
+- Màn **Xem trước đầu ra**: thanh công cụ gom nhóm (**Lưới tất cả trang**, **Xem 1 trang**, nhân bản, đưa lên trước / ra sau, xóa), lưới cuộn được, kéo thả như Output Tray.
+- Ô **Tìm** lọc file nguồn không phân biệt dấu và hoa thường.
+- Thêm file đã có (cùng đường dẫn hoặc cùng fingerprint) bị bỏ qua và báo ở status bar.
+- Thumbnail chỉ render khi nằm trong khoảng một màn hình quanh vùng đang xem (`RenderWhenVisibleBehavior`).
+
 ## Group
 
 - Mỗi lần bấm **Thêm vào đầu ra** tạo một group mới ở cuối tray.
@@ -156,5 +165,6 @@ Hiển thị tổng file, tổng trang nguồn, số trang đang chọn, tổng 
 | Ctrl+Z / Ctrl+Y | Undo / Redo |
 | Ctrl+S | Lưu project |
 | Ctrl+E | Xuất PDF |
-| Enter / Esc | Mở / đóng preview |
+| Enter | Thêm các trang đang chọn vào đầu ra (khi có trang được chọn và không gõ trong ô chữ); nếu không có trang chọn thì mở preview trang đang focus |
+| Esc | Đóng preview |
 | Ctrl+con lăn | Zoom thumbnail |
