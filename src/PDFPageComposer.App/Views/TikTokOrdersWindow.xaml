@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:TikTokOrdersViewModel}"
         Title="Đơn TikTok"
+        Icon="pack://application:,,,/PDFPageComposer.App;component/Assets/app.ico"
         MinWidth="960"
         MinHeight="600"
         Width="1366"

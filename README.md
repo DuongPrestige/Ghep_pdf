@@ -1,5 +1,7 @@
 # PDF Page Composer
 
+<img src="docs/assets/logo.png" alt="Logo PDF Page Composer" width="128" />
+
 ## Tổng quan
 
 PDF Page Composer là ứng dụng desktop Windows dùng để:

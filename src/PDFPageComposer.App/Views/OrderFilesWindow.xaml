@@ -9,6 +9,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:OrderFilesViewModel}"
         Title="{Binding Title}"
+        Icon="pack://application:,,,/PDFPageComposer.App;component/Assets/app.ico"
         Width="1400"
         Height="860"
         MinWidth="1000"
