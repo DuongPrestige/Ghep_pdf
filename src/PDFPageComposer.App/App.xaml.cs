@@ -1,7 +1,5 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using PDFPageComposer.App.Interfaces;
-using PDFPageComposer.App.Services;
 using PDFPageComposer.App.ViewModels;
 using Serilog;
 
@@ -22,7 +20,7 @@ public partial class App : Application
         Log.Information("Application startup begin");
 
         var services = new ServiceCollection();
-        ConfigureServices(services);
+        services.AddPdfPageComposer();
         Log.Information("Services configured");
         serviceProvider = services.BuildServiceProvider();
         Log.Information("Service provider built");
@@ -58,24 +56,5 @@ public partial class App : Application
         serviceProvider?.Dispose();
         Log.CloseAndFlush();
         base.OnExit(e);
-    }
-
-    private static void ConfigureServices(IServiceCollection services)
-    {
-        services.AddSingleton<PdfiumLibrary>();
-        services.AddSingleton<IPdfMetadataService, PdfMetadataService>();
-        services.AddSingleton<IPdfRenderService, PdfRenderService>();
-        services.AddSingleton<IThumbnailCacheService, ThumbnailCacheService>();
-        services.AddSingleton<IThumbnailRenderQueue, ThumbnailRenderQueue>();
-        services.AddSingleton<IPdfExportService, PdfExportService>();
-        services.AddSingleton<IFileDialogService, FileDialogService>();
-        services.AddSingleton<IAppSettingsService, AppSettingsService>();
-        services.AddSingleton<IProjectPersistenceService, ProjectPersistenceService>();
-        services.AddSingleton<IAutoSaveService, AutoSaveService>();
-        services.AddSingleton<IProcessLauncher, ProcessLauncher>();
-        services.AddSingleton<IFoxitLauncherService, FoxitLauncherService>();
-        services.AddSingleton<IUpdateService, UpdateService>();
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<MainWindow>();
     }
 }

@@ -1,0 +1,206 @@
+# Đặc tả kỹ thuật — Module TikTok Order Print
+
+Tài liệu đi kèm `docs/tiktok/PRD_TIKTOK.md` (v0.2). Các quy tắc trong `AGENTS.md` và `docs/TECH_SPEC.md` vẫn áp dụng.
+
+> **v0.2 (2026-10-16):** Nguồn đơn là file CSV xuất từ Seller Center. Phần TikTok Open API được tạm dừng; spike nằm trong `spikes/TikTokApiSpike`, đánh giá ở `docs/spikes/tiktok-api-spike.md`.
+
+## 1. Vị trí trong codebase
+
+Không tách project mới. Code đặt trong `PDFPageComposer.App`:
+
+```text
+src/PDFPageComposer.App/
+├── TikTok/
+│   ├── Import/       # IOrderSource, SellerCenterCsvOrderSource, CsvReader, OrderImportService
+│   ├── Data/         # SQLite repository + migration
+│   ├── Matching/     # SkuConfigSuggester, PdfLibraryScanner, OrderClassifier, PrintPlanBuilder
+│   ├── Export/       # PrintBatchExporter, SeparatorPageRenderer
+│   └── Models/
+├── ViewModels/TikTokOrdersViewModel.cs   # KHÔNG thêm vào MainViewModel
+└── Views/TikTokOrdersWindow.xaml
+```
+
+- Phần `Import/` và `Matching/` là code thuần (không phụ thuộc WPF hay DB) để dễ unit test.
+- `IOrderSource` trả về `IReadOnlyList<ImportedOrderLine>`. Chrome extension sau này chỉ cần thêm một implementation khác của interface này; `OrderImportService` (lọc trùng) dùng chung.
+
+## 2. Package mới
+
+| Package | Mục đích | License |
+|---|---|---|
+| `Microsoft.Data.Sqlite` | Database cục bộ | MIT |
+
+- Không dùng EF Core hay thư viện CSV ngoài. Parser CSV tự viết theo RFC 4180, khoảng 60 dòng, có unit test.
+- Chưa cần DPAPI, vì không còn secret nào phải lưu.
+
+## 3. Import file xuất đơn Seller Center
+
+### 3.1. Định dạng đã quan sát (file mẫu `Chờ vận chuyển đơn hàng-2026-10-16-08_38.csv`)
+
+- Phân cách bằng dấu phẩy. Ô chứa dấu phẩy được bọc ngoặc kép. Header tiếng Anh, giá trị tiếng Việt.
+- **Mỗi dòng là một dòng hàng.** Đơn nhiều món có nhiều dòng cùng `Order ID`. Ví dụ file mẫu: 36 dòng, 33 đơn.
+- Các giá trị số và ngày có **tab ở cuối** (`586610736328377928\t`). Ô trống được ghi là `"\t"`. Cần `Trim()` mọi ô.
+- Ngày có dạng `dd/MM/yyyy HH:mm:ss`, giờ Việt Nam (UTC+7).
+- Cột `Seller SKU` trống ở mọi dòng của file mẫu.
+- Cột người nhận, số điện thoại, địa chỉ đã bị TikTok che một phần, nhưng app vẫn **không đọc** các cột này.
+
+### 3.2. Cột sử dụng (ánh xạ theo **tên header**, không theo vị trí)
+
+| Header | Trường | Bắt buộc |
+|---|---|---|
+| `Order ID` | OrderId | ✓ |
+| `Order Status` | StatusText | ✓ |
+| `Order Substatus` | SubstatusText | |
+| `SKU ID` | SkuId | ✓ |
+| `Product Name` | ProductName | ✓ |
+| `Variation` | VariationName | ✓ |
+| `Quantity` | Quantity | ✓ |
+| `Created Time` | CreatedAt | ✓ |
+| `Buyer Username` | BuyerUsername (đã bị che) | |
+| `Buyer Message` | BuyerMessage | |
+| `Seller Note` | SellerNote | |
+| `Package ID` | PackageId | |
+
+- Thiếu cột bắt buộc → báo lỗi định dạng file, không import gì.
+- Encoding: đọc UTF-8 (có hoặc không BOM). Nếu gặp ký tự lỗi thì báo cho người dùng.
+- Trạng thái được nhận: `Cần vận chuyển`, `Chờ vận chuyển`, `AWAITING_SHIPMENT`. Danh sách này đặt trong settings để thêm được.
+- Sau này hỗ trợ thêm `.xlsx` nếu cần (chưa làm).
+
+### 3.3. `OrderImportService` — chống trùng (TT-09)
+
+```text
+Input : shopId, mode (Full | Partial), rows từ IOrderSource
+1. Chuẩn hóa: Trim mọi ô; bỏ dòng có trạng thái không được nhận (đếm Skipped)
+2. Gom theo OrderId; trong một đơn, gộp trùng theo SkuId (giữ dòng đầu, ghi cảnh báo DuplicateLineInFile)
+3. Trong một transaction SQLite:
+   với mỗi đơn:
+     chưa có  → INSERT Order + OrderLine (Inserted)
+     đã có    → UPDATE Status, SellerNote, LastSeenImportId; đồng bộ OrderLine (Updated)
+                nếu đã in và (SkuId, Quantity) khác snapshot lúc in → ChangedAfterPrint = 1
+   mọi SKU chưa có trong bảng Sku → INSERT với ConfigStatus = Unconfigured + gợi ý (SkuConfigSuggester)
+   nếu mode = Full: đơn cùng shop, đang pending, không có trong file → IsActive = 0
+4. Ghi ImportBatch + trả về ImportReport { Inserted, Updated, AlreadyPrinted, Skipped, Deactivated, NewSkus, Warnings }
+```
+
+- Import là thao tác **idempotent**: chạy lại cùng file thì kết quả không đổi.
+- Không ghi dữ liệu người mua vào log; log chỉ ghi số lượng.
+
+## 4. Database (SQLite)
+
+Đường dẫn: `%LOCALAPPDATA%\PDFPageComposer\tiktok.db`. Schema có version, migration chạy khi khởi động.
+
+```sql
+Shop(ShopId INTEGER PK, Name TEXT UNIQUE)
+
+Sku(SkuId TEXT PK, ProductName, VariationName,
+    ProcessType TEXT /* Auto | Manual | Ignore */, ConfigStatus TEXT /* Unconfigured | Confirmed */,
+    Idol NULL, CardCount NULL, FirstSeenAt, UpdatedAt)
+IdolAlias(Alias TEXT PK /* đã chuẩn hóa */, Idol)
+
+PdfAsset(FilePath TEXT PK, Idol, PageCount, FileDate, ActualPageCount, LastWriteTime, IsValid, Error)
+
+ImportBatch(ImportId INTEGER PK, ShopId, FileName, Mode, ImportedAt,
+            Inserted, Updated, AlreadyPrinted, Skipped, Deactivated)
+
+"Order"(OrderId TEXT PK, ShopId, StatusText, CreatedAt, BuyerUsername, BuyerMessage, SellerNote,
+        IsActive INTEGER, FirstImportId, LastSeenImportId,
+        PrintedBatchId NULL, PrintedAt NULL, PrintedSource NULL /* Batch | SellerNote */,
+        ChangedAfterPrint INTEGER DEFAULT 0,
+        NoteReviewedHash NULL /* SHA-256 của BuyerMessage + '\n' + SellerNote lúc bấm "Đã xem – cho phép ghép" */)
+OrderLine(OrderId, SkuId, LineNo, ProductName, VariationName, Quantity, PRIMARY KEY(OrderId, SkuId))
+
+PrintBatch(BatchId TEXT PK, CreatedAt, OutputPath, SeparatorMode, OrderCount, PageCount, Status)
+PrintBatchItem(BatchId, Seq, OrderId, SkuId, CopyIndex, Quantity, PdfAssetPath, Warning NULL,
+               PRIMARY KEY(BatchId, Seq))
+```
+
+- **Không có** cột người nhận, số điện thoại hay địa chỉ (AC-T07).
+- `PrintBatchItem.Quantity` là snapshot số lượng tại thời điểm in, dùng để phát hiện `ChangedAfterPrint`.
+- Bỏ đánh dấu một đơn: đặt `PrintedBatchId = NULL`; các dòng lịch sử vẫn giữ.
+
+## 5. Logic khớp đơn (code thuần, có unit test)
+
+### 5.1. `PdfLibraryScanner`
+
+- Regex tên file: `^(?<idol>.+?)\s*-\s*(?<pages>\d+)\s*PAGES?\s*-\s*(?<d>\d{1,2})\.(?<m>\d{1,2})(?:\s*\(\d+\))?\.pdf$`, không phân biệt hoa thường (cho phép hậu tố ` (2)` khi trùng tên).
+- Suy ra năm: nếu ngày lớn hơn hôm nay thì lấy năm trước.
+- Số trang thật đọc qua `IPdfMetadataService` có sẵn. Cache theo `LastWriteTime`.
+
+### 5.2. `SkuConfigSuggester`
+
+Mọi phép so khớp chạy trên chuỗi đã qua `TextNormalizer.Normalize`: viết hoa, bỏ dấu (Đ → D), gộp khoảng trắng.
+
+```text
+P = Normalize(ProductName), V = Normalize(VariationName)
+CardCount : regex \b(\d+)\s*CARD\b trên V              ("20 CARD, 1 Mặt" → 20)
+Sides     : regex \b(\d+)\s*MAT\b trên V               ("2 MẶT (MẶT ẢNH + CHỮ KÝ)" → 2)
+ProcessType (xét theo thứ tự):
+  P không chứa "BO GOC"                   → Ignore   (móc khóa, nhãn vở, PTB, polaroid…)
+  CardCount = null                        → Manual   ("1 mặt, A4 (decal bóc dán)")
+  Sides = 2 hoặc V chứa "THEO YEU CAU"    → Manual
+  Sides = 1                               → Auto
+  còn lại                                 → Manual
+Idol (tính cho mọi loại khác Ignore, để người dùng sửa nhanh):
+  1. Tách V theo dấu phẩy, lấy đoạn cuối. Nếu đoạn đó không rỗng và không chứa nguyên từ CARD, MAT, IN hay cụm THEO YEU CAU → ứng viên.
+  2. Nếu không có: tách ProductName theo '[', ']' và ' - ', lấy đoạn đầu tiên có "BO GOC",
+     bỏ các từ chung: CARD, BO, GOC, COMBO, THE, ANH, MOI, TANG, CHU, KY → ứng viên.
+  3. Có ứng viên: tra alias theo TextNormalizer.IdolKey(ứng viên); có alias thì dùng Idol của alias,
+     không thì dùng Normalize(ứng viên). Không có ứng viên → null.
+```
+
+Idol được so khớp giữa SKU và file kho bằng `TextNormalizer.IdolKey` (Normalize, rồi bỏ mọi ký tự không phải chữ hoặc số). Ví dụ `SƠN.K` → `SONK`, `Công B` → `CONGB`.
+
+Test bắt buộc (kỳ vọng):
+
+| Product (rút gọn) | Variation | Kết quả |
+|---|---|---|
+| `[CARD BO GÓC CODY NAM VÕ] - …` | `30 CARD, 1 Mặt` | Auto, 30, idol `CODY NAM VO` |
+| `[CARD BO GÓC Vỹ Vỹ] - …` | `100 CARD, 1 Mặt` | Auto, 100, idol `VY VY` |
+| `[CARD CAPTAIN BOY BO GÓC] - …` | `20 CARD, 1 Mặt` | Auto, 20, idol `CAPTAIN BOY` |
+| `[CARD BO GÓC IVAN] - …` | `20 CARD, 2 MẶT (MẶT ẢNH + CHỮ KÝ)` | Manual |
+| `[CARD BO GÓC TINH HÀ SAY HI] - …` | `20 CARD, 1 MẶT, IN THEO YÊU CẦU (GỬI ẢNH CHO SHOP)` | Manual |
+| `CARD BO GÓC A4 A5 KHỔNG LỒ - …` | `1 mặt, A4 (decal bóc dán)` | Manual |
+| `[MÓC KHÓA ALBUM MINI] - …` | `Tất Cả Các Khung, IVan` | Ignore |
+| `[Ảnh Polar IG] - …` | `18 CARD, QUANG HÙNG MASTER-D, khung ngẫu nhiên (tổng hợp)` | Ignore |
+| `[PTB Tinh Hà Say Hi 2026] - …` | `10 PHOTOBOOTH, Quang Hùng MasterD, Dọc 1x4 ảnh` | Ignore |
+| `[CARD BO GÓC TINH HÀ SAY HI] - …` | `50 CARD, 1 MẶT, COMBO 24 ANH TRAI` + alias `COMBO 24 ANH TRAI`→`24AT` | Auto, 50, idol `24AT` |
+| `[CARD BO GÓC TINH HÀ SAY HI] - …` | `20 CARD, 1 MẶT, Jaysonlei` | Auto, 20, idol `JAYSONLEI` |
+
+### 5.3. `OrderClassifier` (TT-08) và `PrintPlanBuilder` (TT-04 → TT-07)
+
+```text
+orders = active, chưa in (hoặc người dùng chọn In lại), sort CreatedAt ASC, OrderId ASC
+cursor = Dictionary<(idol,pages), int>       // reset mỗi lô
+for order:
+    lines = order.Lines where Sku.ProcessType != Ignore
+    Printed (PrintedBatchId hoặc SellerNote chứa "DA IN" sau chuẩn hóa) → Printed
+    lines rỗng                               → NoCardNeeded
+    note = Trim(BuyerMessage) + Trim(SellerNote) không rỗng
+        và NoteReviewedHash != hash(note hiện tại)  → HasNote   (TT-10)
+    có Sku Unconfigured                       → NeedsConfig
+    có Manual                                 → Manual
+    for Auto line: pages = ceil(CardCount/9); assets(idol,pages) DESC by FileDate
+        assets rỗng                           → MissingFile
+    nếu Ready: tính trên bản sao cursor; commit cursor khi cả đơn hợp lệ
+        mỗi copy 1..Quantity: asset = assets[c++ % assets.Count]; warning nếu Quantity > assets.Count
+```
+
+## 6. Xuất PDF
+
+- Tái sử dụng `IPdfExportService`: mỗi file kho là một `SourcePdfFile`, mỗi đơn là một `OutputGroup`.
+- Trang phân cách: PDFsharp vẽ một trang A4 và lưu thành PDF tạm. Cần bật `GlobalFontSettings.UseWindowsFontsUnderWindows = true` để hiển thị tiếng Việt; ⚠ phải kiểm tra font có dấu.
+- Tên file gợi ý: `TIKTOK_<yyyyMMdd_HHmm>_<số đơn>don.pdf`.
+- Chỉ sau khi `ExportAsync` thành công mới ghi `PrintBatch` / `PrintBatchItem` và cập nhật `Order` trong một transaction, rồi mở Foxit.
+
+## 7. UI (`TikTokOrdersWindow`)
+
+- **Thanh trên:** nút **Import đơn**. Nút này mở dialog gồm: chọn shop, chế độ *File đầy đủ* hoặc *Bổ sung*, chọn file (hỗ trợ kéo thả). Bên cạnh có nút Quét kho và Cài đặt.
+- **Tab Đơn hàng:** chip lọc theo nhóm (TT-08), lọc theo shop, lưới đơn (thời gian, shop, mã đơn, món, số tờ, file dự kiến, lý do, Buyer Message, Seller Note), nút "Đã xem – cho phép ghép" cho đơn nhóm Có ghi chú, checkbox chọn đơn, kiểu trang phân cách, nút **Tạo file in**.
+- **Tab Cấu hình SKU:** lọc *Chưa cấu hình*; sửa Loại xử lý, Idol, Card; nút *Xác nhận gợi ý* hàng loạt; nút *Đặt cả sản phẩm là Bỏ qua*; quản lý alias.
+- **Tab Kho PDF:** danh sách file, trạng thái hợp lệ hoặc lỗi.
+- **Tab Lịch sử:** gồm lô import (kèm báo cáo) và lô in (mở file, xem chi tiết, bỏ đánh dấu, tạo lại, copy danh sách mã đơn).
+
+## 8. Kiểm thử
+
+- Đưa file mẫu đã **xóa hẳn các cột người nhận, số điện thoại, địa chỉ, username** vào `tests/PDFPageComposer.Tests/TestData/tiktok/orders-sample.csv`.
+- Unit test: CSV parser (dấu phẩy và ngoặc kép, tab thừa, BOM), mapping header, `OrderImportService` (import 2 lần idempotent, chế độ Full/Partial, `ChangedAfterPrint`, Seller Note "ĐÃ IN"), `OrderClassifier` (đơn có Buyer Message hoặc Seller Note → HasNote; "Đã xem" hợp lệ; ghi chú đổi thì hủy "Đã xem"), `SkuConfigSuggester` (các mẫu ở 5.2), `PdfLibraryScanner`, `PrintPlanBuilder` (ví dụ mục 7 của PRD).
+- Integration test: repository SQLite trên DB tạm; không đánh dấu đơn khi export lỗi.

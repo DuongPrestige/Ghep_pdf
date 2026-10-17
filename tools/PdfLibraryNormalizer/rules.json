@@ -1,0 +1,968 @@
+{
+  "_comment": "So khớp sau khi bỏ dấu, viết hoa. Alias so theo khóa chỉ gồm chữ+số (bỏ khoảng trắng). Thứ tự categories = thứ tự ưu tiên.",
+  "idols": {
+    "JACK": [
+      "JACK",
+      "J97",
+      "JACK97",
+      "JACK J97"
+    ],
+    "CAPTAIN": [
+      "CAPTAIN",
+      "CAPTAIN BOY",
+      "CAPTAINBOY",
+      "CAPTAN BOY",
+      "CAPTAN",
+      "CAP TAIN",
+      "CAP"
+    ],
+    "CODY": [
+      "CODY",
+      "CODY NAM VO",
+      "CODYNAMVO"
+    ],
+    "CODYLEI": [
+      "CODYLEI"
+    ],
+    "CONGB": [
+      "CONGB",
+      "CONG B"
+    ],
+    "QUANG HUNG": [
+      "QUANG HUNG",
+      "QUANGHUNG",
+      "QHUNG",
+      "QUANG HUFNG",
+      "QUANMG HUNG",
+      "QUANG HUNG MASTERD",
+      "QUANG HUNG MASTER D",
+      "FANQH"
+    ],
+    "DANG HONG HAI": [
+      "DANG HONG HAI",
+      "DHH"
+    ],
+    "DINH BAC": [
+      "DINH BAC",
+      "DINHBAC",
+      "DINHBACMOI"
+    ],
+    "DINH KHANG": [
+      "DINH KHANG",
+      "DINHKHANG"
+    ],
+    "DUONG DOMIC": [
+      "DUONG DOMIC",
+      "DUONGDOMIC",
+      "DUOWNG DOMIC"
+    ],
+    "HIEUTHUHAI": [
+      "HIEUTHUHAI",
+      "HIEU THU HAI",
+      "HIEUTHU2",
+      "HT2",
+      "HTH",
+      "HIEU THU HAI HTH",
+      "HTH HIEU THU HAI"
+    ],
+    "JAYSONLEI": [
+      "JAYSONLEI",
+      "JEYSONLEI"
+    ],
+    "KHOI VU": [
+      "KHOI VU",
+      "KHOIVU"
+    ],
+    "LE HA ANH": [
+      "LE HA ANH",
+      "LEHAANH",
+      "LHA",
+      "LE HA AN H"
+    ],
+    "MASON": [
+      "MASON",
+      "MASON NGUYEN",
+      "MASONB"
+    ],
+    "SON K": [
+      "SON K",
+      "SONK",
+      "SOWNK",
+      "SON.K"
+    ],
+    "VUONG BINH": [
+      "VUONG BINH",
+      "VUONGBINH",
+      "VB"
+    ],
+    "WREN EVANS": [
+      "WREN EVANS",
+      "WREN",
+      "WREN EVENS"
+    ],
+    "WEAN": [
+      "WEAN",
+      "WEAN LE"
+    ],
+    "PHAP KIEU": [
+      "PHAP KIEU",
+      "PHAP KIEEFUI"
+    ],
+    "PMC": [
+      "PMC",
+      "PHUONG MY CHI",
+      "PMC PHUONG MY CHI"
+    ],
+    "RHYDER": [
+      "RHYDER"
+    ],
+    "RHYCAP": [
+      "RHYCAP",
+      "RHY CAP",
+      "RHYDER CAPTAIN",
+      "RHYDER CAPTAIN OTP"
+    ],
+    "BUI TRUONG LINH": [
+      "BUI TRUONG LINH",
+      "BUITRUONGLINH",
+      "BUITRONGLINH",
+      "BTL"
+    ],
+    "HURRYKNG": [
+      "HURRYKNG"
+    ],
+    "HYO": [
+      "HYO"
+    ],
+    "IVAN": [
+      "IVAN"
+    ],
+    "JSOL": [
+      "JSOL"
+    ],
+    "KIM LONG": [
+      "KIM LONG"
+    ],
+    "LYHAN": [
+      "LYHAN",
+      "LYHANPDF"
+    ],
+    "NEGAV": [
+      "NEGAV",
+      "NAGEV",
+      "NEGAVBABY",
+      "NAAGEV"
+    ],
+    "NINA": [
+      "NINA"
+    ],
+    "COOLKID": [
+      "COOLKID"
+    ],
+    "CORTIS": [
+      "CORTIS",
+      "COTIS",
+      "CORITS"
+    ],
+    "DILLAN": [
+      "DILLAN"
+    ],
+    "THE THIEN": [
+      "THE THIEN"
+    ],
+    "XUAN DINH": [
+      "XUAN DINH",
+      "XUIAN DINH"
+    ],
+    "QUAN AP": [
+      "QUAN AP",
+      "QUANAP"
+    ],
+    "CUU NHO": [
+      "CUU NHO"
+    ],
+    "HANSARA": [
+      "HANSARA"
+    ],
+    "HUONG GIANG": [
+      "HUONG GIANG"
+    ],
+    "BRAY": [
+      "BRAY"
+    ],
+    "STEVEN NGUYEN": [
+      "STEVEN NGUYEN",
+      "STEVEN"
+    ],
+    "SON TUNG": [
+      "SON TUNG",
+      "SONTUNG"
+    ],
+    "TUTU": [
+      "TUTU",
+      "TU TU"
+    ],
+    "RANG HO NHO": [
+      "RANG HO NHO"
+    ],
+    "RHN VA MH": [
+      "RHN VA MH"
+    ],
+    "MA HO": [
+      "MA HO"
+    ],
+    "MAI QUE": [
+      "MAI QUE"
+    ],
+    "TAN HAM": [
+      "TAN HAM"
+    ],
+    "TRUONG SI": [
+      "TRUONG SI"
+    ],
+    "TRONG DUONG": [
+      "TRONG DUONG",
+      "TRONGDUONG",
+      "TROOJNGDUONG",
+      "TRONGDUONGBU"
+    ],
+    "DIEN MONG DE": [
+      "DIEN MONG DE"
+    ],
+    "GIAI KY": [
+      "GIAI KY"
+    ],
+    "PANGBOWEN": [
+      "PANGBOWEN",
+      "PBW",
+      "PANGBOWWEN"
+    ],
+    "HOAHOA": [
+      "HOAHOA"
+    ],
+    "LAM ANH": [
+      "LAM ANH",
+      "LAMANH"
+    ],
+    "DUONG KIEU": [
+      "DUONG KIEU",
+      "DUONGKIEU"
+    ],
+    "ENGFA": [
+      "ENGFA"
+    ],
+    "JAMES": [
+      "JAMES"
+    ],
+    "JUHOON": [
+      "JUHOON"
+    ],
+    "KEONHO": [
+      "KEONHO"
+    ],
+    "SEONGHYEON": [
+      "SEONGHYEON"
+    ],
+    "MARTIN": [
+      "MARTIN"
+    ],
+    "24AT": [
+      "24AT",
+      "24 AT",
+      "24 ATSH",
+      "24 THSH",
+      "24 ATRAI",
+      "24 ANH TRAI",
+      "24 AT TINH HA",
+      "24 ATTHSH"
+    ],
+    "DO NHAT HOANG": [
+      "DO NHAT HOANG",
+      "DHN",
+      "DHN DO NHAT HOANG",
+      "DNH"
+    ],
+    "HOANG KHANG": [
+      "HOANG KHANG",
+      "HOANGKHANG"
+    ],
+    "TRUONG LANG HACH": [
+      "TRUONG LANG HACH"
+    ],
+    "TIEU XUYEN": [
+      "TIEU XUYEN"
+    ],
+    "RAT VUI": [
+      "RAT VUI"
+    ],
+    "VI VI": [
+      "VI VI",
+      "VY VY"
+    ],
+    "ANH SANG AZA": [
+      "ANH SANG AZA"
+    ],
+    "DO NAM SON": [
+      "DO NAM SON",
+      "DONAMSON"
+    ],
+    "QUANG TRUNG": [
+      "QUANG TRUNG"
+    ],
+    "RYNLEE": [
+      "RYNLEE"
+    ],
+    "SOOBIN": [
+      "SOOBIN",
+      "SOBIN"
+    ],
+    "THAIDUONG": [
+      "THAIDUONG"
+    ],
+    "LAMOON": [
+      "LAMOON"
+    ],
+    "HUYNH LAP": [
+      "HUYNH LAP",
+      "HUNHLAP"
+    ],
+    "ZINA": [
+      "ZINA",
+      "ZINAA"
+    ],
+    "YEN HAN": [
+      "YEN HAN",
+      "YEN HAN BU"
+    ],
+    "NEYMAR": [
+      "NEYMAR",
+      "NAYMAR"
+    ],
+    "PUIILY": [
+      "PUIILY",
+      "PULLY",
+      "PUILY"
+    ]
+  },
+  "categories": [
+    {
+      "name": "NHAN VO",
+      "keywords": [
+        "NHAN VO",
+        "NHAN VOI",
+        "NHAN VOO"
+      ]
+    },
+    {
+      "name": "MOC KHOA - MINI ALBUM",
+      "keywords": [
+        "MOC KHOA",
+        "ALBUM",
+        "MINI ALBUM",
+        "ALBUM MINI",
+        "MK",
+        "HIEUTHU2MK"
+      ]
+    },
+    {
+      "name": "POLAR",
+      "keywords": [
+        "POLAR",
+        "POLAROID"
+      ],
+      "regex": "\\bPOLAR\\d*\\b"
+    },
+    {
+      "name": "PHOTOBOOTH",
+      "keywords": [
+        "PTB",
+        "PHOTOBOOTH",
+        "PHOTBOOTH"
+      ]
+    },
+    {
+      "name": "STICKER",
+      "keywords": [
+        "STICKER"
+      ]
+    },
+    {
+      "name": "KHUNG IG - SPOTIFY",
+      "keywords": [
+        "KHUNG IG",
+        "KHUNG INSTAGRAM",
+        "INSTAGRAM",
+        "SPOTIFY",
+        "SPOTYFI",
+        "LOCKET",
+        "THREADS",
+        "THREDS",
+        "KHUNG"
+      ]
+    },
+    {
+      "name": "CHU KY",
+      "keywords": [
+        "CHU KY",
+        "CHU KI",
+        "CHUI KY",
+        "CHUKY",
+        "CHUKI",
+        "CHU KY MAT SAU"
+      ]
+    },
+    {
+      "name": "2 MAT",
+      "keywords": [
+        "2 MAT",
+        "2MAT",
+        "HAI MAT",
+        "MAT SAU",
+        "MAWJT SAU",
+        "MAT TRANG"
+      ]
+    },
+    {
+      "name": "SET BON TAM - PIJAMA",
+      "keywords": [
+        "BON TAM",
+        "BOOGN TAM",
+        "BOGN TAM",
+        "PHONG TAM",
+        "PIJAMA",
+        "PYJAMA"
+      ]
+    },
+    {
+      "name": "A4 - A5 - POSTER",
+      "keywords": [
+        "A5",
+        "A4",
+        "A4 3X3",
+        "POSTER",
+        "60 X 60",
+        "60X60"
+      ]
+    },
+    {
+      "name": "TONG HOP",
+      "keywords": [
+        "TONG HOP",
+        "TONGHOP"
+      ]
+    },
+    {
+      "name": "YEU CAU",
+      "keywords": [
+        "YEU CAU",
+        "YEUCAU",
+        "DON ZALO",
+        "IN THUA",
+        "DON THEO YEU CAU"
+      ],
+      "regex": "\\bYC[A-Z0-9]*\\b"
+    }
+  ],
+  "noiseWords": [
+    "PDF",
+    "FILE",
+    "CU",
+    "NEW",
+    "MOI",
+    "OANH",
+    "SIDE",
+    "SUA",
+    "GOC",
+    "XOA",
+    "LOGO",
+    "KO",
+    "OK",
+    "THEM",
+    "UPDATE",
+    "CARD",
+    "CARDS",
+    "PAGE",
+    "PAGES",
+    "FIX",
+    "CUTE",
+    "LIVESTAGE",
+    "BABY",
+    "COPY",
+    "OTP",
+    "X"
+  ],
+  "junk": [
+    "THIET KE CHUA CO TEN",
+    "ABC",
+    "KOANH",
+    "GBHGH",
+    "GHYU",
+    "YU",
+    "YV",
+    "YB",
+    "I",
+    "J",
+    "R",
+    "MK",
+    "IDOL",
+    "TIEM CARD IDOL",
+    "LOGO TINH HA SAY HI",
+    "TEST",
+    "MAU",
+    "NHA QUE CA",
+    "NHA QUE",
+    "QUE CA",
+    "USER"
+  ],
+  "noisePhrases": [
+    "DA GOP",
+    "BAN SAO CUA",
+    "DON DAU TIEN",
+    "DUNG DUOC",
+    "NGAY",
+    "1 SIDE",
+    "THANH VIEN LE",
+    "THANH VIEN",
+    "ANH NHOM"
+  ],
+  "strongFolderCategories": [
+    "NHAN VO",
+    "MOC KHOA - MINI ALBUM",
+    "CHU KY"
+  ],
+  "maxCardPages": 30,
+  "overrides": [
+    {
+      "source": "quân ap 8.5.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "94 pages (about 846 cards): a merged print batch, not a library set (its twin No 540 is TRUNG_LAP)."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\A Vũ File mưa đỏ.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "89 pages, and the idol name 'A VU MUA DO' contains the film title 'Mưa Đỏ'. This is a batch/theme file, not one idol set."
+    },
+    {
+      "source": "TRỌNG DƯƠNG 23.5.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "46 pages, while the other TRONG DUONG files have 1-3 pages. Likely a merged order batch."
+    },
+    {
+      "source": "24 AT 26.8.pdf",
+      "group": "KHAC",
+      "category": "2 MAT",
+      "idol": null,
+      "date": null,
+      "reason": "Byte-identical to '0.0 24 AT 2 MẶT - 6 TỜ\\24 AT 26.8.pdf' (No 911). Its back side '24 AT 26.8 - CHỮ KÝ MẶT SAU' (No 910/1122) is 3 pages, so front 3 + back 3 = the folder's '6 TỜ'. It is the front of a 2-sided product, and as CARD it would print one-sided. 24AT 23.07 stays as the card set."
+    },
+    {
+      "source": "abc.pdf",
+      "group": "KHAC",
+      "category": "A4 - A5 - POSTER",
+      "idol": null,
+      "date": null,
+      "reason": "Byte-identical to 'A5 (19).pdf' / 'A5 (20).pdf' (1149/1152, TRUNG_LAP of it). The kept copy has a junk name, but the content is an A5 product."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\ng hơn).pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Broken name fragment, not an idol."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\CON DỞ.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "'còn dở' = unfinished file, not an idol."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\cua2.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "'cua2' is not an idol name (11 pages)."
+    },
+    {
+      "source": "tre iem xoi lac.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Meme/theme phrase ('trẻ em xôi lạc'), not an idol."
+    },
+    {
+      "source": "Thanh xuân vườn trường 27.8.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Drama/collection title, probably mixed cast. Not a single idol."
+    },
+    {
+      "source": "EM GÁI BẢO CHÂU.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "'Bảo Châu's younger sister' reads as a customer order, not an idol."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\ngoc.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare first name NGOC is ambiguous (BUI DUY NGOC No 21, KIM NGOC No 387, or a customer) and could mis-match orders."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\NGỌC.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Same ambiguous bare name NGOC. 15 pages."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\XUÂN.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare first name, ambiguous with XUAN DINH / XUANSON."
+    },
+    {
+      "source": "quân 5.8.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare 'quân' created a separate idol QUAN. It is probably QUAN AP, but a 'QUAN' alias is unsafe (common word), so check by eye."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\qanh (1).pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "'qanh' is an ambiguous abbreviation (Quang Anh / Quỳnh Anh), not an identifiable idol."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\qanh.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Same as No 535."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\hang.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare name HANG (Hằng/Hàng). It has the same pages and date as hằng.pdf (No 234), so it is a likely near-duplicate."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\hằng.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Same as No 233. It would otherwise get a ' (2)' target."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\CHÂU.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare personal first name, not an identifiable idol."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\HỒNG.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare personal first name."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\nghi.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare personal first name."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\trinh).pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Bare personal first name."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\kimoanh.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "OANH is a noise word and KOANH is junk (staff tag), so 'kimoanh' is likely staff or a customer, not an idol."
+    },
+    {
+      "source": "0.0  PhotoCard O Chung\\0.1 pdf\\yên hân bù).pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "'bù' = 1-page supplement for 'yên hân.pdf' (No 749, 9 pages, same date 11.04). It is not a full set, and as YEN HAN - 1 PAGE it could be printed instead of the real set."
+    },
+    {
+      "source": "vương bình.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Byte-identical to 'khung ảnh 3x3-Duong.pdf' (No 816, frame product), and it collides with vuong_binh.pdf (No 721, same 6 pages/10.03) with a ' (2)' suffix."
+    },
+    {
+      "source": "jeyb (2).pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Byte-identical to 'yooonseo.pdf' (No 752), so the two names conflict. The other JEYB files (344-346) stay CARD."
+    },
+    {
+      "source": "quynh anh 2.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Part 2 of a split set ('quỳnh anh 1' + '2', 1 page each, same date). Merge or keep by hand; ambiguous Quỳnh Anh."
+    },
+    {
+      "source": "quỳnh anh 1.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Part 1 of the same split set. It would otherwise get a ' (2)' target."
+    },
+    {
+      "source": "sonk 1 file.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "'sonk 1 file' + 'sonk 2' (No 659): two 1-page parts with the same date 11.03. Merge or keep one by hand."
+    },
+    {
+      "source": "sonk 2.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Part 2 of No 653. It would otherwise get a ' (2)' target."
+    },
+    {
+      "source": "jack 12.5.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Same idol/pages/date as 'J97 12.5.pdf' (No 308) but not identical, so it got a ' (2)' target. Keep one by hand."
+    },
+    {
+      "source": "negav 16.9.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Collides with 'Negav 16.09.pdf' (No 464) and got a ' (2)' target."
+    },
+    {
+      "source": "quang hùng 17.9.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Collides with 'quang hùng 17.09.pdf' (No 568) and got a ' (2)' target."
+    },
+    {
+      "source": "quang hùng\\QUANG HÙNG 24.6.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Collides with 'quang hùng\\QHUNG 24.6.pdf' (No 583) and got a ' (2)' target."
+    },
+    {
+      "source": "KHOI VU - 18 CARD - 13.9_.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Collides with 'KHOI VU - 18 CARD - 13.9.pdf' (No 370) and got a ' (2)' target."
+    },
+    {
+      "source": "congb 23.8.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Collides with 'congb 23.8.2.pdf' (No 103, same 1 page/23.08) and got a ' (2)' target."
+    },
+    {
+      "source": "ht2 26.7.pdf",
+      "group": "CHUA_PHAN_TICH",
+      "category": null,
+      "idol": null,
+      "date": null,
+      "reason": "Collides with 'ht2 26.7..pdf' (No 255, same 1 page/26.07) and got a ' (2)' target."
+    },
+    {
+      "source": "duong domic 27.7 file cu ngay 23.7.pdf",
+      "group": "CARD",
+      "category": null,
+      "idol": "DUONG DOMIC",
+      "date": "27.07",
+      "reason": "The name means 'the 27.7 file (old file from 23.7)'. The parser took the last date, 23.07, which would sit next to the different 3-page set 'dương domic 23.7.pdf' (No 219). This file is 5 pages, so it is the 27.7 version."
+    },
+    {
+      "source": "0.0.0.0.1 nhản vỡ\\YC_KHUNG_ANH.pdf",
+      "group": "KHAC",
+      "category": "NHAN VO",
+      "idol": null,
+      "date": null,
+      "reason": "'KHUNG ANH' in the nhãn vở folder is the nhãn vở frame style, not an IG/Spotify frame."
+    },
+    {
+      "source": "0.0.0.0.1 nhản vỡ\\yc_20nv.pdf",
+      "group": "KHAC",
+      "category": "NHAN VO",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order for 20 nhãn vở, in the nhãn vở folder."
+    },
+    {
+      "source": "0.0.0.0.1 nhản vỡ\\yc_30x2.pdf",
+      "group": "KHAC",
+      "category": "NHAN VO",
+      "idol": null,
+      "date": null,
+      "reason": "Custom nhãn vở order, in the nhãn vở folder."
+    },
+    {
+      "source": "0.0.0.0.1 nhản vỡ\\yc__.pdf",
+      "group": "KHAC",
+      "category": "NHAN VO",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the nhãn vở folder."
+    },
+    {
+      "source": "0.0.0.0.1 nhản vỡ\\NHAN VO KHUNG CAT MAY\\A5.pdf 10.9.pdf",
+      "group": "KHAC",
+      "category": "NHAN VO",
+      "idol": null,
+      "date": null,
+      "reason": "A5 sheet inside the nhãn vở die-cut folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\Dillan - tổng hợp.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Siblings are '<IDOL> - TONG HOP - MINI ALBUM'; this is a mini album page."
+    },
+    {
+      "source": "0.0.0.02 mini album\\CODY_YC.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom mini album order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\YC 15.8.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\yc 18.8.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\YC26.08.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\YC_1108.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\YC_25.08.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\YC_JSOL+12.08.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "0.0.0.02 mini album\\YC_mui79096.pdf",
+      "group": "KHAC",
+      "category": "MOC KHOA - MINI ALBUM",
+      "idol": null,
+      "date": null,
+      "reason": "Custom order in the mini album folder."
+    },
+    {
+      "source": "Chữ ký\\a4_3x3.pdf",
+      "group": "KHAC",
+      "category": "CHU KY",
+      "idol": null,
+      "date": null,
+      "reason": "A 3x3 sheet in the 'Chữ ký' folder is a signature-card sheet, not a poster."
+    }
+  ]
+}

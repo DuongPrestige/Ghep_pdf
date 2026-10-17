@@ -1,0 +1,777 @@
+<Window x:Class="PDFPageComposer.App.Views.TikTokOrdersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:behaviors="clr-namespace:PDFPageComposer.App.Behaviors"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:PDFPageComposer.App.ViewModels.TikTok"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:TikTokOrdersViewModel}"
+        Title="Đơn TikTok"
+        MinWidth="960"
+        MinHeight="600"
+        Width="1366"
+        Height="800"
+        FontSize="14"
+        AllowDrop="True"
+        DragOver="OnDragOver"
+        Drop="OnDrop"
+        behaviors:LoadedCommandBehavior.Command="{Binding LoadCommand}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <Style x:Key="ToolButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+        <Style x:Key="RowButton" TargetType="Button">
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Foreground" Value="#0F172A" />
+        </Style>
+        <Style x:Key="WrapCell" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="4,2" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="RowBackground" Value="#FFFFFF" />
+            <Setter Property="AlternatingRowBackground" Value="#F8FAFC" />
+            <Setter Property="EnableRowVirtualization" Value="True" />
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <DockPanel Background="#F6F7F9">
+            <ToolBar DockPanel.Dock="Top" Padding="8,6" Background="#FFFFFF">
+                <Button Content="Import đơn" Style="{StaticResource ToolButton}" Command="{Binding Import.OpenCommand}" />
+                <Button Content="Quét kho" Style="{StaticResource ToolButton}" Command="{Binding Library.ScanCommand}" />
+                <Button Content="Tải lại" Style="{StaticResource ToolButton}" Command="{Binding ReloadCommand}" />
+                <Separator />
+                <Button Content="Hủy thao tác"
+                        Style="{StaticResource ToolButton}"
+                        Margin="8,0,8,0"
+                        Command="{Binding Workspace.CancelCommand}"
+                        Visibility="{Binding Workspace.IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <TextBlock Text="Kéo thả file .csv vào cửa sổ để import"
+                           Foreground="#64748B"
+                           VerticalAlignment="Center"
+                           Margin="8,0" />
+            </ToolBar>
+
+            <StatusBar DockPanel.Dock="Bottom" Background="#FFFFFF">
+                <StatusBarItem>
+                    <TextBlock Text="{Binding Workspace.StatusText}" />
+                </StatusBarItem>
+                <StatusBarItem>
+                    <TextBlock Text="{Binding Workspace.ProgressText}" Foreground="#2563EB" />
+                </StatusBarItem>
+                <StatusBarItem HorizontalAlignment="Right">
+                    <ProgressBar Width="140"
+                                 Height="12"
+                                 IsIndeterminate="True"
+                                 Visibility="{Binding Workspace.IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StatusBarItem>
+            </StatusBar>
+
+            <Border DockPanel.Dock="Top"
+                    Background="#FEF2F2"
+                    BorderBrush="#FCA5A5"
+                    BorderThickness="0,0,0,1"
+                    Padding="12,6">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Workspace.ErrorText}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right"
+                            Content="Đóng"
+                            Style="{StaticResource RowButton}"
+                            Command="{Binding Workspace.DismissErrorCommand}" />
+                    <TextBlock Text="{Binding Workspace.ErrorText}"
+                               Foreground="#B91C1C"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+
+            <TabControl Margin="8" SelectedIndex="{Binding SelectedTabIndex}">
+                <TabItem Header="Đơn hàng" DataContext="{Binding Orders}">
+                    <DockPanel Margin="8">
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" LastChildFill="False">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" IsEnabled="{Binding Workspace.IsIdle}">
+                                <ComboBox ItemsSource="{Binding OrderListScopes}"
+                                          SelectedItem="{Binding SelectedOrderListScope}"
+                                          DisplayMemberPath="Label"
+                                          MinWidth="190"
+                                          Margin="0,0,6,0"
+                                          ToolTip="Phạm vi đơn khi xuất danh sách CSV" />
+                                <Button Content="Xuất CSV"
+                                        Padding="10,3"
+                                        ToolTip="Xuất danh sách đơn ra file CSV (mở bằng Excel)"
+                                        Command="{Binding ExportOrderListCommand}" />
+                                <Border Width="1" Background="#CBD5E1" Margin="12,2" />
+                                <TextBlock Text="{Binding SelectionSummary}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,10,0" />
+                                <Button Content="Xem trước file in"
+                                        Padding="12,3"
+                                        Margin="0,0,6,0"
+                                        ToolTip="Xem mọi trang sẽ in theo đúng thứ tự, đổi file hoặc bỏ đơn trước khi tạo file in"
+                                        Command="{Binding PreviewPrintFileCommand}" />
+                                <Button Content="Tạo file in"
+                                        Padding="16,3"
+                                        FontWeight="SemiBold"
+                                        Background="#2563EB"
+                                        Foreground="#FFFFFF"
+                                        BorderBrush="#1D4ED8"
+                                        Command="{Binding CreatePrintFileCommand}" />
+                            </StackPanel>
+                            <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding CategoryFilters}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ToggleButton Content="{Binding Label}"
+                                                      IsChecked="{Binding IsChecked}"
+                                                      Padding="10,4"
+                                                      Margin="0,0,6,4" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ComboBox DockPanel.Dock="Left"
+                                      ItemsSource="{Binding ShopFilters}"
+                                      SelectedItem="{Binding SelectedShopFilter}"
+                                      DisplayMemberPath="Name"
+                                      MinWidth="130"
+                                      VerticalAlignment="Top"
+                                      Margin="6,0,0,4"
+                                      ToolTip="Lọc theo shop" />
+                        </DockPanel>
+
+                        <Border DockPanel.Dock="Bottom"
+                                Background="#FFFFFF"
+                                BorderBrush="#CBD5E1"
+                                BorderThickness="1"
+                                Padding="8"
+                                Margin="0,8,0,0"
+                                IsEnabled="{Binding Workspace.IsIdle}">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="Chọn tất cả đơn sẵn sàng" Style="{StaticResource ToolButton}" Command="{Binding SelectAllReadyCommand}" />
+                                    <Button Content="Bỏ chọn" Style="{StaticResource ToolButton}" Command="{Binding ClearSelectionCommand}" />
+                                    <Button Content="Copy mã đơn"
+                                            Style="{StaticResource ToolButton}"
+                                            Command="{Binding CopyOrderIdsCommand}"
+                                            ToolTip="Copy mã các đơn đang tick; không tick đơn nào thì copy mọi đơn đang hiển thị" />
+                                    <TextBlock Text="Trang trắng giữa đơn:" VerticalAlignment="Center" Margin="8,0,6,0" />
+                                    <ComboBox ItemsSource="{Binding SeparatorModes}"
+                                              SelectedItem="{Binding SelectedSeparatorMode}"
+                                              DisplayMemberPath="Label"
+                                              MinWidth="130"
+                                              Margin="0,0,12,0" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding PlanSummary}"
+                                           TextWrapping="Wrap"
+                                           FontSize="11"
+                                           Foreground="#64748B"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0" />
+                            </DockPanel>
+                        </Border>
+
+                        <DataGrid ItemsSource="{Binding Rows}"
+                                  IsReadOnly="True"
+                                  SelectionMode="Extended"
+                                  GridLinesVisibility="Horizontal"
+                                  RowHeaderWidth="0">
+                            <DataGrid.Resources>
+                                <!-- Hides an optional line of a cell when it has no text. -->
+                                <Style x:Key="OptionalLine" TargetType="TextBlock" BasedOn="{StaticResource WrapCell}">
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.Resources>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#DBEAFE" />
+                                            <Setter Property="Foreground" Value="#0F172A" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="ToolTip" Value="Nháy đúp để copy mã đơn" />
+                                    <EventSetter Event="MouseDoubleClick" Handler="OnOrderRowDoubleClick" />
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="34">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+                                                      IsEnabled="{Binding CanSelect}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Nhóm" Width="125" SortMemberPath="CategoryText">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="10" Padding="8,2" Margin="2,3" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#F1F5F9" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Category}" Value="Ready">
+                                                                <Setter Property="Background" Value="#DCFCE7" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Category}" Value="Printed">
+                                                                <Setter Property="Background" Value="#DBEAFE" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Category}" Value="NeedsConfig">
+                                                                <Setter Property="Background" Value="#FFEDD5" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Category}" Value="MissingFile">
+                                                                <Setter Property="Background" Value="#FEE2E2" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Category}" Value="Manual">
+                                                                <Setter Property="Background" Value="#EDE9FE" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Category}" Value="HasNote">
+                                                                <Setter Property="Background" Value="#FEF9C3" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding CategoryText}" FontSize="13" Foreground="#0F172A" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Mã đơn" Width="230" SortMemberPath="OrderId">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="4,2">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding OrderId}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <Button Content="Copy"
+                                                            FontSize="12"
+                                                            Padding="5,0"
+                                                            Margin="6,0,0,0"
+                                                            ToolTip="Copy mã đơn"
+                                                            Command="{Binding DataContext.CopyOrderIdCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}" />
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding MetaText}" FontSize="12" Foreground="#64748B" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <!-- One text line per order line in both columns (no wrapping) so product and variation stay aligned. -->
+                                <DataGridTemplateColumn Header="Sản phẩm" Width="1.6*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ProductsText}"
+                                                       ToolTip="{Binding ItemsFullText}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="4,2" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Phân loại" Width="1.2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding VariationsText}"
+                                                       ToolTip="{Binding ItemsFullText}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       FontWeight="SemiBold"
+                                                       Margin="4,2" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Số tờ" Binding="{Binding SheetCount, Mode=OneWay}" Width="52" />
+                                <DataGridTemplateColumn Header="File in" Width="1.6*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding PlannedFilesText}" Style="{StaticResource WrapCell}" FontSize="13" Foreground="#334155" />
+                                                <Button Content="Chọn file"
+                                                        FontSize="12"
+                                                        Padding="8,1"
+                                                        Margin="4,2,0,4"
+                                                        HorizontalAlignment="Left"
+                                                        ToolTip="Xem trước các trang sẽ in và tự chọn file cho đơn này"
+                                                        Visibility="{Binding CanChooseFiles, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        Command="{Binding DataContext.ChooseFilesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Ghi chú" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding WarningText}" Style="{StaticResource OptionalLine}" Foreground="#DC2626" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding ReasonsText}" Style="{StaticResource OptionalLine}" Foreground="#B45309" FontSize="13" />
+                                                <TextBlock Text="{Binding NoteText}" Style="{StaticResource OptionalLine}" Foreground="#475569" FontSize="13" FontStyle="Italic" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Width="Auto">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,2">
+                                                <Button Content="Cho phép ghép"
+                                                        Style="{StaticResource RowButton}"
+                                                        ToolTip="Đã xem ghi chú, cho phép ghép tự động"
+                                                        Visibility="{Binding CanReviewNote, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        Command="{Binding DataContext.MarkNoteReviewedCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}" />
+                                                <ToggleButton Content="In lại"
+                                                              Padding="8,2"
+                                                              IsChecked="{Binding IsReprint, Mode=OneWay}"
+                                                              Visibility="{Binding IsPrinted, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                              Command="{Binding DataContext.ToggleReprintCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                              CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </TabItem>
+
+                <TabItem Header="Cấu hình SKU" DataContext="{Binding Skus}">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="300" />
+                        </Grid.ColumnDefinitions>
+                        <DockPanel Grid.Column="0" Margin="0,0,8,0">
+                            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" IsEnabled="{Binding Workspace.IsIdle}">
+                                <CheckBox Content="Chỉ hiện SKU chưa cấu hình"
+                                          IsChecked="{Binding ShowUnconfiguredOnly}"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,12,4" />
+                                <TextBlock Text="Tìm:" VerticalAlignment="Center" Margin="0,0,6,4" />
+                                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,12,4" />
+                                <Button Content="Chọn tất cả" Style="{StaticResource ToolButton}" Command="{Binding SelectAllVisibleCommand}" Margin="0,0,8,4" />
+                                <Button Content="Bỏ chọn" Style="{StaticResource ToolButton}" Command="{Binding ClearSelectionCommand}" Margin="0,0,8,4" />
+                                <Button Content="Xác nhận gợi ý đã chọn" Style="{StaticResource ToolButton}" Command="{Binding ConfirmSelectedCommand}" Margin="0,0,8,4" />
+                                <Button Content="Gợi ý lại" Style="{StaticResource ToolButton}" Command="{Binding RefreshSuggestionsCommand}" Margin="0,0,8,4" />
+                                <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Foreground="#475569" Margin="0,0,0,4" />
+                            </WrapPanel>
+                            <DataGrid ItemsSource="{Binding Rows}" IsEnabled="{Binding Workspace.IsIdle}">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Chọn" Width="46">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="SKU ID" Binding="{Binding SkuId, Mode=OneWay}" IsReadOnly="True" Width="130" />
+                                    <DataGridTemplateColumn Header="Sản phẩm" Width="2*" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ProductName}" Style="{StaticResource WrapCell}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Phân loại" Width="1.5*" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding VariationName}" Style="{StaticResource WrapCell}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Loại xử lý" Width="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{x:Static vm:TikTokLabels.ProcessTypeOptions}"
+                                                          SelectedValuePath="Value"
+                                                          DisplayMemberPath="Label"
+                                                          SelectedValue="{Binding ProcessType, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Idol" Width="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding Idol, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Số card" Width="64">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding CardCountText, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding StatusText, Mode=OneWay}" IsReadOnly="True" Width="120" />
+                                    <DataGridTemplateColumn Header="Thao tác" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="Xác nhận"
+                                                            Style="{StaticResource RowButton}"
+                                                            Command="{Binding DataContext.ConfirmRowCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}" />
+                                                    <Button Content="Đặt cả sản phẩm là Bỏ qua"
+                                                            Style="{StaticResource RowButton}"
+                                                            Command="{Binding DataContext.IgnoreProductCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+
+                        <Border Grid.Column="1"
+                                Background="#FFFFFF"
+                                BorderBrush="#CBD5E1"
+                                BorderThickness="1"
+                                Padding="8"
+                                IsEnabled="{Binding Workspace.IsIdle}">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Top">
+                                    <TextBlock Text="Alias idol" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Cách viết (vd: Công B)" Foreground="#475569" />
+                                    <TextBox Text="{Binding NewAlias, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6" />
+                                    <TextBlock Text="Mã idol (vd: CONGB)" Foreground="#475569" />
+                                    <TextBox Text="{Binding NewAliasIdol, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6" />
+                                    <Button Content="Thêm alias" HorizontalAlignment="Left" Style="{StaticResource ToolButton}" Command="{Binding AddAliasCommand}" Margin="0,0,0,8" />
+                                </StackPanel>
+                                <DataGrid ItemsSource="{Binding Aliases}" IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Alias" Binding="{Binding Alias, Mode=OneWay}" Width="*" />
+                                        <DataGridTextColumn Header="Idol" Binding="{Binding Idol, Mode=OneWay}" Width="*" />
+                                        <DataGridTemplateColumn Header="" Width="Auto">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Xóa"
+                                                            Style="{StaticResource RowButton}"
+                                                            Command="{Binding DataContext.DeleteAliasCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Kho PDF" DataContext="{Binding Library}">
+                    <DockPanel Margin="8">
+                        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" IsEnabled="{Binding Workspace.IsIdle}">
+                            <TextBlock Text="Thư mục kho:" VerticalAlignment="Center" Margin="0,0,6,4" />
+                            <TextBox Text="{Binding Folder, Mode=OneWay}" IsReadOnly="True" MinWidth="360" Margin="0,0,8,4" />
+                            <Button Content="Chọn thư mục" Style="{StaticResource ToolButton}" Command="{Binding PickFolderCommand}" Margin="0,0,8,4" />
+                            <Button Content="Quét kho" Style="{StaticResource ToolButton}" Command="{Binding ScanCommand}" Margin="0,0,12,4" />
+                            <CheckBox Content="Chỉ hiện file lỗi" IsChecked="{Binding ShowInvalidOnly}" VerticalAlignment="Center" Margin="0,0,12,4" />
+                            <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Foreground="#475569" Margin="0,0,0,4" />
+                        </WrapPanel>
+                        <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Tên file" Binding="{Binding FileName, Mode=OneWay}" Width="2*" />
+                                <DataGridTextColumn Header="Idol" Binding="{Binding Idol, Mode=OneWay}" Width="100" />
+                                <DataGridTextColumn Header="Số trang (tên)" Binding="{Binding PageCountText, Mode=OneWay}" Width="100" />
+                                <DataGridTextColumn Header="Số trang thực" Binding="{Binding ActualPageCountText, Mode=OneWay}" Width="100" />
+                                <DataGridTextColumn Header="Ngày" Binding="{Binding FileDateText, Mode=OneWay}" Width="90" />
+                                <DataGridTemplateColumn Header="Trạng thái" Width="2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StatusText}" Style="{StaticResource WrapCell}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Đường dẫn" Binding="{Binding FilePath, Mode=OneWay}" Width="2*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </TabItem>
+
+                <TabItem Header="Lịch sử" DataContext="{Binding History}">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="1.4*" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0">
+                            <TextBlock DockPanel.Dock="Top" Text="Lô import" Style="{StaticResource SectionTitle}" />
+                            <WrapPanel DockPanel.Dock="Bottom" Margin="0,6,0,0" IsEnabled="{Binding Workspace.IsIdle}">
+                                <Button Content="Xóa lần import" Style="{StaticResource ToolButton}" Command="{Binding DeleteImportCommand}" />
+                                <Button Content="Xóa toàn bộ đơn" Style="{StaticResource ToolButton}" Command="{Binding DeleteAllOrdersCommand}" />
+                            </WrapPanel>
+                            <DataGrid ItemsSource="{Binding ImportBatches}"
+                                      SelectedItem="{Binding SelectedImportBatch}"
+                                      SelectionMode="Single"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="#" Binding="{Binding ImportId, Mode=OneWay}" Width="50" />
+                                    <DataGridTextColumn Header="Thời gian" Binding="{Binding ImportedAtText, Mode=OneWay}" Width="120" />
+                                    <DataGridTextColumn Header="Shop" Binding="{Binding ShopName, Mode=OneWay}" Width="120" />
+                                    <DataGridTextColumn Header="Chế độ" Binding="{Binding ModeText, Mode=OneWay}" Width="100" />
+                                    <DataGridTextColumn Header="File" Binding="{Binding FileName, Mode=OneWay}" Width="*" />
+                                    <DataGridTextColumn Header="Kết quả" Binding="{Binding Summary, Mode=OneWay}" Width="2*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                        <Grid Grid.Row="2" IsEnabled="{Binding Workspace.IsIdle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.3*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="1.3*" />
+                            </Grid.ColumnDefinitions>
+                            <DockPanel Grid.Column="0">
+                                <TextBlock DockPanel.Dock="Top" Text="Lô in" Style="{StaticResource SectionTitle}" />
+                                <WrapPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+                                    <Button Content="Mở file" Style="{StaticResource ToolButton}" Command="{Binding OpenBatchFileCommand}" />
+                                    <Button Content="Tạo lại file in" Style="{StaticResource ToolButton}" Command="{Binding RegenerateCommand}" />
+                                    <Button Content="Xuất DS đơn của lô" Style="{StaticResource ToolButton}" Command="{Binding ExportBatchOrderListCommand}" />
+                                </WrapPanel>
+                                <DataGrid ItemsSource="{Binding PrintBatches}"
+                                          SelectedItem="{Binding SelectedPrintBatch}"
+                                          SelectionMode="Single"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Mã lô" Binding="{Binding BatchId, Mode=OneWay}" Width="150" />
+                                        <DataGridTextColumn Header="Thời gian" Binding="{Binding CreatedAtText, Mode=OneWay}" Width="115" />
+                                        <DataGridTextColumn Header="Kết quả" Binding="{Binding Summary, Mode=OneWay}" Width="110" />
+                                        <DataGridTextColumn Header="Phân cách" Binding="{Binding SeparatorModeText, Mode=OneWay}" Width="110" />
+                                        <DataGridTextColumn Header="File" Binding="{Binding FileName, Mode=OneWay}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                            <DockPanel Grid.Column="2">
+                                <TextBlock DockPanel.Dock="Top" Text="Đơn trong lô" Style="{StaticResource SectionTitle}" />
+                                <Button DockPanel.Dock="Bottom"
+                                        Content="Copy mã đơn"
+                                        HorizontalAlignment="Left"
+                                        Style="{StaticResource ToolButton}"
+                                        Margin="0,6,0,0"
+                                        Command="{Binding CopyOrderIdsCommand}" />
+                                <DataGrid ItemsSource="{Binding SelectedOrders}" IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Mã đơn" Binding="{Binding OrderId, Mode=OneWay}" Width="*" />
+                                        <DataGridTextColumn Header="Số bộ" Binding="{Binding CopyCount, Mode=OneWay}" Width="50" />
+                                        <DataGridTemplateColumn Header="" Width="Auto">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Bỏ đánh dấu"
+                                                            Style="{StaticResource RowButton}"
+                                                            Command="{Binding DataContext.UnmarkOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                            <DockPanel Grid.Column="4">
+                                <TextBlock DockPanel.Dock="Top" Text="Chi tiết bộ in" Style="{StaticResource SectionTitle}" />
+                                <DataGrid ItemsSource="{Binding SelectedItems}" IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="#" Binding="{Binding Seq, Mode=OneWay}" Width="36" />
+                                        <DataGridTextColumn Header="Mã đơn" Binding="{Binding OrderId, Mode=OneWay}" Width="140" />
+                                        <DataGridTextColumn Header="Bộ" Binding="{Binding CopyText, Mode=OneWay}" Width="44" />
+                                        <DataGridTextColumn Header="File kho" Binding="{Binding FileName, Mode=OneWay}" Width="*" />
+                                        <DataGridTextColumn Header="Cảnh báo" Binding="{Binding WarningText, Mode=OneWay}" Width="80" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Cài đặt" DataContext="{Binding Settings}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="12" MaxWidth="760" HorizontalAlignment="Left" IsEnabled="{Binding Workspace.IsIdle}">
+                            <TextBlock Text="Thư mục" Style="{StaticResource SectionTitle}" />
+                            <TextBlock Text="Thư mục kho PDF" Foreground="#475569" />
+                            <DockPanel Margin="0,2,0,8">
+                                <Button DockPanel.Dock="Right" Content="Chọn..." Style="{StaticResource RowButton}" Margin="6,0,0,0" Command="{Binding PickLibraryFolderCommand}" />
+                                <TextBox Text="{Binding PdfLibraryFolder, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+                            <TextBlock Text="Thư mục lưu file in (để trống thì hỏi mỗi lần)" Foreground="#475569" />
+                            <DockPanel Margin="0,2,0,12">
+                                <Button DockPanel.Dock="Right" Content="Xóa" Style="{StaticResource RowButton}" Margin="4,0,0,0" Command="{Binding ClearOutputFolderCommand}" />
+                                <Button DockPanel.Dock="Right" Content="Chọn..." Style="{StaticResource RowButton}" Margin="6,0,0,0" Command="{Binding PickOutputFolderCommand}" />
+                                <TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+
+                            <TextBlock Text="Quy tắc" Style="{StaticResource SectionTitle}" />
+                            <CheckBox Content="Seller Note chứa &quot;ĐÃ IN&quot; thì coi là đã in"
+                                      IsChecked="{Binding SellerNoteMarksPrinted}"
+                                      Margin="0,0,0,8" />
+                            <CheckBox Content="Đơn có ghi chú (của khách hoặc Seller Note) thì không ghép tự động"
+                                      IsChecked="{Binding BlockOrdersWithNotes}"
+                                      Margin="0,0,0,8" />
+                            <CheckBox Content="Luôn lấy ảnh mới nhất: ghép từ các file mới nhất của idol cho đủ trang (tắt = chỉ dùng file đúng số trang)"
+                                      IsChecked="{Binding AlwaysUseNewestFiles}"
+                                      Margin="0,0,0,8" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="Trang phân cách mặc định:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <ComboBox ItemsSource="{Binding SeparatorModes}"
+                                          SelectedItem="{Binding DefaultSeparatorMode}"
+                                          DisplayMemberPath="Label"
+                                          MinWidth="160" />
+                            </StackPanel>
+                            <Button Content="Lưu cài đặt" HorizontalAlignment="Left" Style="{StaticResource ToolButton}" Command="{Binding SaveCommand}" Margin="0,0,0,16" />
+
+                            <TextBlock Text="Shop" Style="{StaticResource SectionTitle}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBox Text="{Binding NewShopName, UpdateSourceTrigger=PropertyChanged}" Width="240" Margin="0,0,8,0" />
+                                <Button Content="Thêm shop" Style="{StaticResource RowButton}" Command="{Binding AddShopCommand}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox ItemsSource="{Binding Workspace.Shops}"
+                                          SelectedItem="{Binding SelectedShop}"
+                                          DisplayMemberPath="Name"
+                                          Width="200"
+                                          Margin="0,0,8,0" />
+                                <TextBox Text="{Binding RenameShopName, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,8,0" />
+                                <Button Content="Đổi tên" Style="{StaticResource RowButton}" Command="{Binding RenameShopCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+
+        <!-- Import panel shown as an in-window dialog -->
+        <Grid Background="#80000000"
+              DataContext="{Binding Import}"
+              Visibility="{Binding IsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Background="#FFFFFF"
+                    BorderBrush="#CBD5E1"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="16"
+                    Width="640"
+                    MaxHeight="620"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Import đơn TikTok" FontSize="16" Style="{StaticResource SectionTitle}" />
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                        <TextBlock Text="{Binding Workspace.ProgressText}"
+                                   Foreground="#475569"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <Button Content="Hủy thao tác"
+                                Style="{StaticResource ToolButton}"
+                                Command="{Binding Workspace.CancelCommand}"
+                                Visibility="{Binding Workspace.IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Button Content="Bắt đầu import" Style="{StaticResource ToolButton}" FontWeight="SemiBold" Command="{Binding ImportCommand}" IsEnabled="{Binding Workspace.IsIdle}" />
+                        <Button Content="Đóng" Style="{StaticResource ToolButton}" Margin="0" Command="{Binding CloseCommand}" />
+                    </StackPanel>
+                    <!-- The window's error banner is covered by this overlay, so import errors are repeated here. -->
+                    <Border DockPanel.Dock="Bottom" Background="#FEF2F2" Padding="8,4" Margin="0,8,0,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Workspace.ErrorText}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right"
+                                    Content="Đóng"
+                                    Style="{StaticResource RowButton}"
+                                    Command="{Binding Workspace.DismissErrorCommand}" />
+                            <TextBlock Text="{Binding Workspace.ErrorText}"
+                                       Foreground="#B91C1C"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center" />
+                        </DockPanel>
+                    </Border>
+                    <StackPanel DockPanel.Dock="Top" IsEnabled="{Binding Workspace.IsIdle}">
+                        <TextBlock Text="Shop" Foreground="#475569" />
+                        <ComboBox ItemsSource="{Binding Shops}"
+                                  SelectedItem="{Binding SelectedShop}"
+                                  DisplayMemberPath="Name"
+                                  Margin="0,2,0,6" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBox Text="{Binding NewShopName, UpdateSourceTrigger=PropertyChanged}" Width="240" Margin="0,0,8,0" />
+                            <Button Content="Thêm shop mới" Style="{StaticResource RowButton}" Command="{Binding AddShopCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="Chế độ" Foreground="#475569" />
+                        <RadioButton Content="File đầy đủ (ẩn đơn của shop không còn trong file)"
+                                     IsChecked="{Binding IsFullMode}"
+                                     GroupName="ImportMode"
+                                     Margin="0,2,0,2" />
+                        <RadioButton Content="Bổ sung (không ẩn đơn nào)"
+                                     IsChecked="{Binding IsPartialMode}"
+                                     GroupName="ImportMode"
+                                     Margin="0,0,0,10" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button Content="Chọn file .csv..." Style="{StaticResource RowButton}" Command="{Binding PickFilesCommand}" />
+                            <TextBlock Text="hoặc kéo thả file vào cửa sổ" Foreground="#64748B" VerticalAlignment="Center" Margin="8,0,0,0" />
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{Binding PendingFiles}" Margin="0,0,0,8">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" Foreground="#0F172A" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding ReportText}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#166534" Margin="0,0,0,6" />
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding Warnings}" MinHeight="40" BorderBrush="#E2E8F0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#B45309" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

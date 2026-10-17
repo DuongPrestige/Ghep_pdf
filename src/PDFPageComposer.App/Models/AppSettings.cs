@@ -12,4 +12,6 @@ public sealed class AppSettings
 
     public string? UpdateManifestUrl { get; set; } =
         "https://raw.githubusercontent.com/DuongPrestige/Ghep_pdf/main/latest.json";
+
+    public TikTokSettings TikTok { get; set; } = new();
 }

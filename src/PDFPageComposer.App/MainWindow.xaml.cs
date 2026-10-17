@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using PDFPageComposer.App.Interfaces;
 using PDFPageComposer.App.Models;
 using PDFPageComposer.App.ViewModels;
 
@@ -14,12 +15,19 @@ public partial class MainWindow : Window
     private const string OutputTrayItemDragFormat = "PDFPageComposer.OutputTrayItem";
     private const string OutputGroupDragFormat = "PDFPageComposer.OutputGroup";
     private readonly MainViewModel viewModel;
+    private readonly ITikTokWindowService tikTokWindowService;
 
-    public MainWindow(MainViewModel viewModel)
+    public MainWindow(MainViewModel viewModel, ITikTokWindowService tikTokWindowService)
     {
         InitializeComponent();
         this.viewModel = viewModel;
+        this.tikTokWindowService = tikTokWindowService;
         DataContext = viewModel;
+    }
+
+    private void OnOpenTikTokOrdersClick(object sender, RoutedEventArgs e)
+    {
+        tikTokWindowService.ShowOrdersWindow();
     }
 
     private void OnDragOver(object sender, DragEventArgs e)
@@ -128,18 +136,6 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
-    private void OnOutputPreviewGridMouseWheel(object sender, MouseWheelEventArgs e)
-    {
-        if (sender is not ScrollViewer scrollViewer)
-        {
-            return;
-        }
-
-        var direction = e.Delta < 0 ? 1 : -1;
-        viewModel.MoveOutputPreviewGridPage(direction);
-        e.Handled = true;
-    }
-
     private void OnSourceFileListMouseWheel(object sender, MouseWheelEventArgs e)
     {
         if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ||
@@ -158,6 +154,25 @@ public partial class MainWindow : Window
             scrollViewer.LineUp();
         }
 
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Enter adds the selected pages to the output tray, like "Thêm vào đầu ra". Handled before a focused button
+    /// sees the key; typing in a text box and the page preview keep their own Enter.
+    /// </summary>
+    private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter
+            || Keyboard.Modifiers != ModifierKeys.None
+            || viewModel.IsPreviewOpen
+            || Keyboard.FocusedElement is TextBox
+            || !viewModel.AddSelectionToOutputCommand.CanExecute(null))
+        {
+            return;
+        }
+
+        viewModel.AddSelectionToOutputCommand.Execute(null);
         e.Handled = true;
     }
 
@@ -215,7 +230,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        var request = new OutputItemMoveRequest(source.Item, target.Item);
+        // Dropped on the right half of the target: after it (so a page can also go to the end).
+        var element = (FrameworkElement)sender;
+        var placeAfter = e.GetPosition(element).X > element.ActualWidth / 2;
+        var request = new OutputItemMoveRequest(source.Item, target.Item, placeAfter);
         if (viewModel.MoveOutputItemBeforeCommand.CanExecute(request))
         {
             viewModel.MoveOutputItemBeforeCommand.Execute(request);

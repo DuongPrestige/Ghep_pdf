@@ -24,6 +24,25 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public async Task ImportPdfFilesAsync_skips_files_already_in_the_list()
+    {
+        var metadata = new FakePdfMetadataService();
+        metadata.Add(@"D:\Docs\a.pdf", CreateSourceFile(@"D:\Docs\a.pdf", 2, "A"));
+        metadata.Add(@"D:\Docs\b.pdf", CreateSourceFile(@"D:\Docs\b.pdf", 1, "B"));
+        metadata.Add(@"E:\Copy\a - copy.pdf", CreateSourceFile(@"E:\Copy\a - copy.pdf", 2, "A"));
+        var viewModel = CreateViewModelWithServices(metadata: metadata);
+        await viewModel.ImportPdfFilesAsync([@"D:\Docs\a.pdf"], CancellationToken.None);
+
+        await viewModel.ImportPdfFilesAsync([@"d:\docs\A.pdf", @"E:\Copy\a - copy.pdf", @"D:\Docs\b.pdf"], CancellationToken.None);
+
+        Assert.Equal([@"D:\Docs\a.pdf", @"D:\Docs\b.pdf"], viewModel.SourceFiles.Select(file => file.FilePath));
+        Assert.Equal("Đã import 1/3 file PDF, bỏ qua 2 file đã có: A.pdf, a - copy.pdf", viewModel.RenderStatus);
+
+        await viewModel.ImportPdfFilesAsync([@"D:\Docs\b.pdf"], CancellationToken.None);
+        Assert.Equal("Không có file mới, bỏ qua 1 file đã có: b.pdf", viewModel.RenderStatus);
+    }
+
+    [Fact]
     public async Task ImportPdfFilesAsync_keeps_importing_after_file_error()
     {
         var metadata = new FakePdfMetadataService();
@@ -399,7 +418,7 @@ public sealed class MainViewModelTests
             .ToList();
         foreach (var path in paths)
         {
-            metadata.Add(path, CreateSourceFile(path, 50));
+            metadata.Add(path, CreateSourceFile(path, 50, path));
         }
 
         var render = new FakePdfRenderService();
@@ -413,6 +432,26 @@ public sealed class MainViewModelTests
         Assert.Equal(500, viewModel.SourcePageCount);
         Assert.Equal(0, render.CallCount);
         Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(2), $"Import took {stopwatch.Elapsed}.");
+    }
+
+    [Fact]
+    public void SourceSearchText_ignores_vietnamese_diacritics_case_word_order_and_spaces()
+    {
+        var dinhBac = CreateSourceFile(@"D:\Docs\đình bắc.pdf", 1);
+        var quangHung = CreateSourceFile(@"D:\Docs\QUANG HÙNG 3.10.pdf", 1);
+        var viewModel = CreateViewModelWith(dinhBac, quangHung);
+
+        foreach (var query in new[] { "dinh bac", "DINH BAC", "bac dinh", "dinhbac", "đình" })
+        {
+            viewModel.SourceSearchText = query;
+            Assert.Equal([dinhBac], viewModel.FilteredSourceFiles);
+        }
+
+        viewModel.SourceSearchText = "hung 3.10";
+        Assert.Equal([quangHung], viewModel.FilteredSourceFiles);
+
+        viewModel.SourceSearchText = "dinh hung";
+        Assert.Empty(viewModel.FilteredSourceFiles);
     }
 
     [Fact]
@@ -790,6 +829,37 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public void MoveOutputItemBeforeCommand_can_place_the_dragged_item_after_the_last_page()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);
+        var viewModel = CreateViewModelWith(sourceFile);
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1, 2, 3);
+        var source = viewModel.OutputTrayItems.ElementAt(0).Item;
+        var last = viewModel.OutputTrayItems.ElementAt(2).Item;
+
+        viewModel.MoveOutputItemBeforeCommand.Execute(new OutputItemMoveRequest(source, last, PlaceAfter: true));
+
+        Assert.Equal([2, 3, 1], viewModel.OutputGroups.Single().Items.Select(item => item.SourcePageNumber));
+    }
+
+    [Fact]
+    public async Task Dragging_inside_the_output_preview_grid_updates_the_grid()
+    {
+        var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);
+        var viewModel = CreateViewModelWith(sourceFile);
+        SelectPagesAndAddToOutput(viewModel, sourceFile, 1, 2, 3);
+        await viewModel.PreviewOutputCommand.ExecuteAsync(null);
+        viewModel.ShowPreviewGridCommand.Execute(null);
+        var grid = viewModel.AllOutputPreviewGridItems;
+        Assert.Equal([1, 2, 3], grid.Select(item => item.SourcePageNumber));
+
+        viewModel.MoveOutputItemBeforeCommand.Execute(new OutputItemMoveRequest(grid[2].Item, grid[0].Item));
+
+        Assert.Equal([3, 1, 2], viewModel.AllOutputPreviewGridItems.Select(item => item.SourcePageNumber));
+        Assert.True(viewModel.AllOutputPreviewGridItems[0].IsPreviewSelected);
+    }
+
+    [Fact]
     public void MoveOutputItemDownCommand_moves_item_across_group_boundary()
     {
         var sourceFile = CreateSourceFile(@"D:\Docs\a.pdf", 3);
@@ -1141,7 +1211,7 @@ public sealed class MainViewModelTests
         Assert.Equal(0.6, viewModel.ThumbnailZoom, precision: 3);
     }
 
-    private static SourcePdfFile CreateSourceFile(string path, int pageCount)
+    private static SourcePdfFile CreateSourceFile(string path, int pageCount, string fingerprint = "fingerprint")
     {
         var sourceFileId = Guid.NewGuid();
         var pages = Enumerable.Range(1, pageCount)
@@ -1150,7 +1220,7 @@ public sealed class MainViewModelTests
                 Width = 600,
                 Height = 800
             });
-        return new SourcePdfFile(sourceFileId, path, Path.GetFileName(path), pageCount, 1024, "fingerprint", pages: pages);
+        return new SourcePdfFile(sourceFileId, path, Path.GetFileName(path), pageCount, 1024, fingerprint, pages: pages);
     }
 
     private static MainViewModel CreateViewModelWith(params SourcePdfFile[] sourceFiles)
@@ -1211,6 +1281,16 @@ public sealed class MainViewModelTests
         public IReadOnlyList<string> PickPdfFiles() => paths;
 
         public string? PickOutputPdfFile() => outputPath;
+
+        public IReadOnlyList<string> PickCsvFiles() => [];
+
+        public string? PickFolder(string? initialFolder) => null;
+
+        public string? PickOutputPdfFile(string suggestedFileName, string? initialFolder) => outputPath;
+
+        public string? PickSaveCsvFile(string suggestedFileName, string? initialFolder) => null;
+
+        public bool Confirm(string message, string title) => false;
     }
 
     private sealed class FakePdfExportService : IPdfExportService
