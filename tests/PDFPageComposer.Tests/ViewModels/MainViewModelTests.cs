@@ -1211,6 +1211,16 @@ public sealed class MainViewModelTests
         public IReadOnlyList<string> PickPdfFiles() => paths;
 
         public string? PickOutputPdfFile() => outputPath;
+
+        public IReadOnlyList<string> PickCsvFiles() => [];
+
+        public string? PickFolder(string? initialFolder) => null;
+
+        public string? PickOutputPdfFile(string suggestedFileName, string? initialFolder) => outputPath;
+
+        public string? PickSaveCsvFile(string suggestedFileName, string? initialFolder) => null;
+
+        public bool Confirm(string message, string title) => false;
     }
 
     private sealed class FakePdfExportService : IPdfExportService

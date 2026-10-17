@@ -4,10 +4,10 @@
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Backlog | 0 |
+| Backlog | 2 |
 | In Progress | 0 |
-| Blocked | 0 |
-| Done | 56 |
+| Blocked | 1 |
+| Done | 68 |
 
 Chỉ tối đa một task được ở trạng thái **In Progress**. `[ ]` là chưa hoàn thành, `[x]` là hoàn thành; trạng thái chi tiết ghi ngay dưới task khi bắt đầu hoặc bị chặn.
 
@@ -655,3 +655,108 @@ Completed: 2026-07-28
 Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `latest.json`, `docs/TASKS.md`
 Verification: `dotnet publish .\src\PDFPageComposer.App\PDFPageComposer.App.csproj -c Release -r win-x64 --self-contained true --no-restore -o .\artifacts\publish-v1.2.0` succeeded; `artifacts\PDFPageComposer-v1.2.0.zip` contains `PDFPageComposer.App.exe`, `pdfium.dll`, `PDFiumCore.dll` at the zip root; SHA256 is `0E7F8CB5427F6192D30B21CF5B410F999CD1A5AC3ECF480864F76EE6E94156A8`; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 100 passing tests.
 Notes: Release asset `PDFPageComposer-v1.2.0.zip` was uploaded to GitHub Releases tag `v1.2.0` after the commit and tag were pushed.
+
+## Phase 10 — TikTok order print
+
+Tài liệu: `docs/tiktok/PRD_TIKTOK.md` (v0.2), `docs/tiktok/TECH_SPEC_TIKTOK.md`. Nguồn đơn: file CSV xuất từ Seller Center.
+
+### - [ ] TASK-057 — Spike TikTok Shop API
+
+Status: Blocked (2026-10-16) — TikTok không cấp quyền Open API cho shop. Chuyển sang import file xuất đơn (TASK-059, TASK-060). Mã spike giữ trong `spikes/TikTokApiSpike`; xem `docs/spikes/tiktok-api-spike.md`.
+
+- **Mục tiêu:** Kiểm chứng OAuth, ký request, API đơn hàng và sản phẩm.
+- **Acceptance criteria:** Như bản v0.1; chỉ tiếp tục khi có quyền API.
+
+### - [x] TASK-058 — SQLite: schema, migration, repository
+
+- **Mục tiêu:** Thêm `Microsoft.Data.Sqlite`; tạo schema có version theo mục 4 của TECH_SPEC_TIKTOK và repository cho Shop, Sku, IdolAlias, PdfAsset, ImportBatch, Order, OrderLine, PrintBatch.
+- **Dependency:** —
+- **Acceptance criteria:** Migration chạy khi khởi động; không có cột dữ liệu người nhận; có integration test trên DB tạm.
+
+### - [x] TASK-059 — Đọc file CSV xuất đơn Seller Center
+
+- **Mục tiêu:** CSV parser (RFC 4180) và `SellerCenterCsvOrderSource` implement `IOrderSource`; ánh xạ cột theo tên header.
+- **Dependency:** —
+- **Acceptance criteria:** Đọc đúng file mẫu đã ẩn danh (36 dòng, 33 đơn): bỏ tab thừa, ô có dấu phẩy và ngoặc kép, BOM, ngày `dd/MM/yyyy HH:mm:ss`; thiếu cột bắt buộc thì báo lỗi; không đọc các cột người nhận, số điện thoại, địa chỉ.
+
+### - [x] TASK-060 — Import đơn và chống trùng
+
+- **Mục tiêu:** `OrderImportService` theo TT-09, TT-10 và mục 3.3 của TECH_SPEC_TIKTOK.
+- **Dependency:** TASK-058, TASK-059, TASK-062.
+- **Acceptance criteria:** Import cùng file 2 lần là idempotent; gộp dòng trùng trong file; chế độ Full ẩn đơn không còn trong file (chỉ trong cùng shop), chế độ Partial không ẩn; `ChangedAfterPrint`; Seller Note "ĐÃ IN" được đánh dấu đã in thủ công; có ImportReport; có test.
+
+### - [x] TASK-061 — Quét kho PDF
+
+- **Mục tiêu:** `PdfLibraryScanner` theo TT-01.
+- **Dependency:** TASK-058.
+- **Acceptance criteria:** Test tên hợp lệ và sai quy ước, trường hợp giáp năm, file lệch số trang; cache theo LastWriteTime.
+
+### - [x] TASK-062 — Gợi ý cấu hình SKU và alias idol
+
+- **Mục tiêu:** `SkuConfigSuggester` theo TT-03 và mục 5.2 của TECH_SPEC_TIKTOK; chuẩn hóa chuỗi (bỏ dấu, viết hoa).
+- **Dependency:** —
+- **Acceptance criteria:** Đúng cho mọi mẫu variation liệt kê trong TECH_SPEC 5.2; import lại không ghi đè SKU đã Confirmed.
+
+### - [x] TASK-063 — Phân loại đơn và PrintPlanBuilder
+
+- **Mục tiêu:** `OrderClassifier` (TT-08) và `PrintPlanBuilder` (TT-04 → TT-07).
+- **Dependency:** TASK-061, TASK-062.
+- **Acceptance criteria:** Đúng ví dụ mục 7 của PRD_TIKTOK; đơn có Buyer Message hoặc Seller Note vào nhóm Có ghi chú (TT-10), "Đã xem" tự hủy khi ghi chú đổi; dòng Ignore không chặn đơn; dòng Manual chặn cả đơn; xoay vòng reset theo lô; cảnh báo trùng hình; đơn bị chặn không làm lệch con trỏ.
+
+### - [x] TASK-064 — Trang phân cách
+
+- **Mục tiêu:** Tạo trang phân cách A4, hiển thị tiếng Việt có dấu, theo 3 chế độ của TT-07.
+- **Dependency:** TASK-063.
+- **Acceptance criteria:** Font có dấu hiển thị đúng; file tạm được dọn; có test.
+
+### - [x] TASK-065 — Xuất lô in và đánh dấu đơn
+
+- **Mục tiêu:** Chuyển plan thành dữ liệu cho `IPdfExportService`, xuất file, ghi lịch sử trong transaction, mở Foxit.
+- **Dependency:** TASK-063, TASK-064, TASK-058.
+- **Acceptance criteria:** Xuất lỗi hoặc hủy thì không đánh dấu đơn nào; thành công thì ghi đủ `PrintBatchItem` kèm snapshot Quantity; không rasterize.
+
+### - [x] TASK-066 — UI: cửa sổ TikTok, dialog import, kho PDF, cài đặt
+
+- **Mục tiêu:** `TikTokOrdersWindow` và `TikTokOrdersViewModel` riêng, mở từ toolbar; dialog Import (shop, chế độ, file, kéo thả) và báo cáo import; tab Kho PDF; cài đặt shop và thư mục.
+- **Dependency:** TASK-060, TASK-061.
+- **Acceptance criteria:** Không thêm logic vào `MainViewModel` hoặc code-behind; tác vụ dài không khóa UI; có test ViewModel.
+
+### - [x] TASK-067 — UI: cấu hình SKU
+
+- **Mục tiêu:** Tab Cấu hình SKU: lọc chưa cấu hình, sửa Loại xử lý/Idol/Card, xác nhận gợi ý hàng loạt, đặt cả sản phẩm là Bỏ qua, quản lý alias.
+- **Dependency:** TASK-062, TASK-066.
+- **Acceptance criteria:** Cấu hình khoảng 80 listing thao tác nhanh được; có test ViewModel.
+
+### - [x] TASK-068 — UI: đơn hàng, tạo lô in, lịch sử
+
+- **Mục tiêu:** Tab Đơn hàng (lọc theo nhóm và shop, hiển thị Buyer Message và Seller Note, nút "Đã xem – cho phép ghép", chọn đơn, Tạo file in có tiến trình và hủy, In lại) và tab Lịch sử (lô import, lô in, bỏ đánh dấu, tạo lại, copy danh sách mã đơn).
+- **Dependency:** TASK-065, TASK-067.
+- **Acceptance criteria:** Đạt AC-T02, AC-T03, AC-T06; có test ViewModel.
+
+Completed (TASK-058 → TASK-068): 2026-10-16
+Files changed: `src/PDFPageComposer.App/TikTok/**` (Models, Data, Import, Matching, Export, TextNormalizer, OrderNotes, TikTokSettingsLoader), `src/PDFPageComposer.App/ViewModels/TikTok/**`, `src/PDFPageComposer.App/Views/TikTokOrdersWindow.xaml`, `ServiceRegistration.cs`, `App.xaml.cs`, `MainWindow.xaml(.cs)`, `Interfaces/IFileDialogService.cs`, `IClipboardService.cs`, `ITikTokWindowService.cs`, `Services/FileDialogService.cs`, `ClipboardService.cs`, `TikTokWindowService.cs`, `Models/AppSettings.cs`, `Models/TikTokSettings.cs`, `PDFPageComposer.App.csproj` (Microsoft.Data.Sqlite 10.0.13), `tests/PDFPageComposer.Tests/TikTok/**`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/**`, `tests/PDFPageComposer.Tests/TestData/tiktok/orders-sample.csv` (đã ẩn danh).
+Verification: `dotnet build PDFPageComposer.slnx --no-incremental`: 0 warnings, 0 errors; `dotnet test PDFPageComposer.slnx`: 300/300 passed (gồm test end-to-end với file CSV mẫu, test STA mở TikTokOrdersWindow, test DI). Đã mở app thật và mở cửa sổ "Đơn TikTok" bằng UI Automation: đủ 5 tab, tạo được `%LOCALAPPDATA%\PDFPageComposer\tiktok.db`.
+Notes: Làm bằng workflow nhiều agent, sau đó review đa góc nhìn kèm phản biện: 27 lỗi được xác nhận và đã sửa. Contract mở rộng: `OrderSourceResult.RejectedOrderIds` và overload `IOrderImportService.ImportAsync(..., protectedOrderIds, ...)`; đơn có dòng CSV lỗi bị loại nguyên đơn và không bị ẩn ở chế độ Full. Tên file in tự động thêm hậu tố _2, _3 nếu trùng. "In lại" bỏ qua cả chốt ghi chú đối với đơn đã in.
+
+### - [ ] TASK-069 — Kiểm thử thực tế và publish v1.3.0
+
+- **Mục tiêu:** Chạy với file xuất thật của 2 shop, sửa lỗi, cập nhật USER_GUIDE, publish bản update.
+- **Dependency:** TASK-068.
+- **Acceptance criteria:** Đạt AC-T01 đến AC-T07; `latest.json` được cập nhật.
+
+### - [ ] TASK-070 — (Phase sau) Chrome extension lấy đơn từ Seller Center
+
+- **Mục tiêu:** Extension (Manifest V3) đọc danh sách đơn chờ vận chuyển khi người dùng bấm nút, gửi vào app qua localhost; implement `IOrderSource` mới, dùng chung `OrderImportService`.
+- **Dependency:** TASK-069.
+- **Acceptance criteria:** Chỉ đọc, chạy khi người dùng bấm, không tự thao tác trên đơn; kết quả import giống với khi import file CSV cùng thời điểm.
+
+### - [x] TASK-071 — Xuất danh sách đơn ra CSV (đánh dấu đơn đã làm file in)
+
+- **Mục tiêu:** TT-12 của PRD_TIKTOK: xuất danh sách đơn ra CSV theo phạm vi (đơn đã làm file in, tất cả đơn đang chờ, lần import gần nhất, đơn của một lô in), có cột "Đã làm file in" và file kho đã dùng.
+- **Dependency:** TASK-068.
+- **Acceptance criteria:** Mỗi dòng hàng một dòng CSV; Order ID/SKU ID có tab ở cuối; UTF-8 BOM, CRLF, quote theo RFC 4180; trạng thái giống tab Đơn hàng; không có đơn thì không tạo file; ghi lỗi không để lại file dở; có test.
+
+Completed: 2026-10-17
+Files changed: `src/PDFPageComposer.App/TikTok/Export/OrderListExportModels.cs`, `OrderListExportBuilder.cs`, `OrderListCsvWriter.cs`, `OrderListExportService.cs` (mới); `src/PDFPageComposer.App/ViewModels/TikTok/OrderListExportRunner.cs`, `OrdersTabViewModel.OrderList.cs` (mới), `HistoryTabViewModel.cs`, `TikTokServices.cs`; `Views/TikTokOrdersWindow.xaml`; `Interfaces/IFileDialogService.cs` (`PickSaveCsvFile`), `Services/FileDialogService.cs`; `ServiceRegistration.cs`; `tests/PDFPageComposer.Tests/TikTok/Export/OrderListExportBuilderTests.cs`, `OrderListCsvWriterTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/OrderListExportViewModelTests.cs` (mới), `TikTokUiHarness.cs`, `ViewModels/MainViewModelTests.cs` (fake dialog); `docs/tiktok/PRD_TIKTOK.md` (TT-12).
+Verification: `dotnet test tests/PDFPageComposer.Tests/PDFPageComposer.Tests.csproj`: 355/355 passed (sau khi sửa theo review), build 0 warnings, 0 errors (gồm test STA mở TikTokOrdersWindow không lỗi binding và test DI).
+Notes: Không thêm method repository (dùng `GetOrdersAsync`, `GetOrdersByIdsAsync`, `GetImportBatchesAsync`, `GetPrintBatchItemsAsync`, `GetPrintBatchesAsync`, `GetPrintedItemsForOrdersAsync`). Trạng thái phân loại dùng `ClassificationOptions` hiện tại (không áp dụng "In lại"). "File kho đã dùng" lấy từ lô in hiện tại của đơn (`PrintedBatchId`); với phạm vi lô in, các cột Đã làm file in/Nguồn/Lô in/Thời gian in/File kho đã dùng lấy theo chính lô được chọn (kể cả đơn đã bỏ đánh dấu hoặc in lại ở lô khác), còn Trạng thái xử lý/Lý do theo phân loại hiện tại. File đã rời kho vẫn ghi "lấy N/M trang đầu" nhờ đọc M từ tên file. Ô chữ tự do bắt đầu bằng = + - @ được thêm dấu nháy đơn ở đầu để Excel không hiểu là công thức. "Đơn đã làm file in" gồm cả đơn không còn chờ vận chuyển (cột "Còn chờ vận chuyển" = Không). Tên file gợi ý `DS_DON_<DA_IN|TAT_CA|IMPORT_MOI|LO_<mã lô>>_<yyyyMMdd_HHmm>.csv`, thư mục mặc định là thư mục lưu file in.

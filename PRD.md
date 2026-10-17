@@ -1105,3 +1105,9 @@ Giải pháp:
 - PDF Print Set Builder
 
 Tên tạm dùng trong tài liệu này: **PDF Page Composer**.
+
+---
+
+## 24. Mở rộng: Tạo file in theo đơn TikTok Shop
+
+Yêu cầu chi tiết nằm trong `docs/tiktok/PRD_TIKTOK.md`; đặc tả kỹ thuật trong `docs/tiktok/TECH_SPEC_TIKTOK.md`. Các quy tắc BR-01, BR-02, BR-07, BR-08 của tài liệu này tiếp tục áp dụng cho module TikTok.

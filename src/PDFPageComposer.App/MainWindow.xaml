@@ -82,7 +82,13 @@
                     Margin="0,0,8,0" />
             <Button Command="{Binding CheckForUpdateCommand}"
                     Content="Check update"
-                    Padding="14,6" />
+                    Padding="14,6"
+                    Margin="0,0,8,0" />
+            <Separator />
+            <Button Content="Đơn TikTok"
+                    Padding="14,6"
+                    Margin="8,0,0,0"
+                    Click="OnOpenTikTokOrdersClick" />
         </ToolBar>
 
         <StatusBar DockPanel.Dock="Bottom"

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using PDFPageComposer.App.Interfaces;
 using PDFPageComposer.App.Models;
 using PDFPageComposer.App.ViewModels;
 
@@ -14,12 +15,19 @@ public partial class MainWindow : Window
     private const string OutputTrayItemDragFormat = "PDFPageComposer.OutputTrayItem";
     private const string OutputGroupDragFormat = "PDFPageComposer.OutputGroup";
     private readonly MainViewModel viewModel;
+    private readonly ITikTokWindowService tikTokWindowService;
 
-    public MainWindow(MainViewModel viewModel)
+    public MainWindow(MainViewModel viewModel, ITikTokWindowService tikTokWindowService)
     {
         InitializeComponent();
         this.viewModel = viewModel;
+        this.tikTokWindowService = tikTokWindowService;
         DataContext = viewModel;
+    }
+
+    private void OnOpenTikTokOrdersClick(object sender, RoutedEventArgs e)
+    {
+        tikTokWindowService.ShowOrdersWindow();
     }
 
     private void OnDragOver(object sender, DragEventArgs e)
