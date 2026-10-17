@@ -1,6 +1,6 @@
 {
-  "version": "1.2.0",
-  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.2.0/PDFPageComposer-v1.2.0.zip",
-  "sha256": "0E7F8CB5427F6192D30B21CF5B410F999CD1A5AC3ECF480864F76EE6E94156A8",
-  "notes": "Them mau phan biet group, nhan ban group tu Output Tray, bo chon sau khi them vao dau ra va hien so trang dang chon"
+  "version": "1.3.0",
+  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.3.0/PDFPageComposer-v1.3.0.zip",
+  "sha256": "63BB77574D83C8FEC4DB4E057409B1836FA290925FDBE7D89F126B4D8C1575EB",
+  "notes": "Them chuc nang don TikTok (import CSV, tu ghep file in, xem truoc, chon trang), giao dien ghep le moi: keo tha, phim Enter, tim ten khong dau, khong them trung file"
 }
