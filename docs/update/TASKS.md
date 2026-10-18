@@ -17,7 +17,7 @@ Notes: ...
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Done | 7 |
+| Done | 8 |
 | Chưa xong (Backlog/Blocked) | 0 |
 | Đã hủy | 0 |
 
@@ -98,3 +98,13 @@ Notes: Chưa thử luồng Check update trên máy khác.
 Completed: 2026-10-18
 Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.2), `latest.json`, `docs/CHANGELOG.md`, dòng phiên bản trong `README.md`, `docs/README.md`, `docs/update/RELEASE.md`, các `USER_GUIDE.md`.
 Verification: 380/380 test passed; publish `win-x64` self-contained chạy được (FileVersion 1.3.2.0); release `v1.3.2` (id 416220262), asset tải lại khớp SHA256 `BD912FBA395F5DA53244AB2ACBAB8A32A47AAE190734779512C0D9C58E99EE2A`.
+
+### - [x] TASK-079 — Publish v1.3.3
+
+- **Mục tiêu:** Phát hành bản tách đơn nhiều bộ card trong xem trước file in (TASK-078).
+- **Dependency:** TASK-078.
+- **Acceptance criteria:** Release `v1.3.3` có zip; `latest.json` trỏ tới 1.3.3 chỉ sau khi asset đã tải lại khớp SHA256.
+
+Completed: 2026-10-18
+Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.3), `latest.json`, `docs/CHANGELOG.md`, dòng phiên bản trong `README.md`, `docs/README.md`, `docs/update/RELEASE.md`, các `USER_GUIDE.md`.
+Verification: 381/381 test passed; publish `win-x64` self-contained chạy được (FileVersion 1.3.3.0); release `v1.3.3` (id 416532775), asset tải lại khớp SHA256 `6CDC3126660C681389A50036F79D98A80EFD53FB1FEF0274D8A9EC71367E827A`.
