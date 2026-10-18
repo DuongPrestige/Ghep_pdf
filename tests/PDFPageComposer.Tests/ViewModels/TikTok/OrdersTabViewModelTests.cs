@@ -63,6 +63,46 @@ public sealed class OrdersTabViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Search_finds_orders_by_order_id_or_product_name_in_every_category()
+    {
+        await harness.SeedExampleAsync();
+        var viewModel = harness.CreateViewModel();
+        await viewModel.LoadCommand.ExecuteAsync(null);
+        var orders = viewModel.Orders;
+        Assert.DoesNotContain(orders.Rows, row => row.OrderId == "O4");
+        Assert.False(orders.ClearSearchCommand.CanExecute(null));
+
+        // O4 is in the hidden "Không cần in card" category; searching still finds it.
+        orders.SearchText = "o4";
+        Assert.Equal("O4", Assert.Single(orders.Rows).OrderId);
+        Assert.True(orders.ClearSearchCommand.CanExecute(null));
+
+        var withCody = orders.AllRows
+            .Where(row => row.ProductsText.Contains("CODY30", StringComparison.Ordinal))
+            .Select(row => row.OrderId)
+            .ToList();
+        Assert.NotEmpty(withCody);
+        orders.SearchText = "product sku cody30";
+        Assert.Equal(withCody, orders.Rows.Select(row => row.OrderId));
+
+        orders.SearchText = "khong co don nay";
+        Assert.Empty(orders.Rows);
+
+        orders.ClearSearchCommand.Execute(null);
+        Assert.Equal(string.Empty, orders.SearchText);
+        Assert.Equal(5, orders.Rows.Count);
+        Assert.DoesNotContain(orders.Rows, row => row.OrderId == "O4");
+    }
+
+    [Fact]
+    public void Search_matches_vietnamese_product_names_without_diacritics()
+    {
+        Assert.True(TextNormalizer.MatchesSearch("586643768581260522 [CARD BO GÓC CODY NAM VÕ] 40 CARD", "cody nam vo"));
+        Assert.True(TextNormalizer.MatchesSearch("586643768581260522 [CARD BO GÓC CODY NAM VÕ] 40 CARD", "43768581"));
+        Assert.False(TextNormalizer.MatchesSearch("586643768581260522 [CARD BO GÓC CODY NAM VÕ] 40 CARD", "jaysonlei"));
+    }
+
+    [Fact]
     public async Task Shop_filter_keeps_only_orders_of_the_chosen_shop()
     {
         var shopA = await harness.SeedExampleAsync();

@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng — Ghép lẻ PDF
 
-Áp dụng cho phiên bản 1.3.1. Đây là màn hình chính khi mở ứng dụng (mở ở chế độ toàn màn hình).
+Áp dụng cho phiên bản 1.3.2. Đây là màn hình chính khi mở ứng dụng (mở ở chế độ toàn màn hình).
 
 ## Mở file PDF
 

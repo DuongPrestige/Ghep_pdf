@@ -2,6 +2,11 @@
 
 Mỗi phiên bản là một GitHub Release `vX.Y.Z` có file `PDFPageComposer-vX.Y.Z.zip`. Máy người dùng nhận bản mới qua nút **Check update** (xem `docs/update/`).
 
+## 1.3.2 — 2026-10-18
+
+- Đơn TikTok: ô **Tìm mã đơn / sản phẩm** ở tab Đơn hàng (tìm một phần mã đơn hoặc tên sản phẩm, phân loại, không cần dấu; tìm trong mọi nhóm).
+- Tài liệu được tách theo module (`docs/composer`, `docs/tiktok`, `docs/update`).
+
 ## 1.3.1 — 2026-10-17
 
 - Logo mới cho file exe, thanh taskbar và mọi cửa sổ.

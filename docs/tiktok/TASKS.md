@@ -17,7 +17,7 @@ Notes: ...
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Done | 15 |
+| Done | 16 |
 | Chưa xong (Backlog/Blocked) | 1 |
 | Đã hủy | 1 |
 
@@ -151,3 +151,14 @@ Notes: Cài đặt "Luôn lấy ảnh mới nhất" mặc định bật; tắt t
 Completed: 2026-10-17
 Files changed: `ViewModels/TikTok/PrintPreviewViewModel.cs`, `PageImageCache.cs` (mới), `Views/PrintPreviewWindow.xaml(.cs)` (mới), `Behaviors/RenderWhenVisibleBehavior.cs` (mới), `Views/TikTokOrdersWindow.xaml`, `Services/TikTokWindowService.cs`, `ViewModels/TikTok/TikTokServices.cs` (`PageRenderer`); test tương ứng.
 Verification: 378/378 test passed; kiểm tra giao diện bằng harness chụp màn hình với dữ liệu thật.
+
+### - [x] TASK-076 — Tìm đơn theo mã đơn và tên sản phẩm
+
+- **Mục tiêu:** Ô tìm kiếm ở tab Đơn hàng: tìm theo một phần mã đơn hoặc tên sản phẩm / phân loại, không dấu.
+- **Dependency:** TASK-073.
+- **Acceptance criteria:** Khi đang tìm, đơn ở mọi nhóm (kể cả nhóm đang tắt) đều được tìm, lọc shop vẫn áp dụng; nút Xóa trả về lọc theo chip; có test ViewModel.
+
+Completed: 2026-10-18
+Files changed: `src/PDFPageComposer.App/ViewModels/TikTok/OrdersTabViewModel.cs` (`SearchText`, `ClearSearchCommand`, `MatchesSearch`), `src/PDFPageComposer.App/Views/TikTokOrdersWindow.xaml`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/OrdersTabViewModelTests.cs`, `docs/tiktok/UI_SPEC.md`, `docs/tiktok/USER_GUIDE.md`.
+Verification: 380/380 test passed (gồm test STA mở `TikTokOrdersWindow`); build 0 warning, 0 error.
+Notes: Dùng lại `TextNormalizer.MatchesSearch` (bỏ dấu, mọi từ phải khớp) trên chuỗi mã đơn + sản phẩm + phân loại. Ô tìm có độ trễ 200 ms để không lọc lại ở từng phím.

@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng — Đơn TikTok
 
-Áp dụng cho phiên bản 1.3.1.
+Áp dụng cho phiên bản 1.3.2.
 
 Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
 
@@ -17,7 +17,7 @@ Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
    - **File đầy đủ**: đơn của shop không còn trong file sẽ bị ẩn.
    - **Bổ sung**: không ẩn đơn nào.
 3. Đơn đã làm file in ở lần trước tự được lọc ra, không bị in lại khi import file CSV mới.
-4. Tab **Đơn hàng** hiện đơn theo đúng thứ tự file CSV. Nháy đúp hoặc bấm nút copy để copy mã đơn.
+4. Tab **Đơn hàng** hiện đơn theo đúng thứ tự file CSV. Nháy đúp hoặc bấm nút copy để copy mã đơn. Muốn tìm một đơn, gõ mã đơn (một phần cũng được) hoặc tên sản phẩm vào ô **Tìm mã đơn / sản phẩm**, không cần dấu; khi đang tìm, đơn ở mọi nhóm đều hiện.
 5. Bấm **Xem trước file in** để xem mọi trang sẽ in: **Đổi file** để chọn lại trang cho đơn, **Bỏ khỏi lô** để không in đơn đó lần này, **Copy mã tất cả đơn**.
 6. Bấm **Tạo file in**. File được mở bằng Foxit để in.
 7. Dùng **Xuất CSV** với phạm vi "Đơn chưa làm file in" để lấy danh sách mã đơn còn lại.

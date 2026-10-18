@@ -14,7 +14,7 @@ Tài liệu mô tả phần dùng chung cho mọi module. Chi tiết từng modu
 | Dữ liệu đơn TikTok | `Microsoft.Data.Sqlite` (MIT) | không dùng EF Core |
 | Settings, project | `System.Text.Json` | |
 | Log | `Serilog` + `Serilog.Sinks.File` | rolling theo ngày, giữ 14 file |
-| Test | xUnit | 378 test ở bản 1.3.1 |
+| Test | xUnit | 380 test |
 
 Không dùng iText hoặc thư viện AGPL. Trước khi thêm package mới phải kiểm tra license, tình trạng duy trì và tương thích .NET 10.
 

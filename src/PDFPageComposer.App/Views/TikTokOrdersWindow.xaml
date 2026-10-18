@@ -169,6 +169,24 @@
                                       VerticalAlignment="Top"
                                       Margin="6,0,0,4"
                                       ToolTip="Lọc theo shop" />
+                            <StackPanel DockPanel.Dock="Left"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Top"
+                                        Margin="12,0,0,4">
+                                <TextBlock Text="Tìm mã đơn / sản phẩm:"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"
+                                           Foreground="#475569" />
+                                <TextBox Width="260"
+                                         Height="26"
+                                         VerticalContentAlignment="Center"
+                                         ToolTip="Gõ mã đơn (một phần cũng được) hoặc tên sản phẩm / phân loại, không cần dấu. Khi đang tìm, đơn ở mọi nhóm đều hiện."
+                                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                <Button Content="Xóa"
+                                        Padding="10,3"
+                                        Margin="6,0,0,0"
+                                        Command="{Binding ClearSearchCommand}" />
+                            </StackPanel>
                         </DockPanel>
 
                         <Border DockPanel.Dock="Bottom"
@@ -387,7 +405,7 @@
                                           IsChecked="{Binding ShowUnconfiguredOnly}"
                                           VerticalAlignment="Center"
                                           Margin="0,0,12,4" />
-                                <TextBlock Text="Tìm:" VerticalAlignment="Center" Margin="0,0,6,4" />
+                                <TextBlock Text="Tìm mã đơn / sản phẩm:" VerticalAlignment="Center" Margin="0,0,6,4" />
                                 <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,12,4" />
                                 <Button Content="Chọn tất cả" Style="{StaticResource ToolButton}" Command="{Binding SelectAllVisibleCommand}" Margin="0,0,8,4" />
                                 <Button Content="Bỏ chọn" Style="{StaticResource ToolButton}" Command="{Binding ClearSelectionCommand}" Margin="0,0,8,4" />

@@ -86,11 +86,28 @@ public sealed partial class OrdersTabViewModel : ObservableObject
     [ObservableProperty]
     private string? lastOutputPath;
 
+    /// <summary>Order id or product/variation text; while set, rows of every category are searched.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSearch))]
+    [NotifyCanExecuteChangedFor(nameof(ClearSearchCommand))]
+    private string searchText = string.Empty;
+
+    public bool HasSearch => !string.IsNullOrWhiteSpace(SearchText);
+
     partial void OnSelectedShopFilterChanged(ShopFilterOption? value)
     {
         ApplyFilter();
         SchedulePreviewRefresh();
     }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        ApplyFilter();
+        SchedulePreviewRefresh();
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSearch))]
+    private void ClearSearch() => SearchText = string.Empty;
 
     partial void OnSelectedSeparatorModeChanged(TikTokOption<SeparatorMode> value) => SchedulePreviewRefresh();
 
@@ -451,11 +468,15 @@ public sealed partial class OrdersTabViewModel : ObservableObject
             .Select(filter => filter.Category)
             .ToHashSet();
         var shopId = SelectedShopFilter?.ShopId;
+        var searching = HasSearch;
 
         Rows.Clear();
         foreach (var row in allRows)
         {
-            if (visibleCategories.Contains(row.Category) && (shopId is null || row.ShopId == shopId))
+            var inCategory = searching
+                ? MatchesSearch(row, SearchText)
+                : visibleCategories.Contains(row.Category);
+            if (inCategory && (shopId is null || row.ShopId == shopId))
             {
                 Rows.Add(row);
             }
@@ -463,6 +484,10 @@ public sealed partial class OrdersTabViewModel : ObservableObject
 
         OnPropertyChanged(nameof(SelectionSummary));
     }
+
+    /// <summary>Matches the order id (any part of it) or the product and variation names, ignoring diacritics.</summary>
+    internal static bool MatchesSearch(OrderRowViewModel row, string query) =>
+        TextNormalizer.MatchesSearch($"{row.OrderId} {row.ProductsText} {row.VariationsText}", query);
 
     private void OnCategoryFilterChanged(object? sender, PropertyChangedEventArgs e)
     {

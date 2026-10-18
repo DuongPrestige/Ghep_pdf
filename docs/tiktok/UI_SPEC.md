@@ -32,6 +32,7 @@ Mở từ nút **Đơn TikTok** trên thanh công cụ màn hình chính; `TikTo
 ### Tab Đơn hàng
 
 - **Chip nhóm** theo thứ tự: Sẵn sàng, Thiếu file, Cần cấu hình, Thủ công, Có ghi chú, Đã tạo file in, Không cần in card. Mỗi chip là một màu riêng; lọc thêm theo shop.
+- **Ô Tìm mã đơn / sản phẩm:** gõ một phần mã đơn hoặc tên sản phẩm / phân loại, không cần dấu (`cody nam vo`, `43768581`). Khi ô có chữ, đơn ở **mọi nhóm** đều được tìm (kể cả nhóm đang tắt); lọc shop vẫn áp dụng. Nút **Xóa** trả về bộ lọc theo chip.
 - **Lưới đơn** theo đúng thứ tự dòng trong file CSV (`TikTokOrderOrdering.InFileOrder`). Cột: chọn, Nhóm, Mã đơn (nút copy), Sản phẩm, Phân loại, Số tờ, File in (nút xem / chọn file), Ghi chú. Dòng chọn tô xanh nhạt.
 - Nháy đúp ô mã đơn để copy. **Copy mã đơn** copy các đơn đang tick, không tick thì copy mọi đơn đang hiển thị.
 - Đơn nhóm *Có ghi chú* có nút **Cho phép ghép** (đã xem ghi chú).
