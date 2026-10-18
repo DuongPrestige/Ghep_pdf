@@ -17,7 +17,7 @@ Notes: ...
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Done | 6 |
+| Done | 7 |
 | Chưa xong (Backlog/Blocked) | 0 |
 | Đã hủy | 0 |
 
@@ -88,3 +88,13 @@ Completed: 2026-10-17
 Files changed: `src/PDFPageComposer.App/Assets/app.ico` (mới), `PDFPageComposer.App.csproj` (`ApplicationIcon`, 1.3.1), các cửa sổ (`Icon`), `docs/assets/logo.png`, `README.md`, `latest.json`.
 Verification: Publish `win-x64` self-contained chạy được (FileVersion 1.3.1.0); release `v1.3.1` trên GitHub, asset tải lại khớp SHA256 `067A4C34A65ED50B8332A1C0B35AFAF2DEDEA26EAF883C6AB04D500051D16CA3`; link raw `latest.json` trả về 1.3.1.
 Notes: Chưa thử luồng Check update trên máy khác.
+
+### - [x] TASK-077 — Publish v1.3.2
+
+- **Mục tiêu:** Phát hành bản có ô tìm đơn (TASK-076) và tài liệu tách theo module.
+- **Dependency:** TASK-076.
+- **Acceptance criteria:** Release `v1.3.2` có zip; `latest.json` trỏ tới 1.3.2 chỉ sau khi asset đã tải lại khớp SHA256.
+
+Completed: 2026-10-18
+Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.2), `latest.json`, `docs/CHANGELOG.md`, dòng phiên bản trong `README.md`, `docs/README.md`, `docs/update/RELEASE.md`, các `USER_GUIDE.md`.
+Verification: 380/380 test passed; publish `win-x64` self-contained chạy được (FileVersion 1.3.2.0); release `v1.3.2` (id 416220262), asset tải lại khớp SHA256 `BD912FBA395F5DA53244AB2ACBAB8A32A47AAE190734779512C0D9C58E99EE2A`.

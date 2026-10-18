@@ -1,6 +1,6 @@
 {
-  "version": "1.3.1",
-  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.3.1/PDFPageComposer-v1.3.1.zip",
-  "sha256": "067A4C34A65ED50B8332A1C0B35AFAF2DEDEA26EAF883C6AB04D500051D16CA3",
-  "notes": "Them logo cho phan mem; gom toan bo tinh nang ban 1.3.0 (don TikTok, xem truoc file in, giao dien ghep le moi)"
+  "version": "1.3.2",
+  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.3.2/PDFPageComposer-v1.3.2.zip",
+  "sha256": "BD912FBA395F5DA53244AB2ACBAB8A32A47AAE190734779512C0D9C58E99EE2A",
+  "notes": "Don TikTok: tim don theo ma don va ten san pham"
 }
