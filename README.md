@@ -13,68 +13,45 @@ PDF Page Composer là ứng dụng desktop Windows dùng để:
 
 ## Trạng thái dự án
 
-Phiên bản hiện tại: **1.3.1** (2026-10-17). Ứng dụng đang được sử dụng thực tế; máy người dùng cập nhật bằng nút **Check update** (xem `docs/UPDATE_RELEASE.md`).
+Phiên bản hiện tại: **1.3.1** (2026-10-17). Ứng dụng đang được sử dụng thực tế; máy người dùng cập nhật bằng nút **Check update** (xem [docs/CHANGELOG.md](docs/CHANGELOG.md)).
 
-## Tech stack
+## Cài đặt cho người dùng
 
-- C# / .NET 10.
-- WPF, MVVM, CommunityToolkit.Mvvm.
-- PDFiumCore để render thumbnail.
-- PDFsharp để ghép PDF.
-- Microsoft.Data.Sqlite cho dữ liệu đơn TikTok (`%LOCALAPPDATA%\PDFPageComposer\tiktok.db`).
-- Microsoft.Extensions.DependencyInjection.
-- Serilog và System.Text.Json.
-- xUnit cho kiểm thử.
+1. Tải file `PDFPageComposer-vX.Y.Z.zip` ở [Releases](https://github.com/DuongPrestige/Ghep_pdf/releases/latest).
+2. Giải nén vào một thư mục có quyền ghi, ví dụ `D:\Apps\PDFPageComposer` (không đặt trong `Program Files`).
+3. Chạy `PDFPageComposer.App.exe`. Các lần sau bấm **Check update** để lên bản mới.
 
-## Yêu cầu môi trường
+Hướng dẫn sử dụng: [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 
-- Windows 10 hoặc Windows 11 x64.
-- Visual Studio Code.
-- .NET 10 SDK.
-- C# Dev Kit.
-- Git.
-- Foxit PDF Reader.
+## Dành cho dev
 
-Kiểm tra môi trường:
+- Stack: C# / .NET 10, WPF + MVVM (CommunityToolkit.Mvvm), PDFiumCore, PDFsharp, Microsoft.Data.Sqlite, Serilog, xUnit.
+- Yêu cầu: Windows 10/11 x64, .NET 10 SDK, Git; VS Code + C# Dev Kit hoặc Visual Studio.
 
 ```powershell
-dotnet --version
-git --version
-code --version
+dotnet build .\PDFPageComposer.slnx
+dotnet test .\tests\PDFPageComposer.Tests\PDFPageComposer.Tests.csproj
+dotnet run --project .\src\PDFPageComposer.App\PDFPageComposer.App.csproj
 ```
-
-## Cấu trúc thư mục
 
 ```text
 Ghep_pdf/
-├── src/PDFPageComposer.App/       # ứng dụng WPF (TikTok/ chứa module đơn TikTok)
+├── src/PDFPageComposer.App/       # ứng dụng WPF (TikTok/ chứa module Đơn TikTok)
 ├── tests/PDFPageComposer.Tests/   # xUnit
-├── docs/                          # đặc tả, hướng dẫn, quy trình phát hành
-│   └── tiktok/                    # PRD và TECH_SPEC của module TikTok
+├── tools/PdfLibraryNormalizer/    # công cụ chuẩn hóa tên kho PDF card
+├── docs/                          # tài liệu theo module, xem docs/README.md
 ├── latest.json                    # manifest cho Check update
-├── PRD.md
-├── AGENTS.md
+├── AGENTS.md                      # quy tắc bắt buộc khi code
 └── README.md
 ```
 
-## Các lệnh
+## Tài liệu
 
-```powershell
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project .\src\PDFPageComposer.App
-```
+Mục lục và quy tắc bảo trì: [docs/README.md](docs/README.md).
 
-Đóng gói và phát hành bản update: xem `docs/UPDATE_RELEASE.md`.
-
-## Tài liệu dự án
-
-- `PRD.md`: nguồn sự thật cao nhất về nghiệp vụ và phạm vi sản phẩm.
-- `AGENTS.md`: quy tắc bắt buộc khi code và thực hiện task.
-- `docs/USER_GUIDE.md`: hướng dẫn sử dụng (ghép lẻ, đơn TikTok, cập nhật).
-- `docs/UI_SPEC.md`: bố cục, hành vi và trạng thái giao diện.
-- `docs/TECH_SPEC.md`: stack, kiến trúc, model, service và ràng buộc kỹ thuật.
-- `docs/tiktok/PRD_TIKTOK.md`, `docs/tiktok/TECH_SPEC_TIKTOK.md`: nghiệp vụ và kỹ thuật module đơn TikTok.
-- `docs/UPDATE_RELEASE.md`: cơ chế Check update, quy trình phát hành, lịch sử phiên bản.
-- `docs/TASKS.md`: thứ tự triển khai và trạng thái công việc.
+| Module | Tài liệu |
+|---|---|
+| Ghép lẻ PDF | [docs/composer/](docs/composer/) — PRD, UI_SPEC, TECH_SPEC, USER_GUIDE, TASKS |
+| Đơn TikTok | [docs/tiktok/](docs/tiktok/) — PRD, UI_SPEC, TECH_SPEC, USER_GUIDE, TASKS |
+| Cập nhật và phát hành | [docs/update/](docs/update/) — TECH_SPEC, RELEASE, TASKS |
+| Dùng chung | [ARCHITECTURE](docs/ARCHITECTURE.md), [DEVELOPMENT](docs/DEVELOPMENT.md), [CHANGELOG](docs/CHANGELOG.md) |

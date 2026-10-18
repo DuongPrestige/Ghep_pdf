@@ -1,15 +1,8 @@
-# Kế hoạch và trạng thái công việc
+# Task — Module Ghép lẻ PDF
 
-## Tổng quan trạng thái
+Phạm vi: import PDF, thumbnail, chọn trang, khay đầu ra, nhân bản, sắp xếp, xuất PDF, Foxit, project và auto-save. Đặc tả: `docs/composer/`.
 
-| Trạng thái | Số lượng |
-|---|---:|
-| Backlog | 2 |
-| In Progress | 0 |
-| Blocked | 1 |
-| Done | 68 |
-
-Chỉ tối đa một task được ở trạng thái **In Progress**. `[ ]` là chưa hoàn thành, `[x]` là hoàn thành; trạng thái chi tiết ghi ngay dưới task khi bắt đầu hoặc bị chặn.
+Mã task đánh số chung cho cả dự án (xem `docs/README.md` để biết mã tiếp theo). Chỉ tối đa một task được ở trạng thái **In Progress** trong toàn dự án. `[ ]` là chưa hoàn thành, `[x]` là hoàn thành, `[~]` là đã hủy; trạng thái chi tiết ghi ngay dưới task.
 
 Khi hoàn thành, bổ sung:
 
@@ -19,6 +12,14 @@ Files changed: ...
 Verification: ...
 Notes: ...
 ```
+
+## Tổng quan trạng thái
+
+| Trạng thái | Số lượng |
+|---|---:|
+| Done | 52 |
+| Chưa xong (Backlog/Blocked) | 0 |
+| Đã hủy | 0 |
 
 ## Phase 0 — Project setup
 
@@ -599,193 +600,7 @@ Files changed: `docs/USER_GUIDE.md`
 Verification: Manual review against implemented UI labels and MVP workflows.
 Notes: Added a short Vietnamese guide for importing PDFs, selecting pages, preview, grouping/output actions, duplication/reorder/delete, relink, export/Foxit, and auto-save recovery.
 
-## Phase 9 - Update distribution
-
-### - [x] TASK-052 - Check for update
-
-- **Muc tieu:** Them nut check update de nguoi dung tai va cai ban moi tu manifest online.
-- **Dependency:** TASK-050.
-- **Acceptance criteria:** Nut toolbar goi service rieng; manifest co version/downloadUrl; neu co version moi thi tai zip, bung goi tam, tao script thay the file sau khi app thoat va mo lai app; co test cho luong chua cau hinh, moi nhat va co ban moi.
-
-Completed: 2026-07-17
-Files changed: `src/PDFPageComposer.App/Interfaces/IUpdateService.cs`, `src/PDFPageComposer.App/Services/UpdateService.cs`, `src/PDFPageComposer.App/Models/AppUpdateManifest.cs`, `src/PDFPageComposer.App/Models/AppUpdateResult.cs`, `src/PDFPageComposer.App/Models/AppSettings.cs`, `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `src/PDFPageComposer.App/App.xaml.cs`, `tests/PDFPageComposer.Tests/Services/UpdateServiceTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `docs/UPDATE_RELEASE.md`
-Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 94 passing tests.
-Notes: Update packages must be zip files containing publish output at the zip root. `UpdateManifestUrl` is read from `%LOCALAPPDATA%\PDFPageComposer\settings.json`.
-
-### - [x] TASK-053 - Output preview editing
-
-- **Muc tieu:** Cho phep thao tac nhanh tren trang dang xem trong man `Xem truoc dau ra`.
-- **Dependency:** TASK-035, TASK-052.
-- **Acceptance criteria:** Khi xem mot trang dau ra cu the, co the them ban sao, di chuyen len/xuong va xoa trang hien tai; preview cap nhat dung thu tu/trang hien tai sau moi thao tac; khong them business logic vao code-behind; co test ViewModel cho luong thao tac trong preview.
-
-Completed: 2026-07-17
-Files changed: `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `latest.json`
-Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 95 passing tests.
-Notes: `v1.1.0` keeps grid preview for overview and shows editing controls only after opening a specific output page.
-
-### - [x] TASK-054 - Output group colors
-
-- **Muc tieu:** Gan mau rieng cho tung group trong Output Tray de nguoi dung de phan biet cac lan them trang.
-- **Dependency:** TASK-028, TASK-044, TASK-053.
-- **Acceptance criteria:** Moi group moi co mau hien thi rieng trong tray; duplicate group co mau moi; mau duoc giu qua undo/redo, project save/load va auto-save; khong anh huong thu tu export.
-
-Completed: 2026-07-27
-Files changed: `src/PDFPageComposer.App/Models/OutputGroup.cs`, `src/PDFPageComposer.App/Models/OutputTrayItemView.cs`, `src/PDFPageComposer.App/Models/ProjectState.cs`, `src/PDFPageComposer.App/Services/ProjectStateMapper.cs`, `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `tests/PDFPageComposer.Tests/Models/OutputGroupTests.cs`, `tests/PDFPageComposer.Tests/Services/ProjectPersistenceServiceTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `docs/TASKS.md`
-Verification: `dotnet build PDFPageComposer.slnx --no-restore` succeeded with 0 warnings and 0 errors; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 99 passing tests.
-Notes: Group color is lightweight UI metadata stored as hex color; older project files without color receive a default palette color when loaded.
-
-### - [x] TASK-055 - Output add clears selection and group duplicate UI
-
-- **Muc tieu:** Hoan thien thao tac Output Tray: them nut nhan ban group, bo selection sau khi them vao dau ra, va hien so trang dang chon tren nut them.
-- **Dependency:** TASK-027, TASK-032, TASK-054.
-- **Acceptance criteria:** Sau khi bam **Them vao dau ra**, source pages vua them duoc bo chon va thong ke selection ve 0; toolbar hien so trang dang chon ngay tren nut add; nguoi dung co the nhan ban ca group tu Output Tray; co test ViewModel cho behavior moi.
-
-Completed: 2026-07-27
-Files changed: `src/PDFPageComposer.App/ViewModels/MainViewModel.cs`, `src/PDFPageComposer.App/MainWindow.xaml`, `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `docs/TASKS.md`
-Verification: `dotnet test PDFPageComposer.slnx --no-build /p:NuGetAudit=false` succeeded with 100 passing tests. `dotnet build PDFPageComposer.slnx --no-restore /p:NuGetAudit=false` succeeded with 0 errors; the environment still reports NU1900 vulnerability-feed warnings because it cannot reach `https://api.nuget.org/v3/index.json`.
-Notes: Group duplication logic already existed in ViewModel; this task exposes it in the tray row UI and aligns add-output behavior with the requested workflow.
-
-### - [x] TASK-056 - Publish update v1.2.0
-
-- **Muc tieu:** Build goi update moi va cap nhat manifest de user co the update len ban chua cac cai tien Output Tray.
-- **Dependency:** TASK-054, TASK-055.
-- **Acceptance criteria:** Tang app version; publish `win-x64` self-contained; zip publish output khong boc folder cha; tinh SHA256; cap nhat `latest.json`; push thay doi len git.
-
-Completed: 2026-07-28
-Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj`, `latest.json`, `docs/TASKS.md`
-Verification: `dotnet publish .\src\PDFPageComposer.App\PDFPageComposer.App.csproj -c Release -r win-x64 --self-contained true --no-restore -o .\artifacts\publish-v1.2.0` succeeded; `artifacts\PDFPageComposer-v1.2.0.zip` contains `PDFPageComposer.App.exe`, `pdfium.dll`, `PDFiumCore.dll` at the zip root; SHA256 is `0E7F8CB5427F6192D30B21CF5B410F999CD1A5AC3ECF480864F76EE6E94156A8`; `dotnet test PDFPageComposer.slnx --no-build` succeeded with 100 passing tests.
-Notes: Release asset `PDFPageComposer-v1.2.0.zip` was uploaded to GitHub Releases tag `v1.2.0` after the commit and tag were pushed.
-
-## Phase 10 — TikTok order print
-
-Tài liệu: `docs/tiktok/PRD_TIKTOK.md` (v0.2), `docs/tiktok/TECH_SPEC_TIKTOK.md`. Nguồn đơn: file CSV xuất từ Seller Center.
-
-### - [ ] TASK-057 — Spike TikTok Shop API
-
-Status: Blocked (2026-10-16) — TikTok không cấp quyền Open API cho shop. Chuyển sang import file xuất đơn (TASK-059, TASK-060). Mã spike giữ trong `spikes/TikTokApiSpike`; xem `docs/spikes/tiktok-api-spike.md`.
-
-- **Mục tiêu:** Kiểm chứng OAuth, ký request, API đơn hàng và sản phẩm.
-- **Acceptance criteria:** Như bản v0.1; chỉ tiếp tục khi có quyền API.
-
-### - [x] TASK-058 — SQLite: schema, migration, repository
-
-- **Mục tiêu:** Thêm `Microsoft.Data.Sqlite`; tạo schema có version theo mục 4 của TECH_SPEC_TIKTOK và repository cho Shop, Sku, IdolAlias, PdfAsset, ImportBatch, Order, OrderLine, PrintBatch.
-- **Dependency:** —
-- **Acceptance criteria:** Migration chạy khi khởi động; không có cột dữ liệu người nhận; có integration test trên DB tạm.
-
-### - [x] TASK-059 — Đọc file CSV xuất đơn Seller Center
-
-- **Mục tiêu:** CSV parser (RFC 4180) và `SellerCenterCsvOrderSource` implement `IOrderSource`; ánh xạ cột theo tên header.
-- **Dependency:** —
-- **Acceptance criteria:** Đọc đúng file mẫu đã ẩn danh (36 dòng, 33 đơn): bỏ tab thừa, ô có dấu phẩy và ngoặc kép, BOM, ngày `dd/MM/yyyy HH:mm:ss`; thiếu cột bắt buộc thì báo lỗi; không đọc các cột người nhận, số điện thoại, địa chỉ.
-
-### - [x] TASK-060 — Import đơn và chống trùng
-
-- **Mục tiêu:** `OrderImportService` theo TT-09, TT-10 và mục 3.3 của TECH_SPEC_TIKTOK.
-- **Dependency:** TASK-058, TASK-059, TASK-062.
-- **Acceptance criteria:** Import cùng file 2 lần là idempotent; gộp dòng trùng trong file; chế độ Full ẩn đơn không còn trong file (chỉ trong cùng shop), chế độ Partial không ẩn; `ChangedAfterPrint`; Seller Note "ĐÃ IN" được đánh dấu đã in thủ công; có ImportReport; có test.
-
-### - [x] TASK-061 — Quét kho PDF
-
-- **Mục tiêu:** `PdfLibraryScanner` theo TT-01.
-- **Dependency:** TASK-058.
-- **Acceptance criteria:** Test tên hợp lệ và sai quy ước, trường hợp giáp năm, file lệch số trang; cache theo LastWriteTime.
-
-### - [x] TASK-062 — Gợi ý cấu hình SKU và alias idol
-
-- **Mục tiêu:** `SkuConfigSuggester` theo TT-03 và mục 5.2 của TECH_SPEC_TIKTOK; chuẩn hóa chuỗi (bỏ dấu, viết hoa).
-- **Dependency:** —
-- **Acceptance criteria:** Đúng cho mọi mẫu variation liệt kê trong TECH_SPEC 5.2; import lại không ghi đè SKU đã Confirmed.
-
-### - [x] TASK-063 — Phân loại đơn và PrintPlanBuilder
-
-- **Mục tiêu:** `OrderClassifier` (TT-08) và `PrintPlanBuilder` (TT-04 → TT-07).
-- **Dependency:** TASK-061, TASK-062.
-- **Acceptance criteria:** Đúng ví dụ mục 7 của PRD_TIKTOK; đơn có Buyer Message hoặc Seller Note vào nhóm Có ghi chú (TT-10), "Đã xem" tự hủy khi ghi chú đổi; dòng Ignore không chặn đơn; dòng Manual chặn cả đơn; xoay vòng reset theo lô; cảnh báo trùng hình; đơn bị chặn không làm lệch con trỏ.
-
-### - [x] TASK-064 — Trang phân cách
-
-- **Mục tiêu:** Tạo trang phân cách A4, hiển thị tiếng Việt có dấu, theo 3 chế độ của TT-07.
-- **Dependency:** TASK-063.
-- **Acceptance criteria:** Font có dấu hiển thị đúng; file tạm được dọn; có test.
-
-### - [x] TASK-065 — Xuất lô in và đánh dấu đơn
-
-- **Mục tiêu:** Chuyển plan thành dữ liệu cho `IPdfExportService`, xuất file, ghi lịch sử trong transaction, mở Foxit.
-- **Dependency:** TASK-063, TASK-064, TASK-058.
-- **Acceptance criteria:** Xuất lỗi hoặc hủy thì không đánh dấu đơn nào; thành công thì ghi đủ `PrintBatchItem` kèm snapshot Quantity; không rasterize.
-
-### - [x] TASK-066 — UI: cửa sổ TikTok, dialog import, kho PDF, cài đặt
-
-- **Mục tiêu:** `TikTokOrdersWindow` và `TikTokOrdersViewModel` riêng, mở từ toolbar; dialog Import (shop, chế độ, file, kéo thả) và báo cáo import; tab Kho PDF; cài đặt shop và thư mục.
-- **Dependency:** TASK-060, TASK-061.
-- **Acceptance criteria:** Không thêm logic vào `MainViewModel` hoặc code-behind; tác vụ dài không khóa UI; có test ViewModel.
-
-### - [x] TASK-067 — UI: cấu hình SKU
-
-- **Mục tiêu:** Tab Cấu hình SKU: lọc chưa cấu hình, sửa Loại xử lý/Idol/Card, xác nhận gợi ý hàng loạt, đặt cả sản phẩm là Bỏ qua, quản lý alias.
-- **Dependency:** TASK-062, TASK-066.
-- **Acceptance criteria:** Cấu hình khoảng 80 listing thao tác nhanh được; có test ViewModel.
-
-### - [x] TASK-068 — UI: đơn hàng, tạo lô in, lịch sử
-
-- **Mục tiêu:** Tab Đơn hàng (lọc theo nhóm và shop, hiển thị Buyer Message và Seller Note, nút "Đã xem – cho phép ghép", chọn đơn, Tạo file in có tiến trình và hủy, In lại) và tab Lịch sử (lô import, lô in, bỏ đánh dấu, tạo lại, copy danh sách mã đơn).
-- **Dependency:** TASK-065, TASK-067.
-- **Acceptance criteria:** Đạt AC-T02, AC-T03, AC-T06; có test ViewModel.
-
-Completed (TASK-058 → TASK-068): 2026-10-16
-Files changed: `src/PDFPageComposer.App/TikTok/**` (Models, Data, Import, Matching, Export, TextNormalizer, OrderNotes, TikTokSettingsLoader), `src/PDFPageComposer.App/ViewModels/TikTok/**`, `src/PDFPageComposer.App/Views/TikTokOrdersWindow.xaml`, `ServiceRegistration.cs`, `App.xaml.cs`, `MainWindow.xaml(.cs)`, `Interfaces/IFileDialogService.cs`, `IClipboardService.cs`, `ITikTokWindowService.cs`, `Services/FileDialogService.cs`, `ClipboardService.cs`, `TikTokWindowService.cs`, `Models/AppSettings.cs`, `Models/TikTokSettings.cs`, `PDFPageComposer.App.csproj` (Microsoft.Data.Sqlite 10.0.13), `tests/PDFPageComposer.Tests/TikTok/**`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/**`, `tests/PDFPageComposer.Tests/TestData/tiktok/orders-sample.csv` (đã ẩn danh).
-Verification: `dotnet build PDFPageComposer.slnx --no-incremental`: 0 warnings, 0 errors; `dotnet test PDFPageComposer.slnx`: 300/300 passed (gồm test end-to-end với file CSV mẫu, test STA mở TikTokOrdersWindow, test DI). Đã mở app thật và mở cửa sổ "Đơn TikTok" bằng UI Automation: đủ 5 tab, tạo được `%LOCALAPPDATA%\PDFPageComposer\tiktok.db`.
-Notes: Làm bằng workflow nhiều agent, sau đó review đa góc nhìn kèm phản biện: 27 lỗi được xác nhận và đã sửa. Contract mở rộng: `OrderSourceResult.RejectedOrderIds` và overload `IOrderImportService.ImportAsync(..., protectedOrderIds, ...)`; đơn có dòng CSV lỗi bị loại nguyên đơn và không bị ẩn ở chế độ Full. Tên file in tự động thêm hậu tố _2, _3 nếu trùng. "In lại" bỏ qua cả chốt ghi chú đối với đơn đã in.
-
-### - [x] TASK-069 — Kiểm thử thực tế và publish v1.3.0
-
-- **Mục tiêu:** Chạy với file xuất thật của 2 shop, sửa lỗi, cập nhật USER_GUIDE, publish bản update.
-- **Dependency:** TASK-068.
-- **Acceptance criteria:** Đạt AC-T01 đến AC-T07; `latest.json` được cập nhật.
-
-Completed: 2026-10-17
-Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.0), `latest.json`, `docs/USER_GUIDE.md`, `docs/UPDATE_RELEASE.md`.
-Verification: Chạy với các file CSV xuất thật của người dùng (gồm file sau khi đã in, đơn chuyển "Đang chờ lấy hàng", file có đơn gắn cờ đỏ), so sánh file in dự kiến với file người dùng ghép tay; 378/378 test passed; publish `win-x64` self-contained, release `v1.3.0` trên GitHub, tải lại asset khớp SHA256 rồi mới cập nhật `latest.json`.
-Notes: Sửa lỗi phát hiện khi chạy thật được ghi ở TASK-072 → TASK-074. Cờ đỏ trên TikTok không có trong file CSV nên app không đọc được; đơn đã làm được nhận biết qua lịch sử lô in.
-
-### - [~] TASK-070 — (Hủy) Chrome extension lấy đơn từ Seller Center
-
-Status: Cancelled (2026-10-17) — người dùng chọn quy trình chỉ dùng file CSV: xuất CSV từ TikTok → import → tạo file in và xuất mã đơn chưa làm → lần sau import CSV mới, đơn đã làm tự được lọc. Không dùng extension, không tự gắn cờ trên TikTok.
-
-- **Mục tiêu (cũ):** Extension (Manifest V3) đọc danh sách đơn chờ vận chuyển khi người dùng bấm nút, gửi vào app qua localhost.
-
-### - [x] TASK-071 — Xuất danh sách đơn ra CSV (đánh dấu đơn đã làm file in)
-
-- **Mục tiêu:** TT-12 của PRD_TIKTOK: xuất danh sách đơn ra CSV theo phạm vi (đơn đã làm file in, tất cả đơn đang chờ, lần import gần nhất, đơn của một lô in), có cột "Đã làm file in" và file kho đã dùng.
-- **Dependency:** TASK-068.
-- **Acceptance criteria:** Mỗi dòng hàng một dòng CSV; Order ID/SKU ID có tab ở cuối; UTF-8 BOM, CRLF, quote theo RFC 4180; trạng thái giống tab Đơn hàng; không có đơn thì không tạo file; ghi lỗi không để lại file dở; có test.
-
-Completed: 2026-10-17
-Files changed: `src/PDFPageComposer.App/TikTok/Export/OrderListExportModels.cs`, `OrderListExportBuilder.cs`, `OrderListCsvWriter.cs`, `OrderListExportService.cs` (mới); `src/PDFPageComposer.App/ViewModels/TikTok/OrderListExportRunner.cs`, `OrdersTabViewModel.OrderList.cs` (mới), `HistoryTabViewModel.cs`, `TikTokServices.cs`; `Views/TikTokOrdersWindow.xaml`; `Interfaces/IFileDialogService.cs` (`PickSaveCsvFile`), `Services/FileDialogService.cs`; `ServiceRegistration.cs`; `tests/PDFPageComposer.Tests/TikTok/Export/OrderListExportBuilderTests.cs`, `OrderListCsvWriterTests.cs`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/OrderListExportViewModelTests.cs` (mới), `TikTokUiHarness.cs`, `ViewModels/MainViewModelTests.cs` (fake dialog); `docs/tiktok/PRD_TIKTOK.md` (TT-12).
-Verification: `dotnet test tests/PDFPageComposer.Tests/PDFPageComposer.Tests.csproj`: 355/355 passed (sau khi sửa theo review), build 0 warnings, 0 errors (gồm test STA mở TikTokOrdersWindow không lỗi binding và test DI).
-Notes: Không thêm method repository (dùng `GetOrdersAsync`, `GetOrdersByIdsAsync`, `GetImportBatchesAsync`, `GetPrintBatchItemsAsync`, `GetPrintBatchesAsync`, `GetPrintedItemsForOrdersAsync`). Trạng thái phân loại dùng `ClassificationOptions` hiện tại (không áp dụng "In lại"). "File kho đã dùng" lấy từ lô in hiện tại của đơn (`PrintedBatchId`); với phạm vi lô in, các cột Đã làm file in/Nguồn/Lô in/Thời gian in/File kho đã dùng lấy theo chính lô được chọn (kể cả đơn đã bỏ đánh dấu hoặc in lại ở lô khác), còn Trạng thái xử lý/Lý do theo phân loại hiện tại. File đã rời kho vẫn ghi "lấy N/M trang đầu" nhờ đọc M từ tên file. Ô chữ tự do bắt đầu bằng = + - @ được thêm dấu nháy đơn ở đầu để Excel không hiểu là công thức. "Đơn đã làm file in" gồm cả đơn không còn chờ vận chuyển (cột "Còn chờ vận chuyển" = Không). Tên file gợi ý `DS_DON_<DA_IN|TAT_CA|IMPORT_MOI|LO_<mã lô>>_<yyyyMMdd_HHmm>.csv`, thư mục mặc định là thư mục lưu file in.
-
-### - [x] TASK-072 — Luôn lấy ảnh mới nhất, tự chọn file, thứ tự CSV, xóa import
-
-- **Mục tiêu:** Sửa logic chọn file theo phản hồi khi chạy thật; cho người dùng tự chọn trang in; hiển thị đơn đúng thứ tự file CSV; xóa dữ liệu đã import.
-- **Dependency:** TASK-063, TASK-068.
-- **Acceptance criteria:** Mỗi bộ card ghép từ các file mới nhất của idol (file cuối chỉ lấy số trang đầu còn thiếu; mỗi đơn bắt đầu lại từ file mới nhất, bộ sau trong cùng đơn lùi sang file cũ hơn); dialog "Xem và tự chọn file" cho chọn trang, PDF ngoài kho, nhiều hoặc ít trang hơn số card; lựa chọn tay được lưu và dùng khi xuất; đơn hiện theo thứ tự dòng CSV; xóa một lần import hoặc toàn bộ đơn; trang phân cách là trang trắng; phạm vi xuất CSV "Đơn chưa làm file in".
-
-Completed: 2026-10-17
-Files changed: `TikTok/Matching/PdfAssetMatcher.cs`, `PrintPlanBuilder.cs`, `OrderClassifier.cs`, `TikTok/Models/PrintModels.cs`, `FileOverride.cs` (mới), `TikTokOrder.cs`, `TikTok/Data/TikTokSchemaMigrator.cs` (v3 → v6), `SqliteTikTokRepository.Orders.cs`, `.Overrides.cs` (mới), `.Printing.cs`, `TikTok/Import/OrderImportMerger.cs`, `TikTok/Export/PrintBatchExporter.cs`, `SeparatorPageRenderer.cs`, `OrderListExport*`, `Models/TikTokSettings.cs` (`AlwaysUseNewestFiles`), `ViewModels/TikTok/OrderFilesViewModel.cs` (mới), `OrdersTabViewModel.cs`, `OrderRowViewModel.cs`, `TikTokWorkspace.cs`, `Views/OrderFilesWindow.xaml` (mới), `Views/TikTokOrdersWindow.xaml`; test tương ứng.
-Verification: Test plan builder với ví dụ thật (Jack 50 card 2 bộ; Đình Bắc 20 card lấy 3 trang đầu của file 5 trang mới nhất); test repository cho override và xóa import; chạy harness với dữ liệu thật và chụp màn hình dialog.
-Notes: Cài đặt "Luôn lấy ảnh mới nhất" mặc định bật; tắt thì dùng lại thuật toán file đúng số trang, xoay vòng. File kho đã bị xóa khỏi ổ đĩa được ẩn khỏi dialog và chặn lưu nếu đang được chọn.
-
-### - [x] TASK-073 — Xem trước file in TikTok và giao diện tab Đơn hàng
-
-- **Mục tiêu:** Lưới đơn gọn, chữ to hơn, cột sản phẩm và phân loại riêng, copy mã đơn (nút, nháy đúp, copy tất cả); dialog "Xem trước file in" để sửa file, bỏ đơn khỏi lô trước khi tạo file in; nút xem trước và tạo file in ở góc trên bên phải; cửa sổ mở phóng to.
-- **Dependency:** TASK-072.
-- **Acceptance criteria:** Xem trước đúng thứ tự file in, gồm trang trắng phân cách; thumbnail chỉ render khi cuộn tới; có test ViewModel và test STA mở cửa sổ.
-
-Completed: 2026-10-17
-Files changed: `ViewModels/TikTok/PrintPreviewViewModel.cs`, `PageImageCache.cs` (mới), `Views/PrintPreviewWindow.xaml(.cs)` (mới), `Behaviors/RenderWhenVisibleBehavior.cs` (mới), `Views/TikTokOrdersWindow.xaml`, `Services/TikTokWindowService.cs`, `ViewModels/TikTok/TikTokServices.cs` (`PageRenderer`); test tương ứng.
-Verification: 378/378 test passed; kiểm tra giao diện bằng harness chụp màn hình với dữ liệu thật.
+## Phase 11 — Giao diện v1.3
 
 ### - [x] TASK-074 — Làm mới giao diện ghép lẻ
 
@@ -796,14 +611,3 @@ Verification: 378/378 test passed; kiểm tra giao diện bằng harness chụp 
 Completed: 2026-10-17
 Files changed: `MainWindow.xaml(.cs)`, `ViewModels/MainViewModel.cs`, `Models/OutputItemMoveRequest.cs` (`PlaceAfter`), `Converters/NonZeroToVisibilityConverter.cs` (mới), `Behaviors/RenderWhenVisibleBehavior.cs`, `TikTok/TextNormalizer.cs` (`MatchesSearch`); `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `Behaviors/RenderWhenVisibleBehaviorTests.cs`.
 Verification: 378/378 test passed; đo với 115 trang trong khay chỉ render 33 trang đang hiển thị.
-
-### - [x] TASK-075 — Logo và publish v1.3.1
-
-- **Mục tiêu:** Thêm logo cho exe, taskbar và các cửa sổ; phát hành bản update.
-- **Dependency:** TASK-069.
-- **Acceptance criteria:** Icon nhiều kích thước (16–256 px); `latest.json` trỏ tới v1.3.1.
-
-Completed: 2026-10-17
-Files changed: `src/PDFPageComposer.App/Assets/app.ico` (mới), `PDFPageComposer.App.csproj` (`ApplicationIcon`, 1.3.1), các cửa sổ (`Icon`), `docs/assets/logo.png`, `README.md`, `latest.json`.
-Verification: Publish `win-x64` self-contained chạy được (FileVersion 1.3.1.0); release `v1.3.1` trên GitHub, asset tải lại khớp SHA256 `067A4C34A65ED50B8332A1C0B35AFAF2DEDEA26EAF883C6AB04D500051D16CA3`; link raw `latest.json` trả về 1.3.1.
-Notes: Chưa thử luồng Check update trên máy khác.

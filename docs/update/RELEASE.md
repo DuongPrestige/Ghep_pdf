@@ -1,4 +1,6 @@
-# Check update va phat hanh ban moi
+# Quy trinh phat hanh ban moi
+
+Co che ben trong nut Check update: `docs/update/TECH_SPEC.md`. Lich su phien ban: `docs/CHANGELOG.md`.
 
 Co che update dung file manifest `latest.json` o nhanh `main` cua repo va goi `.zip` dat tren GitHub Releases.
 
@@ -62,11 +64,7 @@ Lam dung thu tu de may nguoi dung khong bao gio doc manifest tro toi file chua t
 
 9. Mo link raw cua `latest.json` de kiem tra version da doi.
 
-## 3. Lich su phat hanh
+## 3. Sau khi phat hanh
 
-| Version | Ngay | Noi dung |
-|---|---|---|
-| 1.3.1 | 2026-10-17 | Logo moi cho exe, thanh taskbar va cac cua so. |
-| 1.3.0 | 2026-10-17 | Module don TikTok (import CSV, cau hinh SKU, kho PDF, tao file in, xem truoc file in, tu chon file, xuat danh sach don); giao dien ghep le moi (khay dau ra dang luoi, keo tha, phim Enter, tim khong dau, chan file trung, chi render thumbnail khi cuon toi). |
-| 1.2.0 | 2026-07-28 | Mau rieng cho tung nhom, nhan ban nhom, bo chon sau khi them vao dau ra. |
-| 1.1.0 | 2026-07-17 | Sua nhanh trang trong man xem truoc dau ra. |
+- Them muc moi vao `docs/CHANGELOG.md` va cap nhat dong "Ban hien tai" o dau file nay.
+- Ghi task phat hanh vao `docs/update/TASKS.md` (Completed, Files changed, Verification voi SHA256).

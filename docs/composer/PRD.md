@@ -8,6 +8,9 @@
 - **Phiên bản tài liệu:** 1.0
 - **Ngày tạo:** 2026-07-16
 - **Đối tượng sử dụng tài liệu:** Product Owner, Business Analyst, UI/UX Designer, Developer, Tester.
+- **Phạm vi:** module Ghép lẻ PDF (màn hình chính). Module Đơn TikTok có PRD riêng ở `docs/tiktok/PRD.md`.
+- **Tài liệu liên quan:** `docs/composer/UI_SPEC.md`, `docs/composer/TECH_SPEC.md`, `docs/composer/USER_GUIDE.md`, `docs/composer/TASKS.md`.
+- **Lưu ý:** mục 15–17 (tech stack, kiến trúc, mô hình dữ liệu *đề xuất*) là định hướng lúc lập PRD; lựa chọn đã chốt nằm ở `docs/ARCHITECTURE.md` và `docs/composer/TECH_SPEC.md`.
 
 ---
 
@@ -1110,4 +1113,4 @@ Tên tạm dùng trong tài liệu này: **PDF Page Composer**.
 
 ## 24. Mở rộng: Tạo file in theo đơn TikTok Shop
 
-Yêu cầu chi tiết nằm trong `docs/tiktok/PRD_TIKTOK.md`; đặc tả kỹ thuật trong `docs/tiktok/TECH_SPEC_TIKTOK.md`. Các quy tắc BR-01, BR-02, BR-07, BR-08 của tài liệu này tiếp tục áp dụng cho module TikTok.
+Yêu cầu chi tiết nằm trong `docs/tiktok/PRD.md`; đặc tả kỹ thuật trong `docs/tiktok/TECH_SPEC.md`. Các quy tắc BR-01, BR-02, BR-07, BR-08 của tài liệu này tiếp tục áp dụng cho module TikTok.

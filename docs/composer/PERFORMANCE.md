@@ -1,4 +1,4 @@
-# Performance notes
+# Hiệu năng — Module Ghép lẻ PDF
 
 Date: 2026-07-16
 
@@ -27,3 +27,9 @@ Follow-up measurement for real PDFs:
 - Use 10 real PDFs totaling around 500 pages.
 - Import them and scroll Source Workspace from top to bottom while watching process working set in Task Manager.
 - Expected behavior: import should remain responsive before thumbnails finish; working set should stabilize because off-viewport render requests cancel and the thumbnail cache is bounded.
+
+## Cập nhật 2026-10-17 (v1.3.0)
+
+- Thumbnail trong khay đầu ra, màn xem trước đầu ra và các dialog TikTok chỉ render khi thẻ trang nằm trong khoảng một màn hình quanh vùng đang cuộn (`RenderWhenVisibleBehavior`).
+- Đo trên dữ liệu thật: khay đầu ra 115 trang, sau khi mở chỉ 33 trang được render.
+- Test: `tests/PDFPageComposer.Tests/Behaviors/RenderWhenVisibleBehaviorTests.cs`.

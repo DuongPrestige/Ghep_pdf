@@ -1,6 +1,6 @@
 # Đặc tả kỹ thuật — Module TikTok Order Print
 
-Tài liệu đi kèm `docs/tiktok/PRD_TIKTOK.md` (v0.2). Các quy tắc trong `AGENTS.md` và `docs/TECH_SPEC.md` vẫn áp dụng.
+Tài liệu đi kèm `docs/tiktok/PRD.md`; giao diện ở `docs/tiktok/UI_SPEC.md`. Các quy tắc trong `AGENTS.md`, `docs/ARCHITECTURE.md` và `docs/composer/TECH_SPEC.md` (render, export PDF) vẫn áp dụng.
 
 > **v0.2 (2026-10-16):** Nguồn đơn là file CSV xuất từ Seller Center. Phần TikTok Open API được tạm dừng; spike nằm trong `spikes/TikTokApiSpike`, đánh giá ở `docs/spikes/tiktok-api-spike.md`.
 
@@ -11,17 +11,20 @@ Không tách project mới. Code đặt trong `PDFPageComposer.App`:
 ```text
 src/PDFPageComposer.App/
 ├── TikTok/
-│   ├── Import/       # IOrderSource, SellerCenterCsvOrderSource, CsvReader, OrderImportService
-│   ├── Data/         # SQLite repository + migration
-│   ├── Matching/     # SkuConfigSuggester, PdfLibraryScanner, OrderClassifier, PrintPlanBuilder
-│   ├── Export/       # PrintBatchExporter, SeparatorPageRenderer
-│   └── Models/
-├── ViewModels/TikTokOrdersViewModel.cs   # KHÔNG thêm vào MainViewModel
-└── Views/TikTokOrdersWindow.xaml
+│   ├── Import/       # IOrderSource, SellerCenterCsvOrderSource, CsvParser, ImportedOrderGrouper, OrderImportMerger, OrderImportService
+│   ├── Data/         # SqliteTikTokRepository (partial: Catalog, Orders, Overrides, Printing), TikTokSchemaMigrator
+│   ├── Matching/     # SkuConfigSuggester, PdfAssetNameParser, PdfLibraryScanner, PdfAssetMatcher, OrderClassifier, PrintPlanBuilder
+│   ├── Export/       # PrintBatchExporter, SeparatorPageRenderer, OrderListExport*, font resolver
+│   ├── Models/       # TikTokOrder, PdfAsset, SkuModels, PrintModels, FileOverride, enums
+│   ├── TikTokInterfaces.cs, TextNormalizer.cs, OrderNotes.cs, TikTokSettingsLoader.cs
+├── ViewModels/TikTok/  # TikTokOrdersViewModel + một ViewModel cho mỗi tab, OrderFilesViewModel, PrintPreviewViewModel,
+│                       # TikTokWorkspace (trạng thái dùng chung), PrintFileRunner, PageImageCache — KHÔNG thêm vào MainViewModel
+├── Views/              # TikTokOrdersWindow, OrderFilesWindow, PrintPreviewWindow
+└── Services/TikTokWindowService.cs
 ```
 
 - Phần `Import/` và `Matching/` là code thuần (không phụ thuộc WPF hay DB) để dễ unit test.
-- `IOrderSource` trả về `IReadOnlyList<ImportedOrderLine>`. Chrome extension sau này chỉ cần thêm một implementation khác của interface này; `OrderImportService` (lọc trùng) dùng chung.
+- `IOrderSource` trả về `IReadOnlyList<ImportedOrderLine>`. Nếu sau này có nguồn đơn khác (API TikTok nếu được cấp quyền) chỉ cần thêm một implementation khác của interface này; `OrderImportService` (lọc trùng) dùng chung.
 
 ## 2. Package mới
 
@@ -220,15 +223,9 @@ for order:
 - Tên file gợi ý: `TIKTOK_<yyyyMMdd_HHmm>_<số đơn>don.pdf`.
 - Chỉ sau khi `ExportAsync` thành công mới ghi `PrintBatch` / `PrintBatchItem` và cập nhật `Order` trong một transaction, rồi mở Foxit.
 
-## 7. UI (`TikTokOrdersWindow`)
+## 7. UI
 
-- **Thanh trên:** nút **Import đơn**. Nút này mở dialog gồm: chọn shop, chế độ *File đầy đủ* hoặc *Bổ sung*, chọn file (hỗ trợ kéo thả). Bên cạnh có nút Quét kho và Cài đặt.
-- **Tab Đơn hàng:** chip lọc theo nhóm (TT-08), lọc theo shop, lưới đơn gọn theo thứ tự file CSV (mã đơn, sản phẩm, phân loại, file in, nhãn nhóm, ghi chú), nút "Đã xem – cho phép ghép" cho đơn nhóm Có ghi chú, checkbox chọn đơn, kiểu trang phân cách. Copy mã đơn bằng nút hoặc nháy đúp. Góc trên bên phải: phạm vi và **Xuất CSV**, **Xem trước file in**, **Tạo file in**. Cửa sổ mở ở chế độ phóng to (`TikTokWindowService`).
-- **Dialog Xem và tự chọn file** (`OrderFilesWindow`, `OrderFilesViewModel`): bên trái là thư viện file của idol (ẩn file đã bị xóa khỏi ổ đĩa) và PDF ngoài kho được thêm vào; bên phải là các bộ card cần in. Chọn từng trang hoặc cả file, đổi thứ tự, cho phép nhiều hoặc ít trang hơn số card (có cảnh báo). Lưu thành `OrderFileOverride`; **Dùng lại chọn tự động** xóa lựa chọn tay.
-- **Dialog Xem trước file in** (`PrintPreviewWindow`, `PrintPreviewViewModel`): toàn bộ trang theo đơn (gồm trang trắng phân cách), sửa file, bỏ đơn khỏi lô, copy mã đơn, rồi tạo file in. Thumbnail render khi cuộn tới (`RenderWhenVisibleBehavior`) qua `PageImageCache`.
-- **Tab Cấu hình SKU:** lọc *Chưa cấu hình*; sửa Loại xử lý, Idol, Card; nút *Xác nhận gợi ý* hàng loạt; nút *Đặt cả sản phẩm là Bỏ qua*; quản lý alias.
-- **Tab Kho PDF:** danh sách file, trạng thái hợp lệ hoặc lỗi.
-- **Tab Lịch sử:** gồm lô import (kèm báo cáo) và lô in (mở file, xem chi tiết, bỏ đánh dấu, tạo lại, copy danh sách mã đơn).
+Xem `docs/tiktok/UI_SPEC.md`. Đăng ký DI: `ServiceRegistration.AddTikTokModule` (repository, scanner, classifier, plan builder, exporter là singleton; `TikTokServices`, `TikTokOrdersViewModel`, `TikTokOrdersWindow` là transient). `TikTokServices.PageRenderer` dùng chung `IPdfRenderService` của màn hình Ghép lẻ.
 
 ## 8. Kiểm thử
 

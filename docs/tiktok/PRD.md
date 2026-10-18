@@ -1,10 +1,13 @@
 # PRD bổ sung — Tạo file in theo đơn TikTok Shop
 
-- **Phiên bản:** 0.2 (draft)
-- **Ngày cập nhật:** 2026-10-16 (bổ sung TT-10: đơn có ghi chú không ghép tự động)
-- **Phụ thuộc:** `PRD.md` (BR-01, BR-02, BR-07, BR-08 vẫn áp dụng).
+- **Phiên bản:** 1.0 (đã triển khai trong ứng dụng 1.3.0)
+- **Ngày cập nhật:** 2026-10-18
+- **Phụ thuộc:** `docs/composer/PRD.md` (BR-01, BR-02, BR-07, BR-08 vẫn áp dụng).
+- **Tài liệu liên quan:** `docs/tiktok/TECH_SPEC.md`, `docs/tiktok/UI_SPEC.md`, `docs/tiktok/USER_GUIDE.md`, `docs/tiktok/TASKS.md`.
 
-> **Thay đổi từ v0.1:** TikTok không cấp quyền dùng Open API, nên nguồn đơn chuyển sang **file xuất đơn từ Seller Center (CSV)**. Chrome extension là phương án sau, dùng chung cơ chế import và lọc trùng. Bổ sung loại xử lý SKU "Bỏ qua" và quy tắc chống trùng đơn.
+> **Thay đổi ở v1.0 (2026-10-17):** quy tắc *Luôn lấy ảnh mới nhất* (TT-04), xem trước file in và tự chọn file (TT-04), trang phân cách trắng (TT-07), xóa lần import (TT-09), phạm vi *Đơn chưa làm file in* và thứ tự theo file CSV (TT-12). Bỏ phương án Chrome extension: quy trình chỉ dùng file CSV (xem Q3).
+
+> **Thay đổi từ v0.1:** TikTok không cấp quyền dùng Open API, nên nguồn đơn chuyển sang **file xuất đơn từ Seller Center (CSV)**. Bổ sung loại xử lý SKU "Bỏ qua" và quy tắc chống trùng đơn.
 
 ---
 
@@ -25,7 +28,7 @@ Tính năng này nhận danh sách đơn từ Seller Center, tự khớp các d�
 ## 3. Ngoài phạm vi (giai đoạn này)
 
 - Card 2 mặt, sản phẩm "in theo yêu cầu (gửi ảnh cho shop)", và các sản phẩm không phải card bo góc. Các loại này được phân loại để làm thủ công hoặc bỏ qua.
-- Ghi ngược Seller Note hoặc trạng thái lên TikTok.
+- Ghi ngược Seller Note, cờ hoặc trạng thái lên TikTok (kể cả qua extension trình duyệt).
 - Tự động in (BR-07).
 - Gọi TikTok Open API. Mã spike API được giữ lại trong `spikes/TikTokApiSpike`, phòng khi sau này được cấp quyền.
 
@@ -221,4 +224,4 @@ Tổng file in: 11 trang. O1 và O2 được đánh dấu đã in. Import lại 
 
 - **Q1 (đã chốt 2026-10-16):** Polaroid và photobooth (PTB) hiện tại là *Bỏ qua*. Nếu sau này có file kho cho các loại này, cần mở rộng TT-01/TT-02 theo loại sản phẩm.
 - **Q2 (đã chốt 2026-10-16):** Đơn có lẫn card *Thủ công* (ví dụ 2 mặt) và card *Ghép tự động* thì **chặn cả đơn**, xếp vào nhóm *Thủ công* (TT-08).
-- **Q3 (phase sau):** Chrome extension đọc đơn trực tiếp từ Seller Center và gửi vào app, dùng chung TT-09.
+- **Q3 (đã chốt 2026-10-17):** Không làm Chrome extension và không đánh dấu ngược (cờ đỏ) lên TikTok. Quy trình: xuất CSV từ TikTok → import → tạo file in và xuất mã đơn chưa làm → lần sau import CSV mới, đơn đã làm tự được lọc nhờ lịch sử lô in. Cờ đỏ không có trong file CSV nên app không đọc được.

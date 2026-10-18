@@ -1,4 +1,6 @@
-# Đặc tả giao diện
+# Đặc tả giao diện — Module Ghép lẻ PDF
+
+Tài liệu đi kèm `docs/composer/PRD.md` và `docs/composer/TECH_SPEC.md`. Phần "Cập nhật v1.3" mô tả giao diện hiện tại; các mục còn lại là đặc tả gốc của MVP.
 
 ## Nguyên tắc thiết kế
 
@@ -152,19 +154,19 @@ Hiển thị tổng file, tổng trang nguồn, số trang đang chọn, tổng 
 - Không tìm thấy Foxit: chọn executable hoặc mở bằng viewer mặc định.
 - Export thất bại: thông báo dễ hiểu, chi tiết trong log và không để lại file đích hỏng.
 
-## Phím tắt MVP
+## Phím tắt
 
-| Phím | Chức năng |
-|---|---|
-| Ctrl+O | Thêm PDF |
-| Ctrl+A | Chọn tất cả trong phạm vi hiện tại |
-| Ctrl+Shift+A | Bỏ chọn tất cả |
-| Ctrl+Enter | Thêm selection vào Output Tray |
-| Ctrl+D | Nhân bản item/group |
-| Delete | Xóa khỏi Output Tray |
-| Ctrl+Z / Ctrl+Y | Undo / Redo |
-| Ctrl+S | Lưu project |
-| Ctrl+E | Xuất PDF |
-| Enter | Thêm các trang đang chọn vào đầu ra (khi có trang được chọn và không gõ trong ô chữ); nếu không có trang chọn thì mở preview trang đang focus |
-| Esc | Đóng preview |
-| Ctrl+con lăn | Zoom thumbnail |
+| Phím | Chức năng | Trạng thái |
+|---|---|---|
+| Click / Ctrl+Click / Shift+Click | Chọn một trang / thêm bớt từng trang / chọn dải trang | Đã có |
+| Enter | Thêm các trang đang chọn vào đầu ra (khi có trang được chọn và không gõ trong ô chữ); nếu không có trang chọn thì mở preview trang đang focus | Đã có |
+| Esc | Đóng preview | Đã có |
+| Ctrl+con lăn | Zoom thumbnail | Đã có |
+| Nháy đúp thumbnail | Xem lớn | Đã có |
+| Ctrl+O | Thêm PDF | Kế hoạch |
+| Ctrl+A / Ctrl+Shift+A | Chọn / bỏ chọn tất cả trong phạm vi | Kế hoạch |
+| Ctrl+D | Nhân bản item/group | Kế hoạch |
+| Delete | Xóa khỏi Output Tray | Kế hoạch |
+| Ctrl+Z / Ctrl+Y | Undo / Redo | Kế hoạch (đang dùng nút **Hoàn tác / Làm lại**) |
+| Ctrl+S | Lưu project | Kế hoạch (hiện chỉ có tự lưu phục hồi) |
+| Ctrl+E | Xuất PDF | Kế hoạch |

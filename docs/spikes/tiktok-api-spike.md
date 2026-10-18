@@ -9,5 +9,5 @@ Status: Blocked — 2026-10-16
 
 ## Quyết định
 
-- Nguồn đơn chuyển sang file CSV xuất từ Seller Center (PRD_TIKTOK v0.2). File xuất có đủ `Order ID`, `SKU ID`, `Product Name`, `Variation`, `Quantity`, `Created Time`, `Seller Note`.
+- Nguồn đơn chuyển sang file CSV xuất từ Seller Center (`docs/tiktok/PRD.md` v0.2). File xuất có đủ `Order ID`, `SKU ID`, `Product Name`, `Variation`, `Quantity`, `Created Time`, `Seller Note`.
 - Giữ mã spike để dùng lại nếu sau này được cấp API: chỉ cần thêm một implementation `IOrderSource` mới.
