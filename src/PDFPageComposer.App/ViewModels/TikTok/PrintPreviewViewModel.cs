@@ -16,14 +16,15 @@ namespace PDFPageComposer.App.ViewModels.TikTok;
 public sealed partial class PrintPreviewViewModel : ObservableObject
 {
     private readonly Func<PrintPlan> buildPlan;
-    private readonly Func<string, Task> editOrderFiles;
+    private readonly Func<string, OrderSetKey?, Task> editOrderFiles;
     private readonly Action<string> removeOrder;
     private readonly Func<string, bool>? copyText;
     private readonly PageImageCache images;
 
+    /// <param name="editOrderFiles">Opens "Xem / chọn file" for an order, on the given set when not null.</param>
     public PrintPreviewViewModel(
         Func<PrintPlan> buildPlan,
-        Func<string, Task> editOrderFiles,
+        Func<string, OrderSetKey?, Task> editOrderFiles,
         Action<string> removeOrder,
         IPdfRenderService? renderer,
         Func<string, bool>? copyText = null)
@@ -70,21 +71,32 @@ public sealed partial class PrintPreviewViewModel : ObservableObject
         foreach (var planOrder in plan.Orders)
         {
             var pages = new List<PrintPreviewPageViewModel>();
+            PrintPreviewPageViewModel? separator = null;
             if (planOrder.IncludeSeparator)
             {
-                pages.Add(PrintPreviewPageViewModel.Blank(++outputNumber));
+                separator = PrintPreviewPageViewModel.Blank(++outputNumber);
+                pages.Add(separator);
                 blankPages++;
             }
 
-            foreach (var copy in planOrder.Copies)
+            // A set is one line copy; it may span several files, which follow each other in the plan.
+            var sets = new List<PreviewSetViewModel>();
+            foreach (var group in planOrder.Copies.GroupBy(copy => new OrderSetKey(copy.SkuId, copy.CopyIndex)))
             {
-                for (var page = copy.FirstPage; page <= copy.LastPage; page++)
+                var setPages = new List<PrintPreviewPageViewModel>();
+                foreach (var copy in group)
                 {
-                    pages.Add(new PrintPreviewPageViewModel(copy.Asset.FilePath, page, ++outputNumber));
+                    for (var page = copy.FirstPage; page <= copy.LastPage; page++)
+                    {
+                        setPages.Add(new PrintPreviewPageViewModel(copy.Asset.FilePath, page, ++outputNumber));
+                    }
                 }
+
+                pages.AddRange(setPages);
+                sets.Add(new PreviewSetViewModel(planOrder, group.Key, group.ToList(), setPages) { Number = sets.Count + 1 });
             }
 
-            Orders.Add(new PreviewOrderViewModel(planOrder, pages));
+            Orders.Add(new PreviewOrderViewModel(planOrder, pages, sets, separator));
         }
 
         Summary = plan.Orders.Count == 0
@@ -125,7 +137,20 @@ public sealed partial class PrintPreviewViewModel : ObservableObject
             return;
         }
 
-        await editOrderFiles(order.OrderId);
+        await editOrderFiles(order.OrderId, null);
+        Refresh();
+    }
+
+    /// <summary>"Đổi file" of one set of a multi-set order: opens the dialog on that set.</summary>
+    [RelayCommand]
+    private async Task EditSetAsync(PreviewSetViewModel? set)
+    {
+        if (set is null)
+        {
+            return;
+        }
+
+        await editOrderFiles(set.OrderId, set.Key);
         Refresh();
     }
 
@@ -177,10 +202,14 @@ public sealed partial class PrintPreviewViewModel : ObservableObject
     private void Close() => CloseRequested?.Invoke(this, EventArgs.Empty);
 }
 
-/// <summary>One order of the preview: its pages in print order.</summary>
+/// <summary>One order of the preview: its pages in print order, split into its printed sets.</summary>
 public sealed class PreviewOrderViewModel
 {
-    public PreviewOrderViewModel(PrintPlanOrder planOrder, IReadOnlyList<PrintPreviewPageViewModel> pages)
+    public PreviewOrderViewModel(
+        PrintPlanOrder planOrder,
+        IReadOnlyList<PrintPreviewPageViewModel> pages,
+        IReadOnlyList<PreviewSetViewModel>? sets = null,
+        PrintPreviewPageViewModel? separatorPage = null)
     {
         ArgumentNullException.ThrowIfNull(planOrder);
         ArgumentNullException.ThrowIfNull(pages);
@@ -191,7 +220,22 @@ public sealed class PreviewOrderViewModel
         SheetText = $"{planOrder.SheetCount} tờ";
         HasManualChoice = planOrder.Copies.Any(copy => copy.IsManualChoice);
         Pages = pages;
+        Sets = sets ?? [];
+        SeparatorPage = separatorPage;
     }
+
+    /// <summary>Printed sets of the order (one per line copy) with their own "Đổi file".</summary>
+    public IReadOnlyList<PreviewSetViewModel> Sets { get; }
+
+    /// <summary>True when the order prints more than one set; the preview then shows them one block each.</summary>
+    public bool HasManySets => Sets.Count > 1;
+
+    public bool HasOneSet => !HasManySets;
+
+    /// <summary>Blank separator page printed before the order, if any.</summary>
+    public PrintPreviewPageViewModel? SeparatorPage { get; }
+
+    public bool HasSeparator => SeparatorPage is not null;
 
     public string OrderId { get; }
 
@@ -201,6 +245,45 @@ public sealed class PreviewOrderViewModel
     public string ProductsText { get; }
 
     public string SheetText { get; }
+
+    public bool HasManualChoice { get; }
+
+    public IReadOnlyList<PrintPreviewPageViewModel> Pages { get; }
+}
+
+/// <summary>One printed set of an order (a line copy): its product, the files used and its pages.</summary>
+public sealed class PreviewSetViewModel
+{
+    public PreviewSetViewModel(
+        PrintPlanOrder planOrder,
+        OrderSetKey key,
+        IReadOnlyList<PrintPlanCopy> copies,
+        IReadOnlyList<PrintPreviewPageViewModel> pages)
+    {
+        ArgumentNullException.ThrowIfNull(planOrder);
+        ArgumentNullException.ThrowIfNull(copies);
+        ArgumentNullException.ThrowIfNull(pages);
+        OrderId = planOrder.Order.OrderId;
+        Key = key;
+        Pages = pages;
+        var line = planOrder.Order.Lines.FirstOrDefault(candidate => string.Equals(candidate.SkuId, key.SkuId, StringComparison.Ordinal));
+        var first = copies[0];
+        var copyText = first.Quantity > 1 ? $" · bộ {key.CopyIndex}/{first.Quantity}" : string.Empty;
+        Title = $"{first.Idol} · {line?.VariationName ?? key.SkuId}{copyText} · {pages.Count} trang";
+        ProductName = line?.ProductName ?? string.Empty;
+        HasManualChoice = copies.Any(copy => copy.IsManualChoice);
+    }
+
+    public string OrderId { get; }
+
+    public OrderSetKey Key { get; }
+
+    public string Title { get; }
+
+    /// <summary>Position of the set in the order (1-based).</summary>
+    public int Number { get; init; } = 1;
+
+    public string ProductName { get; }
 
     public bool HasManualChoice { get; }
 

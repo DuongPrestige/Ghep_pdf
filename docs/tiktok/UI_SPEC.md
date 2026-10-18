@@ -87,6 +87,7 @@ Mở từ nút xem ở cột File in. Mỗi bộ card cần in là một ô (slo
 
 - Bên trái: các file của idol, mới nhất trước, lọc theo tên (mặc định là idol của bộ đang chọn, tìm không dấu). PDF ngoài kho thêm bằng **Thêm file PDF ngoài…** được ghim ở đầu danh sách.
 - Bấm trang để thêm / bỏ khỏi bộ đang chọn; **Lấy cả file** thêm mọi trang chưa chọn của file.
+- Đơn có nhiều bộ card: dòng **Đơn có nhiều bộ card · bấm vào bộ cần sửa** hiện mỗi bộ thành một nút (`Bộ n: IDOL · số card = số trang · đã chọn x/y`, dòng dưới là tên sản phẩm); bộ đang sửa tô xanh. Thư viện bên trái tự lọc theo idol của bộ đang chọn.
 - Bên phải: trang của từng bộ theo thứ tự in; đổi thứ tự bằng **◀ Lên / Xuống ▶**, bỏ trang bằng **✕**.
 - Được chọn nhiều hoặc ít trang hơn số card; dialog hiện cảnh báo nhưng vẫn cho lưu.
 - **Lưu lựa chọn** chỉ bật khi mọi bộ có ít nhất một trang và không trang nào thuộc file đã mất; file kho đã bị xóa khỏi ổ đĩa bị ẩn, trang lỗi render hiển thị "Không mở được file".
@@ -106,6 +107,7 @@ Mở từ nút xem ở cột File in. Mỗi bộ card cần in là một ô (slo
 ```
 
 - Hiển thị mọi trang theo đúng thứ tự file in, gồm trang trắng phân cách.
-- **Đổi file** mở dialog "Xem và tự chọn file" cho đơn đó rồi dựng lại xem trước.
+- Đơn có nhiều bộ card (nhiều món, hoặc một món mua nhiều bộ) được tách thành từng khối `Bộ n: IDOL · phân loại · số trang` kèm tên sản phẩm; trang trắng phân cách (nếu có) đứng trước các khối.
+- **Đổi file bộ này** mở dialog "Xem và tự chọn file" đúng bộ đó; **Đổi file** ở đầu đơn mở bộ 1. Đóng dialog thì xem trước được dựng lại.
 - **Bỏ khỏi lô** bỏ tick đơn, không in trong lô này.
 - **Tạo file in** tạo file với các đơn còn lại.

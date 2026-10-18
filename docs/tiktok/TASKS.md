@@ -17,7 +17,7 @@ Notes: ...
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Done | 16 |
+| Done | 17 |
 | Chưa xong (Backlog/Blocked) | 1 |
 | Đã hủy | 1 |
 
@@ -162,3 +162,13 @@ Completed: 2026-10-18
 Files changed: `src/PDFPageComposer.App/ViewModels/TikTok/OrdersTabViewModel.cs` (`SearchText`, `ClearSearchCommand`, `MatchesSearch`), `src/PDFPageComposer.App/Views/TikTokOrdersWindow.xaml`, `tests/PDFPageComposer.Tests/ViewModels/TikTok/OrdersTabViewModelTests.cs`, `docs/tiktok/UI_SPEC.md`, `docs/tiktok/USER_GUIDE.md`.
 Verification: 380/380 test passed (gồm test STA mở `TikTokOrdersWindow`); build 0 warning, 0 error.
 Notes: Dùng lại `TextNormalizer.MatchesSearch` (bỏ dấu, mọi từ phải khớp) trên chuỗi mã đơn + sản phẩm + phân loại. Ô tìm có độ trễ 200 ms để không lọc lại ở từng phím.
+
+### - [x] TASK-078 — Sửa file từng bộ card của đơn nhiều món
+
+- **Mục tiêu:** Đơn có nhiều bộ card (ví dụ Jaysonlei 30 card + Cody 30 card) phải sửa được từng bộ; trước đây nút chọn bộ trong dialog trông như chữ thường nên người dùng không biết bấm.
+- **Dependency:** TASK-073.
+- **Acceptance criteria:** Xem trước file in tách đơn thành khối theo bộ, mỗi khối có "Đổi file bộ này" mở dialog đúng bộ; dialog hiện các bộ thành nút rõ ràng có số thứ tự và tên sản phẩm; có test ViewModel và test mở thật hai cửa sổ.
+
+Completed: 2026-10-18
+Files changed: `ViewModels/TikTok/OrderFilesViewModel.cs` (`OrderSetKey`, tham số `initialSet`, `FileSlotViewModel.Number/ProductName`), `ViewModels/TikTok/PrintPreviewViewModel.cs` (`PreviewSetViewModel`, `EditSetCommand`), `ViewModels/TikTok/OrdersTabViewModel.cs`, `Views/OrderFilesWindow.xaml`, `Views/PrintPreviewWindow.xaml`, `tests/.../OrderFilesViewModelTests.cs`, `OrdersTabViewModelTests.cs`, `TikTokOrdersWindowSmokeTests.cs`, `docs/tiktok/UI_SPEC.md`, `docs/tiktok/USER_GUIDE.md`.
+Verification: 381/381 test passed; test STA mới mở `PrintPreviewWindow` (đơn nhiều bộ) và `OrderFilesWindow` ở bộ 2 không lỗi binding; chụp màn hình trên bản sao dữ liệu thật đơn 586646591384225083: xem trước tách 2 bộ JAYSONLEI / CODY, "Đổi file bộ này" của CODY mở dialog ở Bộ 2.

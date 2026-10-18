@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng — Đơn TikTok
 
-Áp dụng cho phiên bản 1.3.2.
+Áp dụng cho phiên bản 1.3.3.
 
 Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
 
@@ -33,6 +33,7 @@ Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
 - Ở cột **File in**, bấm nút xem để mở **Xem và tự chọn file**.
 - Bên trái là các file của idol; bấm vào trang để chọn, hoặc **Lấy cả file**. Bấm **Thêm file PDF ngoài…** để lấy trang từ file bất kỳ trên máy.
 - Có thể chọn nhiều hoặc ít trang hơn số card (ví dụ đơn 30 card bình thường 4 tờ, muốn in 5 tờ); ứng dụng chỉ cảnh báo.
+- Đơn có nhiều bộ card (ví dụ card Jaysonlei + card Cody): bấm vào nút **Bộ 1**, **Bộ 2**… ở đầu hộp để chọn bộ cần sửa. Trong **Xem trước file in**, mỗi bộ có nút **Đổi file bộ này** mở thẳng đúng bộ đó.
 - Bấm **Lưu lựa chọn**. **Dùng lại chọn tự động** để bỏ lựa chọn tay.
 - Nếu file kho đã bị xóa khỏi ổ đĩa, bấm **Quét kho** rồi chọn lại.
 

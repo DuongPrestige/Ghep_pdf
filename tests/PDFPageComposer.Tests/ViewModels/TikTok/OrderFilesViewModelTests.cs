@@ -115,6 +115,27 @@ public sealed class OrderFilesViewModelTests
     }
 
     [Fact]
+    public void Opens_on_the_requested_set_and_numbers_the_sets()
+    {
+        var order = Order("O1", 0, [("CODY20", 1), ("IVAN20", 2)]);
+        var skus = Skus(Auto("CODY20", "CODY", 20), Auto("IVAN20", "IVAN", 20));
+
+        var viewModel = new OrderFilesViewModel(order, skus, [Cody1, Ivan3], [], [], renderer: null, fileExists: _ => true,
+            initialSet: new OrderSetKey("IVAN20", 2));
+
+        Assert.True(viewModel.HasManySlots);
+        Assert.Equal([1, 2, 3], viewModel.Slots.Select(slot => slot.Number));
+        Assert.Equal("IVAN20", viewModel.SelectedSlot!.SkuId);
+        Assert.Equal(2, viewModel.SelectedSlot.CopyIndex);
+        Assert.Equal("IVAN", viewModel.FilterText);
+        Assert.False(string.IsNullOrEmpty(viewModel.SelectedSlot.ProductName));
+
+        var fallback = new OrderFilesViewModel(order, skus, [Cody1, Ivan3], [], [], renderer: null, fileExists: _ => true,
+            initialSet: new OrderSetKey("KHONG-CO", 1));
+        Assert.Same(fallback.Slots[0], fallback.SelectedSlot);
+    }
+
+    [Fact]
     public void A_chosen_page_of_a_file_missing_on_disk_blocks_saving()
     {
         var viewModel = Create(Order("O1", 0, [("CODY20", 1)]), [Cody1, Cody2], [Cody1, Cody2], path => path != Cody2.FilePath);

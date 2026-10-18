@@ -80,27 +80,70 @@
                 <TextBlock Text="{Binding Header}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" />
             </DockPanel>
             <TextBlock Text="{Binding ProductsText}" Foreground="#475569" TextWrapping="Wrap" Margin="0,4,0,0" />
-            <ListBox ItemsSource="{Binding Slots}"
-                     SelectedItem="{Binding SelectedSlot}"
-                     Margin="0,6,0,0"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     Visibility="{Binding HasManySlots, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Padding="6,2">
-                            <Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold" />
-                            <Run Text=" · " />
-                            <Run Text="{Binding StatusText, Mode=OneWay}" />
-                        </TextBlock>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <DockPanel Margin="0,8,0,0"
+                       Visibility="{Binding HasManySlots, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock DockPanel.Dock="Left"
+                           Text="Đơn có nhiều bộ card · bấm vào bộ cần sửa:"
+                           FontWeight="SemiBold"
+                           Foreground="#1E293B"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0" />
+                <ListBox ItemsSource="{Binding Slots}"
+                         SelectedItem="{Binding SelectedSlot}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Margin" Value="0,0,8,6" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Chip"
+                                                Background="#FFFFFF"
+                                                BorderBrush="#94A3B8"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="10,5">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Chip" Property="Background" Value="#EFF6FF" />
+                                                <Setter TargetName="Chip" Property="BorderBrush" Value="#2563EB" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Chip" Property="Background" Value="#2563EB" />
+                                                <Setter TargetName="Chip" Property="BorderBrush" Value="#1D4ED8" />
+                                                <Setter Property="Foreground" Value="#FFFFFF" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel MaxWidth="380">
+                                <TextBlock TextTrimming="CharacterEllipsis">
+                                    <Run Text="{Binding Number, Mode=OneWay, StringFormat='Bộ {0}: '}" FontWeight="Bold" />
+                                    <Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <Run Text=" · " />
+                                    <Run Text="{Binding StatusText, Mode=OneWay}" />
+                                </TextBlock>
+                                <TextBlock Text="{Binding ProductName}" FontSize="12" Opacity="0.8" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
             <TextBlock Text="{Binding MissingFilesText}" Foreground="#B45309" TextWrapping="Wrap" Margin="0,4,0,0" />
         </StackPanel>
 

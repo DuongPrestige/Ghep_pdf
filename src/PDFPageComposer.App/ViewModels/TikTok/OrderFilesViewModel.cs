@@ -19,6 +19,9 @@ public enum OrderFilesResult
     Automatic,
 }
 
+/// <summary>One printed set of an order: a line (SKU) and the copy number when the line is bought more than once.</summary>
+public sealed record OrderSetKey(string SkuId, int CopyIndex);
+
 /// <summary>
 /// "Xem / chọn file in" of one order, laid out like the composer: every library file of the idol is a row of page
 /// thumbnails (click a page to add or remove it), and the right side shows the pages chosen for the selected set in
@@ -47,7 +50,8 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         Func<string, bool>? fileExists = null,
         Func<IReadOnlyList<string>>? pickPdfFiles = null,
         Func<string, int>? countPdfPages = null,
-        Func<string, bool>? copyText = null)
+        Func<string, bool>? copyText = null,
+        OrderSetKey? initialSet = null)
     {
         ArgumentNullException.ThrowIfNull(order);
         ArgumentNullException.ThrowIfNull(skus);
@@ -89,7 +93,11 @@ public sealed partial class OrderFilesViewModel : ObservableObject
                     title += $" · bộ {copyIndex}/{line.Quantity}";
                 }
 
-                var slot = new FileSlotViewModel(line.SkuId, copyIndex, title, pages, idol);
+                var slot = new FileSlotViewModel(line.SkuId, copyIndex, title, pages, idol)
+                {
+                    Number = Slots.Count + 1,
+                    ProductName = TextNormalizer.TrimCell(line.ProductName) ?? line.SkuId,
+                };
                 foreach (var copy in currentCopies.Where(copy =>
                     copy.CopyIndex == copyIndex && string.Equals(copy.SkuId, line.SkuId, StringComparison.Ordinal)))
                 {
@@ -116,7 +124,10 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         ProductsText = string.Join(
             Environment.NewLine,
             order.Lines.OrderBy(line => line.LineNo).Select(line => $"{line.ProductName} · {line.VariationName} x{line.Quantity}"));
-        SelectedSlot = Slots.FirstOrDefault();
+        SelectedSlot = Slots.FirstOrDefault(slot => initialSet is not null
+                           && slot.CopyIndex == initialSet.CopyIndex
+                           && string.Equals(slot.SkuId, initialSet.SkuId, StringComparison.Ordinal))
+                       ?? Slots.FirstOrDefault();
     }
 
     /// <summary>Raised when the dialog should close; <see cref="Result"/> says how.</summary>
@@ -504,6 +515,12 @@ public sealed class FileSlotViewModel : ObservableObject
     public int CopyIndex { get; }
 
     public string Title { get; }
+
+    /// <summary>Position of the set in the order (1-based), shown on the set buttons.</summary>
+    public int Number { get; init; } = 1;
+
+    /// <summary>Product name of the line, shown under the set title so sets of one idol can be told apart.</summary>
+    public string ProductName { get; init; } = string.Empty;
 
     public int RequiredPages { get; }
 

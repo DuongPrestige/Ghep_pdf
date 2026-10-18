@@ -542,6 +542,21 @@ public sealed class OrdersTabViewModelTests : IDisposable
             Assert.True(preview.Orders[1].Pages[0].IsBlank);
             Assert.Contains("trang trắng", preview.Summary);
 
+            // O2 prints two sets; each is its own block and "Đổi file bộ này" opens the dialog on that set.
+            var ivan = preview.Orders[1];
+            Assert.True(ivan.HasManySets);
+            Assert.Equal([1, 2], ivan.Sets.Select(set => set.Number));
+            Assert.Equal([1, 2], ivan.Sets.Select(set => set.Key.CopyIndex));
+            Assert.Contains("bộ 2/2", ivan.Sets[1].Title);
+            Assert.Same(ivan.Pages[0], ivan.SeparatorPage);
+            Assert.Equal(ivan.Pages.Skip(1), ivan.Sets.SelectMany(set => set.Pages));
+            OrderFilesViewModel? opened = null;
+            orders.ShowOrderFilesDialog = dialog => opened = dialog;
+            preview.EditSetCommand.Execute(ivan.Sets[1]);
+            Assert.NotNull(opened);
+            Assert.Equal(2, opened!.SelectedSlot!.CopyIndex);
+            Assert.Equal(2, opened.Slots.Count);
+
             preview.CopyOrderIdCommand.Execute(preview.Orders[1]);
             Assert.Equal("O2", harness.Clipboard.Text);
             preview.CopyAllOrderIdsCommand.Execute(null);

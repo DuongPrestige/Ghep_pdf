@@ -2,6 +2,11 @@
 
 Mỗi phiên bản là một GitHub Release `vX.Y.Z` có file `PDFPageComposer-vX.Y.Z.zip`. Máy người dùng nhận bản mới qua nút **Check update** (xem `docs/update/`).
 
+## 1.3.3 — 2026-10-18
+
+- Đơn TikTok: đơn có nhiều bộ card được tách theo từng bộ trong **Xem trước file in**, mỗi bộ có nút **Đổi file bộ này**.
+- Hộp **Xem / chọn file**: các bộ card hiện thành nút **Bộ 1**, **Bộ 2**… kèm tên sản phẩm, bấm để chọn bộ cần sửa.
+
 ## 1.3.2 — 2026-10-18
 
 - Đơn TikTok: ô **Tìm mã đơn / sản phẩm** ở tab Đơn hàng (tìm một phần mã đơn hoặc tên sản phẩm, phân loại, không cần dấu; tìm trong mọi nhóm).

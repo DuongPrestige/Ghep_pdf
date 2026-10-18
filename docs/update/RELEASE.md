@@ -4,7 +4,7 @@ Co che ben trong nut Check update: `docs/update/TECH_SPEC.md`. Lich su phien ban
 
 Co che update dung file manifest `latest.json` o nhanh `main` cua repo va goi `.zip` dat tren GitHub Releases.
 
-Ban hien tai: **v1.3.2** (https://github.com/DuongPrestige/Ghep_pdf/releases/tag/v1.3.2).
+Ban hien tai: **v1.3.3** (https://github.com/DuongPrestige/Ghep_pdf/releases/tag/v1.3.3).
 
 ## 1. May nguoi dung
 

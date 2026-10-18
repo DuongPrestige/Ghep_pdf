@@ -281,11 +281,11 @@ public sealed partial class OrdersTabViewModel : ObservableObject
             workspace.ClassificationOptions(allowReprint: selected.Any(row => row.IsReprint)));
     }
 
-    private async Task EditOrderFilesAsync(string orderId)
+    private async Task EditOrderFilesAsync(string orderId, OrderSetKey? set)
     {
         if (allRows.FirstOrDefault(row => string.Equals(row.OrderId, orderId, StringComparison.Ordinal)) is { } row)
         {
-            await ChooseFilesCommand.ExecuteAsync(row);
+            await ChooseFilesForSetAsync(row, set);
         }
     }
 
@@ -307,7 +307,10 @@ public sealed partial class OrdersTabViewModel : ObservableObject
     /// plan because every order starts from the newest file), then saves or clears the files chosen by hand.
     /// </summary>
     [RelayCommand]
-    private Task ChooseFilesAsync(OrderRowViewModel? row)
+    private Task ChooseFilesAsync(OrderRowViewModel? row) => ChooseFilesForSetAsync(row, null);
+
+    /// <summary>Opens "Xem / chọn file" for the order, on <paramref name="set"/> when given (from the print preview).</summary>
+    private Task ChooseFilesForSetAsync(OrderRowViewModel? row, OrderSetKey? set)
     {
         if (row is null || !row.CanChooseFiles || ShowOrderFilesDialog is null)
         {
@@ -333,7 +336,8 @@ public sealed partial class OrdersTabViewModel : ObservableObject
             FileExists,
             services.FileDialogs.PickPdfFiles,
             CountPdfPages,
-            CopyToClipboard);
+            CopyToClipboard,
+            set);
         ShowOrderFilesDialog(dialog);
         if (dialog.Result == OrderFilesResult.Cancel)
         {

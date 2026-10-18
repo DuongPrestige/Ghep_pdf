@@ -61,6 +61,31 @@ public sealed class TikTokOrdersWindowSmokeTests : IDisposable
                 viewModel.Import.OpenCommand.Execute(null);
                 viewModel.Workspace.ShowError("Lỗi thử");
                 PumpUntil(() => true);
+
+                // Print preview (O2 prints two sets, so the per-set blocks render) and the file dialog on set 2.
+                viewModel.SelectedTabIndex = 0;
+                viewModel.Workspace.ErrorText = null;
+                PumpUntil(() => true);
+                viewModel.Orders.ShowPrintPreviewDialog = preview =>
+                {
+                    Assert.Contains(preview.Orders, order => order.HasManySets);
+                    var previewWindow = OffScreen(new PrintPreviewWindow(preview));
+                    previewWindow.Show();
+                    PumpUntil(() => true);
+
+                    viewModel.Orders.ShowOrderFilesDialog = dialog =>
+                    {
+                        var filesWindow = OffScreen(new OrderFilesWindow(dialog));
+                        filesWindow.Show();
+                        PumpUntil(() => true);
+                        filesWindow.Close();
+                    };
+                    preview.EditSetCommand.Execute(preview.Orders.First(order => order.HasManySets).Sets[1]);
+                    PumpUntil(() => true);
+                    previewWindow.Close();
+                };
+                viewModel.Orders.PreviewPrintFileCommand.Execute(null);
+                PumpUntil(() => true);
                 window.Close();
             }
             catch (Exception exception)
@@ -83,6 +108,18 @@ public sealed class TikTokOrdersWindowSmokeTests : IDisposable
         }
 
         Assert.Empty(bindingErrors);
+    }
+
+    private static T OffScreen<T>(T window)
+        where T : Window
+    {
+        window.WindowState = WindowState.Normal;
+        window.WindowStartupLocation = WindowStartupLocation.Manual;
+        window.Left = -20000;
+        window.Top = -20000;
+        window.ShowActivated = false;
+        window.ShowInTaskbar = false;
+        return window;
     }
 
     private static void PumpUntil(Func<bool> condition)

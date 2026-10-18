@@ -31,7 +31,7 @@ Trước khi build lại, đóng app đang chạy; nếu không, file exe bị k
 dotnet test .\tests\PDFPageComposer.Tests\PDFPageComposer.Tests.csproj
 ```
 
-- 378 test ở bản 1.3.1. Có test STA mở thật `TikTokOrdersWindow` và `OrderFilesWindow` để bắt lỗi binding; `MainWindow` và `PrintPreviewWindow` chưa có test này, nên kiểm tra bằng cách mở app.
+- 381 test. Có test STA mở thật `TikTokOrdersWindow`, `PrintPreviewWindow` và `OrderFilesWindow` để bắt lỗi binding; `MainWindow` chưa có test này, nên kiểm tra bằng cách mở app.
 - Khi app đang chạy làm khóa thư mục `bin`, dùng thư mục build riêng: thêm `--artifacts-path "$env:TEMP\gpdf-verify"`.
 - Dữ liệu mẫu TikTok (đã xóa thông tin người nhận): `tests/PDFPageComposer.Tests/TestData/tiktok/orders-sample.csv`.
 
