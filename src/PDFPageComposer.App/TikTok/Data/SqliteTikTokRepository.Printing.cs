@@ -85,6 +85,30 @@ public sealed partial class SqliteTikTokRepository
         EnsureOrderFound(affected, orderId);
     }
 
+    public async Task SetPaperPrintedAsync(
+        IReadOnlyCollection<string> orderIds,
+        DateTimeOffset? printedAt,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(orderIds);
+
+        await using var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using var transaction = await BeginTransactionAsync(connection, cancellationToken).ConfigureAwait(false);
+        foreach (var orderId in orderIds)
+        {
+            var affected = await ExecuteAsync(
+                connection,
+                transaction,
+                "UPDATE \"Order\" SET PaperPrintedAt = @printedAt WHERE OrderId = @orderId;",
+                cancellationToken,
+                ("@printedAt", printedAt is { } value ? SqliteValues.ToDb(value) : null),
+                ("@orderId", orderId)).ConfigureAwait(false);
+            EnsureOrderFound(affected, orderId);
+        }
+
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task UnmarkPrintedAsync(string orderId, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(orderId);
@@ -95,7 +119,7 @@ public sealed partial class SqliteTikTokRepository
             null,
             """
             UPDATE "Order"
-            SET PrintedBatchId = NULL, PrintedAt = NULL, PrintedSource = NULL, ChangedAfterPrint = 0
+            SET PrintedBatchId = NULL, PrintedAt = NULL, PrintedSource = NULL, ChangedAfterPrint = 0, PaperPrintedAt = NULL
             WHERE OrderId = @orderId;
             """,
             cancellationToken,

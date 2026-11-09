@@ -100,7 +100,10 @@ public interface ITikTokRepository
     /// <summary>Stores (or clears with null) the note hash approved by "Đã xem – cho phép ghép".</summary>
     Task SetNoteReviewedAsync(string orderId, string? noteHash, CancellationToken cancellationToken);
 
-    /// <summary>Clears PrintedBatchId/PrintedAt/PrintedSource/ChangedAfterPrint. History rows are kept.</summary>
+    /// <summary>"Đã in": stores (or clears with null) when the orders were printed on paper. Imports never change it.</summary>
+    Task SetPaperPrintedAsync(IReadOnlyCollection<string> orderIds, DateTimeOffset? printedAt, CancellationToken cancellationToken);
+
+    /// <summary>Clears PrintedBatchId/PrintedAt/PrintedSource/ChangedAfterPrint/PaperPrintedAt. History rows are kept.</summary>
     Task UnmarkPrintedAsync(string orderId, CancellationToken cancellationToken);
 
     /// <summary>Writes the batch, its items and marks the orders printed (PrintedSource.Batch) in one transaction.</summary>
@@ -150,6 +153,15 @@ public interface IPrintPlanBuilder
         IReadOnlyDictionary<string, SkuConfig> skus,
         IReadOnlyList<PdfAsset> assets,
         SeparatorMode separatorMode,
+        ClassificationOptions options);
+
+    /// <summary>
+    /// Files one order would print now, without classifying it; lines that cannot be planned yet are left out.
+    /// </summary>
+    IReadOnlyList<PrintPlanCopy> PlanOrderCopies(
+        TikTokOrder order,
+        IReadOnlyDictionary<string, SkuConfig> skus,
+        IReadOnlyList<PdfAsset> assets,
         ClassificationOptions options);
 }
 

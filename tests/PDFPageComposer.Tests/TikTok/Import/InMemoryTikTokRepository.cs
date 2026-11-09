@@ -172,6 +172,16 @@ internal sealed class InMemoryTikTokRepository : ITikTokRepository
         return Task.CompletedTask;
     }
 
+    public Task SetPaperPrintedAsync(IReadOnlyCollection<string> orderIds, DateTimeOffset? printedAt, CancellationToken cancellationToken)
+    {
+        foreach (var orderId in orderIds)
+        {
+            _orders[orderId] = _orders[orderId] with { PaperPrintedAt = printedAt };
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task<int> DeleteImportAsync(long importId, CancellationToken cancellationToken) => throw new NotSupportedException();
 
     public Task<int> DeleteAllOrdersAsync(CancellationToken cancellationToken) => throw new NotSupportedException();

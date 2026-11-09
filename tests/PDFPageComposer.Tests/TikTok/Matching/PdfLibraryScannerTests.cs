@@ -128,6 +128,20 @@ public sealed class PdfLibraryScannerTests : IDisposable
             () => scanner.ScanAsync(_directory, [], Today, cancellation.Token));
     }
 
+    [Fact]
+    public async Task ScanAsync_skips_the_manual_file_store()
+    {
+        var valid = CreatePdf("IVAN - 3 PAGE - 15.10.pdf", 3);
+        CreatePdf(Path.Combine("_ThuCong", "587035179774936214", "khach.pdf"), 1);
+
+        using var pdfium = new PdfiumLibrary();
+        var scanner = new PdfLibraryScanner(new PdfMetadataService(pdfium));
+
+        var result = await scanner.ScanAsync(_directory, [], Today, CancellationToken.None);
+
+        Assert.Equal(Path.GetFullPath(valid), Assert.Single(result).FilePath);
+    }
+
     private static PdfAsset Single(IReadOnlyList<PdfAsset> assets, string path) =>
         Assert.Single(assets, asset => string.Equals(asset.FilePath, Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase));
 

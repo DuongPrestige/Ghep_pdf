@@ -204,6 +204,11 @@
                                             Style="{StaticResource ToolButton}"
                                             Command="{Binding CopyOrderIdsCommand}"
                                             ToolTip="Copy mã các đơn đang tick; không tick đơn nào thì copy mọi đơn đang hiển thị" />
+                                    <Button Content="Đánh dấu đã in"
+                                            Style="{StaticResource ToolButton}"
+                                            Command="{Binding MarkPaperPrintedCommand}"
+                                            CommandParameter="{Binding SelectedItems, ElementName=OrdersGrid}"
+                                            ToolTip="Đánh dấu các dòng đang bôi đen (giữ Shift/Ctrl để chọn nhiều; không bôi đen thì dùng các đơn đang tick) là đã in giấy, dòng chuyển màu xanh lá. Bấm lại khi tất cả đã đánh dấu để bỏ đánh dấu." />
                                     <TextBlock Text="Trang trắng giữa đơn:" VerticalAlignment="Center" Margin="8,0,6,0" />
                                     <ComboBox ItemsSource="{Binding SeparatorModes}"
                                               SelectedItem="{Binding SelectedSeparatorMode}"
@@ -220,7 +225,8 @@
                             </DockPanel>
                         </Border>
 
-                        <DataGrid ItemsSource="{Binding Rows}"
+                        <DataGrid x:Name="OrdersGrid"
+                                  ItemsSource="{Binding Rows}"
                                   IsReadOnly="True"
                                   SelectionMode="Extended"
                                   GridLinesVisibility="Horizontal"
@@ -239,8 +245,9 @@
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="BorderThickness" Value="0" />
                                     <Style.Triggers>
+                                        <!-- Highlighted (bôi đen) rows: yellow, a hue no group colour uses. -->
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#DBEAFE" />
+                                            <Setter Property="Background" Value="#FDE047" />
                                             <Setter Property="Foreground" Value="#0F172A" />
                                         </Trigger>
                                     </Style.Triggers>
@@ -250,6 +257,22 @@
                                 <Style TargetType="DataGridRow">
                                     <Setter Property="ToolTip" Value="Nháy đúp để copy mã đơn" />
                                     <EventSetter Event="MouseDoubleClick" Handler="OnOrderRowDoubleClick" />
+                                    <!-- Whole-row colour by group (2026-11-09); "Đã in" (paper) is last so it wins. -->
+                                    <Style.Triggers>
+                                        <!-- Strong, clearly different hues (2026-11-09): sky blue, violet, orange, green. -->
+                                        <DataTrigger Binding="{Binding Category}" Value="Printed">
+                                            <Setter Property="Background" Value="#7DD3FC" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Category}" Value="Manual">
+                                            <Setter Property="Background" Value="#C4B5FD" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Category}" Value="HasNote">
+                                            <Setter Property="Background" Value="#FDBA74" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsPaperPrinted}" Value="True">
+                                            <Setter Property="Background" Value="#4ADE80" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
@@ -311,13 +334,13 @@
                                                             Command="{Binding DataContext.CopyOrderIdCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                             CommandParameter="{Binding}" />
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding MetaText}" FontSize="12" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding MetaText}" FontSize="12" Foreground="#334155" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <!-- One text line per order line in both columns (no wrapping) so product and variation stay aligned. -->
-                                <DataGridTemplateColumn Header="Sản phẩm" Width="1.6*">
+                                <DataGridTemplateColumn Header="Sản phẩm" Width="1.6*" MinWidth="160">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ProductsText}"
@@ -327,7 +350,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Phân loại" Width="1.2*">
+                                <DataGridTemplateColumn Header="Phân loại" Width="1.2*" MinWidth="130">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding VariationsText}"
@@ -339,7 +362,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Số tờ" Binding="{Binding SheetCount, Mode=OneWay}" Width="52" />
-                                <DataGridTemplateColumn Header="File in" Width="1.6*">
+                                <DataGridTemplateColumn Header="File in" Width="230">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel>
@@ -357,18 +380,21 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Ghi chú" Width="*">
+                                <DataGridTemplateColumn Header="Ghi chú" Width="*" MinWidth="180">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel>
-                                                <TextBlock Text="{Binding WarningText}" Style="{StaticResource OptionalLine}" Foreground="#DC2626" FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding ReasonsText}" Style="{StaticResource OptionalLine}" Foreground="#B45309" FontSize="13" />
-                                                <TextBlock Text="{Binding NoteText}" Style="{StaticResource OptionalLine}" Foreground="#475569" FontSize="13" FontStyle="Italic" />
+                                                <!-- Dark text colours so they stay readable on the strong row colours. -->
+                                                <TextBlock Text="{Binding PaperPrintedText}" Style="{StaticResource OptionalLine}" Foreground="#14532D" FontWeight="Bold" />
+                                                <TextBlock Text="{Binding WarningText}" Style="{StaticResource OptionalLine}" Foreground="#991B1B" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding ReasonsText}" Style="{StaticResource OptionalLine}" Foreground="#7C2D12" FontSize="13" />
+                                                <TextBlock Text="{Binding NoteText}" Style="{StaticResource OptionalLine}" Foreground="#1E293B" FontSize="13" FontStyle="Italic" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="Auto">
+                                <!-- Fixed width: an Auto column next to star columns is measured too late and gets cut off at the right edge. -->
+                                <DataGridTemplateColumn Header="Thao tác" Width="175" MinWidth="175">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,2">
@@ -378,6 +404,13 @@
                                                         Visibility="{Binding CanReviewNote, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                         Command="{Binding DataContext.MarkNoteReviewedCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}" />
+                                                <ToggleButton Content="Đã in"
+                                                              Padding="8,2"
+                                                              Margin="0,0,4,0"
+                                                              ToolTip="Đánh dấu đơn đã in giấy (dòng chuyển xanh lá); bấm lại để bỏ"
+                                                              IsChecked="{Binding IsPaperPrinted, Mode=OneWay}"
+                                                              Command="{Binding DataContext.TogglePaperPrintedCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                              CommandParameter="{Binding}" />
                                                 <ToggleButton Content="In lại"
                                                               Padding="8,2"
                                                               IsChecked="{Binding IsReprint, Mode=OneWay}"

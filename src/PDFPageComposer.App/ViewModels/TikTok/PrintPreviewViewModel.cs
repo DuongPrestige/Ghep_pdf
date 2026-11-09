@@ -268,7 +268,7 @@ public sealed class PreviewSetViewModel
         Pages = pages;
         var line = planOrder.Order.Lines.FirstOrDefault(candidate => string.Equals(candidate.SkuId, key.SkuId, StringComparison.Ordinal));
         var first = copies[0];
-        var copyText = first.Quantity > 1 ? $" · bộ {key.CopyIndex}/{first.Quantity}" : string.Empty;
+        var copyText = first.ShowsCopyNumber ? $" · bộ {key.CopyIndex}/{first.Quantity}" : string.Empty;
         Title = $"{first.Idol} · {line?.VariationName ?? key.SkuId}{copyText} · {pages.Count} trang";
         ProductName = line?.ProductName ?? string.Empty;
         HasManualChoice = copies.Any(copy => copy.IsManualChoice);

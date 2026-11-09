@@ -98,10 +98,21 @@ public sealed partial class OrderRowViewModel : ObservableObject
 
     public bool IsPrinted => Category == OrderCategory.Printed;
 
+    /// <summary>"Đã in": the user marked the order as printed on paper; the whole row turns green (2026-11-09).</summary>
+    public bool IsPaperPrinted => Order.PaperPrintedAt is not null;
+
+    public string PaperPrintedText => Order.PaperPrintedAt is { } at
+        ? $"Đã in giấy lúc {TikTokLabels.FormatDateTime(at)}"
+        : string.Empty;
+
     public bool CanReviewNote => Category == OrderCategory.HasNote;
 
-    /// <summary>"Xem / chọn": orders whose card lines are all configured (ready, missing a file, or printed).</summary>
-    public bool CanChooseFiles => Category is OrderCategory.Ready or OrderCategory.MissingFile or OrderCategory.Printed;
+    /// <summary>
+    /// "Chọn file": orders whose card lines are all configured (ready, missing a file, printed, or manual: manual
+    /// products are printed from files the user adds by hand, 2026-11-08).
+    /// </summary>
+    public bool CanChooseFiles =>
+        Category is OrderCategory.Ready or OrderCategory.MissingFile or OrderCategory.Printed or OrderCategory.Manual;
 
     /// <summary>Ready orders can always be picked; printed orders only after "In lại".</summary>
     public bool CanSelect => Category == OrderCategory.Ready || IsReprint;
@@ -131,7 +142,7 @@ public sealed partial class OrderRowViewModel : ObservableObject
     private static string DescribeCopy(PrintPlanCopy copy)
     {
         var text = Path.GetFileNameWithoutExtension(copy.Asset.FilePath);
-        if (copy.Quantity > 1)
+        if (copy.ShowsCopyNumber)
         {
             text += $" · bộ {copy.CopyIndex}/{copy.Quantity}";
         }

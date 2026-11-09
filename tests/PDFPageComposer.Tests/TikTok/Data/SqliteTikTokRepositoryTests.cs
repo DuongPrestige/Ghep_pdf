@@ -28,7 +28,7 @@ public sealed class SqliteTikTokRepositoryTests
         await fixture.Repository.InitializeAsync(CancellationToken.None);
 
         Assert.True(File.Exists(fixture.DatabasePath));
-        Assert.Equal(6, await fixture.CountAsync("SchemaVersion"));
+        Assert.Equal(7, await fixture.CountAsync("SchemaVersion"));
         Assert.Equal([shop], await fixture.Repository.GetShopsAsync(CancellationToken.None));
         foreach (var table in new[] { "Shop", "Sku", "IdolAlias", "PdfAsset", "ImportBatch", "\"Order\"", "OrderLine", "PrintBatch", "PrintBatchItem" })
         {
@@ -44,6 +44,7 @@ public sealed class SqliteTikTokRepositoryTests
         var columns = await fixture.GetColumnsAsync("Order");
 
         Assert.Contains("NoteReviewedHash", columns);
+        Assert.Contains("PaperPrintedAt", columns);
         Assert.DoesNotContain(columns, column =>
             column.Contains("Recipient", StringComparison.OrdinalIgnoreCase)
             || column.Contains("Phone", StringComparison.OrdinalIgnoreCase)

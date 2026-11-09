@@ -126,6 +126,9 @@ internal static class TikTokSchemaMigrator
         (6, """
             ALTER TABLE OrderFileOverride ADD COLUMN FilePageCount INTEGER NULL;
             """),
+        (7, """
+            ALTER TABLE "Order" ADD COLUMN PaperPrintedAt TEXT NULL;
+            """),
     ];
 
     public static int LatestVersion => Migrations[^1].Version;

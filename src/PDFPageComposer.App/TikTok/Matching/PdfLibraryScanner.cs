@@ -59,6 +59,8 @@ public sealed class PdfLibraryScanner : IPdfLibraryScanner
         var files = Directory.EnumerateFiles(fullFolder, "*.pdf", options)
             .Where(path => string.Equals(Path.GetExtension(path), ".pdf", StringComparison.OrdinalIgnoreCase))
             .Select(Path.GetFullPath)
+            // Copies of files added by hand for single orders are not library files (ManualFileStore, 2026-11-08).
+            .Where(path => !ManualFileStore.IsInStore(fullFolder, path))
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .ToList();
 

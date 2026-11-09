@@ -1,9 +1,11 @@
 # PRD bổ sung — Tạo file in theo đơn TikTok Shop
 
 - **Phiên bản:** 1.0 (đã triển khai trong ứng dụng 1.3.0)
-- **Ngày cập nhật:** 2026-10-18
+- **Ngày cập nhật:** 2026-11-08
 - **Phụ thuộc:** `docs/composer/PRD.md` (BR-01, BR-02, BR-07, BR-08 vẫn áp dụng).
 - **Tài liệu liên quan:** `docs/tiktok/TECH_SPEC.md`, `docs/tiktok/UI_SPEC.md`, `docs/tiktok/USER_GUIDE.md`, `docs/tiktok/TASKS.md`.
+
+> **Thay đổi 2026-11-08 (TASK-080):** đơn *Thủ công* có nút "Chọn file" để người dùng tự thêm file PDF cho từng bộ; khi mọi bộ thủ công đã có file, đơn thành *Sẵn sàng* và được gộp chung file in với card 1 mặt (TT-04, TT-08). Card A4/A5, photobooth và mini album chuyển từ *Bỏ qua* sang *Thủ công* (TT-03, Q1). File ngoài kho được chép vào thư mục `_ThuCong` trong kho. Món thủ công không làm đơn thành "đơn phức tạp" (TT-07).
 
 > **Thay đổi ở v1.0 (2026-10-17):** quy tắc *Luôn lấy ảnh mới nhất* (TT-04), xem trước file in và tự chọn file (TT-04), trang phân cách trắng (TT-07), xóa lần import (TT-09), phạm vi *Đơn chưa làm file in* và thứ tự theo file CSV (TT-12). Bỏ phương án Chrome extension: quy trình chỉ dùng file CSV (xem Q3).
 
@@ -69,11 +71,12 @@ Tính năng này nhận danh sách đơn từ Seller Center, tự khớp các d�
 | Loại | Ý nghĩa | Ví dụ |
 |---|---|---|
 | **Ghép tự động** | Card bo góc 1 mặt, có file trong kho. Cần thêm: mã idol, số card. | `30 CARD, 1 Mặt` của Cody |
-| **Thủ công** | Card nhưng không ghép tự động được: 2 mặt, in theo yêu cầu… | `20 CARD, 2 MẶT (MẶT ẢNH + CHỮ KÝ)` |
-| **Bỏ qua** | Không thuộc quy trình in card | móc khóa, nhãn vở, photobooth, polaroid, card A4 |
+| **Thủ công** | Không ghép tự động được, người dùng tự thêm file in (TT-04): card 2 mặt, in theo yêu cầu, card A4/A5, photobooth, mini album (2026-11-08)… | `20 CARD, 2 MẶT (MẶT ẢNH + CHỮ KÝ)`, `1 mặt, A4` |
+| **Bỏ qua** | Không thuộc quy trình in card | móc khóa, nhãn vở, polaroid |
 
 - SKU **lần đầu xuất hiện** trong file import được tự thêm vào danh sách với trạng thái *Chưa cấu hình*, kèm gợi ý:
-  - Tên sản phẩm **không chứa "BO GÓC", "THẺ GÓC" hay "PHOTOCARD"** → gợi ý *Bỏ qua* (móc khóa, nhãn vở, photobooth/PTB, polaroid…).
+  - Tên sản phẩm chứa `PHOTOBOOTH`, `ALBUM MINI` hoặc `MINI ALBUM` → *Thủ công* (2026-11-08).
+  - Tên sản phẩm **không chứa "BO GÓC", "THẺ GÓC" hay "PHOTOCARD"** → gợi ý *Bỏ qua* (móc khóa, nhãn vở, polaroid…).
   - Variation chứa `YÊU CẦU` hoặc sản phẩm bắt đầu bằng `IN THEO YÊU CẦU` → *Thủ công*. Variation chỉ ghi `<số> CARD` (không ghi số mặt) → coi là 1 mặt.
   - Không đọc được số card (`<số> CARD`) → *Thủ công*.
   - Variation chứa `2 MẶT` hoặc `THEO YÊU CẦU` → *Thủ công*.
@@ -92,6 +95,8 @@ Tính năng này nhận danh sách đơn từ Seller Center, tự khớp các d�
 - **Luôn lấy ảnh mới nhất** (cập nhật 2026-10-17, công tắc trong Cài đặt, mặc định bật; quy tắc này thay cho việc chọn file đúng số trang ở trên): ghép bộ từ các file của idol theo ngày **mới nhất → cũ dần**, không quan tâm số trang từng file, đến khi đủ N trang; file cuối chỉ lấy số trang đầu còn thiếu. Ví dụ Đình Bắc 20 card (3 trang) = 3 trang đầu của `DINH BAC - 5 PAGE - 24.09` (dù có `DINH BAC - 3 PAGE - 31.07`); Jack 50 card (6 trang) = `JACK - 1 PAGE - 13.09` + `JACK - 1 PAGE - 06.09` + `JACK - 4 PAGE - 31.08`; mọi đơn cùng loại đều in cùng bộ này. Tắt công tắc thì chỉ dùng file đúng số trang (mới nhất trước).
 - **Xem trước file in** (thêm 2026-10-17): nút "Xem trước file in" cạnh "Tạo file in" mở cửa sổ toàn màn hình liệt kê mọi trang sẽ in của các đơn đang tick, đúng thứ tự file in (đánh số trang, chia theo đơn, gồm trang trắng giữa đơn). Mỗi đơn có "Đổi file" (mở cửa sổ chọn file bên dưới) và "Bỏ khỏi lô" (bỏ tick); xem trước tự cập nhật sau mỗi thay đổi; nút "Tạo file in" trong cửa sổ chạy đúng luồng tạo file in thường.
 - **Xem trước và tự chọn file** (thêm 2026-10-17): ô *File in* của mỗi đơn (Sẵn sàng / Thiếu file / Đã tạo file in) có nút **"Xem / chọn file"**, mở cửa sổ (bố cục giống trình ghép PDF gốc): bên trái là mọi file trong kho của idol, mỗi file một dòng ảnh các trang (lọc được theo tên bất kỳ, file không còn trên ổ đĩa bị ẩn kèm nhắc "Quét kho"); **bấm vào trang để chọn / bỏ chọn**, trang đã chọn có số thứ tự in; nút "Lấy cả file"; nút **"Thêm file PDF ngoài…"** chọn PDF bất kỳ trên máy (không cần nằm trong kho), file ngoài luôn nằm đầu danh sách (nền vàng) và được lưu kèm số trang (`OrderFileOverride.FilePageCount`) để tạo file in. Bên phải là các trang đã chọn của bộ đang chọn theo thứ tự in (đổi thứ tự, bỏ trang, "Bỏ hết"). Đơn nhiều bộ (nhiều dòng hàng hoặc số lượng > 1) chọn bộ ở thanh trên. Mỗi bộ được chọn nhiều hơn hoặc ít hơn số trang theo số card (ví dụ đơn 30 card in 5 tờ thay vì 4); khi lệch app chỉ cảnh báo màu cam, chỉ chặn lưu khi một bộ chưa có trang nào hoặc có trang của file không còn trên ổ đĩa. Trang tự chọn được lưu theo đơn thành các đoạn trang liên tiếp (bảng `OrderFileOverride`: file, trang bắt đầu, số trang); lịch sử in lưu cả trang bắt đầu (`PrintBatchItem.FirstPage`), thay cho chọn tự động khi tạo file in, hiện chữ "tự chọn" trong ô *File in*; đơn *Thiếu file* có file tự chọn thì thành *Sẵn sàng*. Nút **"Dùng lại chọn tự động"** xóa lựa chọn tay. Nếu file đã chọn không còn trong kho, đơn chuyển *Thiếu file*. Bộ thứ 2 trong cùng một đơn lấy tiếp các file sau đó. Lịch sử in lưu mỗi file của bộ là một dòng, kèm số trang đã dùng khi chỉ lấy một phần (`PrintBatchItem.PagesUsed`).
+- **Tự thêm file cho đơn Thủ công** (thêm 2026-11-08, đơn giản hóa 2026-11-09): đơn *Thủ công* cũng có nút "Chọn file". **Mọi món thủ công của một đơn, dù số lượng bao nhiêu, chung một ô** `Thủ công · <phân loại> x<số lượng> + …`: người dùng thêm file như bình thường (file đã gồm đủ số lượng), không chia bộ theo số lượng, không có số trang yêu cầu, chỉ cần ít nhất 1 trang. Ô lọc theo idol của SKU nếu có, không thì để trống; file thường được thêm bằng "Thêm file PDF ngoài…". Lựa chọn lưu trên dòng thủ công đầu tiên, bộ 1. Khi ô này có file, đơn được xét tiếp như đơn thường (thường thành *Sẵn sàng*, dòng *Ghép tự động* trong cùng đơn vẫn lấy file mới nhất). Các trang thủ công in một lần, đặt tại vị trí món thủ công đầu tiên, gộp chung file in với card 1 mặt; trang giữ nguyên khổ giấy của file (A4, A5…); không hiện "bộ x/y". "Dùng lại chọn tự động" xóa file đã chọn và đơn quay về nhóm *Thủ công*.
+- **Lưu bản sao file ngoài** (thêm 2026-11-08): khi bấm "Lưu lựa chọn", mọi file chọn từ ngoài kho được chép vào `<kho PDF>\_ThuCong\<mã đơn>\` (chưa đặt kho thì vào `%LOCALAPPDATA%\PDFPageComposer\_ThuCong`) và đơn dùng bản sao này. Nhờ vậy di chuyển hoặc xóa file gốc vẫn tạo file in và "In lại" được. Không ghi đè bản sao cũ: file khác trùng tên được đặt tên `… (2).pdf`. "Quét kho" bỏ qua thư mục `_ThuCong`. File gốc không bị sửa.
 
 ### TT-05 — Số lượng lớn hơn 1
 
@@ -103,7 +108,7 @@ Các đơn sắp **đúng thứ tự dòng trong file CSV** (cập nhật 2026-1
 
 ### TT-07 — Trang phân cách
 
-Trước mỗi **đơn phức tạp** (có từ 2 dòng *Ghép tự động* trở lên, hoặc có dòng số lượng lớn hơn 1), app chèn một trang phân cách A4 **trắng hoàn toàn** (cập nhật 2026-10-17 để tiết kiệm mực; trước đó in mã đơn, shop, người mua, danh sách món, số tờ). Tùy chọn theo lô: *Không chèn* / *Chỉ đơn phức tạp* (mặc định) / *Mọi đơn*.
+Trước mỗi **đơn phức tạp** (có từ 2 dòng *Ghép tự động* trở lên, hoặc có dòng số lượng lớn hơn 1), app chèn một trang phân cách A4 **trắng hoàn toàn** (cập nhật 2026-10-17 để tiết kiệm mực; trước đó in mã đơn, shop, người mua, danh sách món, số tờ). Tùy chọn theo lô: *Không chèn* / *Chỉ đơn phức tạp* (mặc định) / *Mọi đơn*. Dòng *Thủ công* không được tính khi xét đơn phức tạp, nên món thủ công không tự thêm trang trắng (2026-11-08).
 
 ### TT-08 — Phân loại đơn
 
@@ -114,7 +119,7 @@ Phân loại dựa trên các dòng hàng **không phải** *Bỏ qua*:
 | **Sẵn sàng** | Có ít nhất 1 dòng *Ghép tự động* và mọi dòng (trừ dòng *Bỏ qua*) đều khớp được file. |
 | **Cần cấu hình** | Có SKU chưa cấu hình hoặc chưa xác nhận. |
 | **Thiếu file** | Kho không có file hợp lệ cho (idol, số trang). |
-| **Thủ công** | Có dòng *Thủ công*. |
+| **Thủ công** | Có dòng *Thủ công* mà ô *Thủ công* của đơn chưa có file tự chọn. Khi đã có file, đơn được xét tiếp như đơn thường (thường thành *Sẵn sàng*). |
 | **Có ghi chú** | Đơn có `Buyer Message` hoặc `Seller Note` (xem TT-10). |
 | **Không cần in card** | Mọi dòng đều là *Bỏ qua*. Mặc định ẩn. |
 | **Đã tạo file in** | Đã có trong một lô in thành công, hoặc Seller Note chứa "ĐÃ IN". |
@@ -155,6 +160,8 @@ Phân loại dựa trên các dòng hàng **không phải** *Bỏ qua*:
 - Người dùng có thể **bỏ đánh dấu** một đơn hoặc **tạo lại** file in của một lô cũ.
 - Xuất thất bại hoặc bị hủy thì không đánh dấu đơn nào.
 - Sau khi in, app cho phép **copy danh sách mã đơn** để người dùng dán ghi chú lên Seller Center nếu muốn.
+- **Đánh dấu đã in giấy** (thêm 2026-11-09): khác với *Đã tạo file in* (app đã tạo file PDF), người dùng tự đánh dấu đơn **đã in ra giấy** bằng nút "Đã in" trên từng dòng, hoặc "Đánh dấu đã in" cho các dòng đang bôi đen (không bôi đen thì dùng các đơn đang tick; nếu mọi dòng đã đánh dấu thì bấm để bỏ). Lưu thời điểm (`Order.PaperPrintedAt`); import CSV không xóa dấu này; "Bỏ đánh dấu" ở tab Lịch sử xóa luôn dấu này. Dấu này chỉ để nhìn, không đổi nhóm đơn.
+- **Màu cả dòng** ở tab Đơn hàng (thêm 2026-11-09): *Đã tạo file in* nền xanh dương nhạt, *Thủ công* nền xanh tím, *Có ghi chú* nền cam, **đã in giấy** nền xanh lá (ưu tiên hơn các màu khác).
 
 ### TT-12 — Xuất danh sách đơn
 
@@ -222,6 +229,6 @@ Tổng file in: 11 trang. O1 và O2 được đánh dấu đã in. Import lại 
 
 ## 9. Câu hỏi mở
 
-- **Q1 (đã chốt 2026-10-16):** Polaroid và photobooth (PTB) hiện tại là *Bỏ qua*. Nếu sau này có file kho cho các loại này, cần mở rộng TT-01/TT-02 theo loại sản phẩm.
+- **Q1 (đã chốt 2026-10-16, sửa 2026-11-08):** Polaroid là *Bỏ qua*. Photobooth (PTB), mini album và card A4/A5 là *Thủ công*: người dùng tự thêm file PDF cho từng bộ và các món này được gộp chung file in với card 1 mặt.
 - **Q2 (đã chốt 2026-10-16):** Đơn có lẫn card *Thủ công* (ví dụ 2 mặt) và card *Ghép tự động* thì **chặn cả đơn**, xếp vào nhóm *Thủ công* (TT-08).
 - **Q3 (đã chốt 2026-10-17):** Không làm Chrome extension và không đánh dấu ngược (cờ đỏ) lên TikTok. Quy trình: xuất CSV từ TikTok → import → tạo file in và xuất mã đơn chưa làm → lần sau import CSV mới, đơn đã làm tự được lọc nhờ lịch sử lô in. Cờ đỏ không có trong file CSV nên app không đọc được.

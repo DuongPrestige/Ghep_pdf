@@ -335,7 +335,8 @@ public sealed partial class SqliteTikTokRepository
         using var command = SqliteValues.CreateCommand(
             connection,
             null,
-            $"SELECT {OrderColumns} FROM \"Order\" WHERE {filter};",
+            // PaperPrintedAt is read here but never written by imports (only by SetPaperPrintedAsync).
+            $"SELECT {OrderColumns}, PaperPrintedAt FROM \"Order\" WHERE {filter};",
             parameters);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         var orders = new List<TikTokOrder>();
@@ -359,7 +360,8 @@ public sealed partial class SqliteTikTokRepository
                 reader.GetBoolean("ChangedAfterPrint"),
                 reader.GetNullableString("NoteReviewedHash"),
                 lines.TryGetValue(orderId, out var orderLines) ? orderLines : [],
-                reader.GetInt32("SourceRow")));
+                reader.GetInt32("SourceRow"),
+                reader.GetNullableDateTimeOffset("PaperPrintedAt")));
         }
 
         return SortOrders(orders);

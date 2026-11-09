@@ -59,8 +59,19 @@ public sealed class SkuConfigSuggesterTests
 
     [Theory]
     [InlineData("[MÓC KHÓA ALBUM MINI] - Móc khóa", "Tất Cả Các Khung, IVan")]
-    [InlineData("[Ảnh Polar IG] - Polaroid", "18 CARD, QUANG HÙNG MASTER-D, khung ngẫu nhiên (tổng hợp)")]
     [InlineData("[PTB Tinh Hà Say Hi 2026] - Photobooth", "10 PHOTOBOOTH, Quang Hùng MasterD, Dọc 1x4 ảnh")]
+    [InlineData("[PTB IN THEO YÊU CẦU] - PHOTOBOOTH NHÀ QUẾ CA", "20 PHOTOBOOTH, THEO YÊU CẦU (GỬI ẢNH CHO SHOP), Dọc 1x4 ảnh")]
+    public void Suggest_returns_manual_for_photobooth_and_mini_album(string product, string variation)
+    {
+        var suggestion = new SkuConfigSuggester().Suggest(product, variation, Aliases);
+
+        Assert.Equal(SkuProcessType.Manual, suggestion.ProcessType);
+        Assert.Null(suggestion.Idol);
+        Assert.Null(suggestion.CardCount);
+    }
+
+    [Theory]
+    [InlineData("[Ảnh Polar IG] - Polaroid", "18 CARD, QUANG HÙNG MASTER-D, khung ngẫu nhiên (tổng hợp)")]
     [InlineData("MÓC KHÓA - IN HÌNH THEO YÊU CẦU - MÓC KHÓA ANH TRAI SAY HI - IN 2 MẶT", "IDOL KHÁC/IN THEO YÊU CẦU (GỬI ẢNH CHO SHOP), 2 mặt giống nhau")]
     public void Suggest_returns_ignore_without_idol(string product, string variation)
     {

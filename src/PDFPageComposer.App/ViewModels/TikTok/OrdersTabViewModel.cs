@@ -36,6 +36,8 @@ public sealed partial class OrdersTabViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(printRunner);
         this.workspace = workspace;
         this.printRunner = printRunner;
+        StoreExternalFile = (orderId, path) =>
+            ManualFileStore.Import(ManualFileStore.RootFor(this.workspace.Settings.PdfLibraryFolder), orderId, path);
 
         foreach (var category in TikTokLabels.CategoryDisplayOrder)
         {
@@ -204,6 +206,51 @@ public sealed partial class OrdersTabViewModel : ObservableObject
             "MarkNoteReviewed");
     }
 
+    /// <summary>Row button "Đã in": marks the order as printed on paper, or clears the mark when it is set.</summary>
+    [RelayCommand]
+    private Task TogglePaperPrintedAsync(OrderRowViewModel? row) =>
+        row is null ? Task.CompletedTask : SetPaperPrintedAsync([row], !row.IsPaperPrinted);
+
+    /// <summary>
+    /// "Đánh dấu đã in": every highlighted row (click, Shift/Ctrl + click), or every ticked row when none is
+    /// highlighted. When all of them are already marked, the mark is cleared instead.
+    /// </summary>
+    [RelayCommand]
+    private Task MarkPaperPrintedAsync(System.Collections.IList? highlighted)
+    {
+        var rows = highlighted?.OfType<OrderRowViewModel>().ToList() ?? [];
+        if (rows.Count == 0)
+        {
+            rows = Rows.Where(row => row.IsSelected).ToList();
+        }
+
+        if (rows.Count == 0)
+        {
+            workspace.ShowError("Hãy bôi đen (bấm vào dòng, giữ Shift hoặc Ctrl để chọn nhiều) hoặc tick các đơn cần đánh dấu đã in.");
+            return Task.CompletedTask;
+        }
+
+        return SetPaperPrintedAsync(rows, !rows.All(row => row.IsPaperPrinted));
+    }
+
+    private Task SetPaperPrintedAsync(IReadOnlyList<OrderRowViewModel> rows, bool printed)
+    {
+        var orderIds = rows.Select(row => row.OrderId).ToList();
+        return workspace.RunAsync(
+            "Đang lưu đánh dấu đã in...",
+            async cancellationToken =>
+            {
+                var repository = workspace.Services.Repository;
+                DateTimeOffset? at = printed ? workspace.Now : null;
+                await Task.Run(() => repository.SetPaperPrintedAsync(orderIds, at, cancellationToken), cancellationToken);
+                await ReloadAsync(cancellationToken);
+                workspace.StatusText = printed
+                    ? $"Đã đánh dấu đã in {orderIds.Count} đơn."
+                    : $"Đã bỏ đánh dấu đã in {orderIds.Count} đơn.";
+            },
+            "SetPaperPrinted");
+    }
+
     [RelayCommand]
     private void ToggleReprint(OrderRowViewModel? row)
     {
@@ -299,6 +346,33 @@ public sealed partial class OrdersTabViewModel : ObservableObject
         return document.PageCount;
     };
 
+    /// <summary>
+    /// Copies a PDF from outside the library into the "_ThuCong" store (order id, source path → stored path), so the
+    /// order still prints after the original file is moved or deleted (2026-11-08).
+    /// </summary>
+    public Func<string, string, string> StoreExternalFile { get; set; }
+
+    /// <summary>Points every file from outside the library at its stored copy.</summary>
+    private async Task<IReadOnlyList<FileOverride>> StoreExternalFilesAsync(
+        string orderId,
+        IReadOnlyList<FileOverride> overrides,
+        CancellationToken cancellationToken)
+    {
+        if (!overrides.Any(choice => choice.FilePageCount is not null))
+        {
+            return overrides;
+        }
+
+        var store = StoreExternalFile;
+        return await Task.Run(
+            () => overrides
+                .Select(choice => choice.FilePageCount is null
+                    ? choice
+                    : choice with { PdfAssetPath = store(orderId, choice.PdfAssetPath) })
+                .ToList(),
+            cancellationToken);
+    }
+
     /// <summary>Disk check used by the dialog to hide library files that were deleted after the last scan.</summary>
     public Func<string, bool> FileExists { get; set; } = System.IO.File.Exists;
 
@@ -320,18 +394,19 @@ public sealed partial class OrdersTabViewModel : ObservableObject
         var order = row.Order;
         var services = workspace.Services;
         var skus = workspace.SkuMap();
-        var plan = services.PlanBuilder.Build(
-            [order],
+        // Planned without classification, so the sets that can be printed already are filled in even while a manual
+        // line still has no file (the order is then not Ready yet).
+        var currentCopies = services.PlanBuilder.PlanOrderCopies(
+            order,
             skus,
             workspace.Assets,
-            SeparatorMode.None,
             workspace.ClassificationOptions(allowReprint: true));
         var dialog = new OrderFilesViewModel(
             order,
             skus,
             workspace.Assets,
             workspace.Aliases,
-            plan.Orders.FirstOrDefault()?.Copies ?? [],
+            currentCopies,
             services.PageRenderer,
             FileExists,
             services.FileDialogs.PickPdfFiles,
@@ -344,11 +419,12 @@ public sealed partial class OrdersTabViewModel : ObservableObject
             return Task.CompletedTask;
         }
 
-        var overrides = dialog.Result == OrderFilesResult.Save ? dialog.BuildOverrides() : [];
+        var chosen = dialog.Result == OrderFilesResult.Save ? dialog.BuildOverrides() : [];
         return workspace.RunAsync(
             "Đang lưu file in đã chọn...",
             async cancellationToken =>
             {
+                var overrides = await StoreExternalFilesAsync(order.OrderId, chosen, cancellationToken);
                 await workspace.SaveFileOverridesAsync(order.OrderId, overrides, cancellationToken);
                 await ReloadAsync(cancellationToken);
                 workspace.StatusText = overrides.Count > 0

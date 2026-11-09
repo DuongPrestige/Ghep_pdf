@@ -172,3 +172,25 @@ Notes: Dùng lại `TextNormalizer.MatchesSearch` (bỏ dấu, mọi từ phải
 Completed: 2026-10-18
 Files changed: `ViewModels/TikTok/OrderFilesViewModel.cs` (`OrderSetKey`, tham số `initialSet`, `FileSlotViewModel.Number/ProductName`), `ViewModels/TikTok/PrintPreviewViewModel.cs` (`PreviewSetViewModel`, `EditSetCommand`), `ViewModels/TikTok/OrdersTabViewModel.cs`, `Views/OrderFilesWindow.xaml`, `Views/PrintPreviewWindow.xaml`, `tests/.../OrderFilesViewModelTests.cs`, `OrdersTabViewModelTests.cs`, `TikTokOrdersWindowSmokeTests.cs`, `docs/tiktok/UI_SPEC.md`, `docs/tiktok/USER_GUIDE.md`.
 Verification: 381/381 test passed; test STA mới mở `PrintPreviewWindow` (đơn nhiều bộ) và `OrderFilesWindow` ở bộ 2 không lỗi binding; chụp màn hình trên bản sao dữ liệu thật đơn 586646591384225083: xem trước tách 2 bộ JAYSONLEI / CODY, "Đổi file bộ này" của CODY mở dialog ở Bộ 2.
+
+### - [x] TASK-080 — Tự thêm file cho đơn Thủ công
+
+- **Mục tiêu:** Đơn *Thủ công* (card A4/A5, photobooth, mini album, in theo yêu cầu, 2 mặt…) được tự thêm file PDF cho từng bộ và gộp chung file in với card 1 mặt.
+- **Dependency:** TASK-072, TASK-078.
+- **Acceptance criteria:** Đơn Thủ công có nút "Chọn file"; dialog gộp mọi món thủ công của đơn thành một ô, không chia theo số lượng, không bắt buộc số trang (đơn giản hóa 2026-11-09 theo phản hồi người dùng); đơn thành *Sẵn sàng* khi ô thủ công có file; file in xếp món thủ công theo thứ tự dòng hàng; món thủ công không thêm trang trắng giữa đơn; file ngoài kho được chép vào `<kho>\_ThuCong\<mã đơn>\` và "Quét kho" bỏ qua thư mục này; gợi ý SKU photobooth / mini album là *Thủ công*.
+
+Completed: 2026-11-08
+Files changed: `TikTok/Matching/OrderClassifier.cs`, `TikTok/Matching/PrintPlanBuilder.cs` (`PlanManualSet`, `PlanOrderCopies`, `IsManual`, `ManualIdol`), `TikTok/Models/PrintModels.cs` (`IsManualProduct`, `ShowsCopyNumber`), `ViewModels/TikTok/PrintPreviewViewModel.cs`, `TikTok/TikTokInterfaces.cs`, `TikTok/ManualFileStore.cs` (mới), `TikTok/Matching/PdfLibraryScanner.cs`, `TikTok/Matching/SkuConfigSuggester.cs`, `ViewModels/TikTok/OrderFilesViewModel.cs` (`FileSlotViewModel.RequiredPages` thành `int?`), `ViewModels/TikTok/OrderRowViewModel.cs`, `ViewModels/TikTok/OrdersTabViewModel.cs` (`StoreExternalFile`), `Views/OrderFilesWindow.xaml`, `tests/.../ManualOrderFilesTests.cs` (mới), `OrderFilesViewModelTests.cs`, `PdfLibraryScannerTests.cs`, `SkuConfigSuggesterTests.cs`, `OrdersTabViewModelTests.cs`, `docs/tiktok/PRD.md`, `UI_SPEC.md`, `TECH_SPEC.md`, `USER_GUIDE.md`.
+Verification: build không warning; 390/390 test passed (gồm test mới cho phân loại, kế hoạch in, dialog, `ManualFileStore`, quét kho bỏ `_ThuCong`).
+Notes: SKU photobooth / mini album đã xác nhận *Bỏ qua* từ trước không tự đổi; người dùng đổi sang *Thủ công* ở tab Cấu hình SKU. Bản sao trong `_ThuCong` không tự xóa. 2026-11-09: đã đổi 38 SKU photobooth / mini album / A4 decal sang *Thủ công* trực tiếp trong `tiktok.db` (có bản sao lưu); người dùng thử giao diện thấy chia bộ theo số lượng khó dùng nên gộp thành một ô thủ công cho mỗi đơn.
+
+### - [x] TASK-081 — Màu cả dòng theo nhóm và đánh dấu đã in giấy
+
+- **Mục tiêu:** Nhìn lưới đơn biết ngay trạng thái: tô nền cả dòng theo nhóm; người dùng đánh dấu đơn đã in ra giấy.
+- **Dependency:** TASK-080.
+- **Acceptance criteria:** Đã tạo file in nền xanh dương nhạt, Thủ công nền xanh tím, Có ghi chú nền cam, đã in giấy nền xanh lá (ưu tiên); nút "Đã in" từng dòng và "Đánh dấu đã in" cho dòng bôi đen / đơn đang tick, bấm lại để bỏ; dấu lưu trong database, import không xóa, "Bỏ đánh dấu" lô in xóa.
+
+Completed: 2026-11-09
+Files changed: `TikTok/Data/TikTokSchemaMigrator.cs` (v7), `TikTok/Models/TikTokOrder.cs` (`PaperPrintedAt`), `TikTok/Data/SqliteTikTokRepository.Orders.cs`, `TikTok/Data/SqliteTikTokRepository.Printing.cs` (`SetPaperPrintedAsync`), `TikTok/TikTokInterfaces.cs`, `ViewModels/TikTok/OrderRowViewModel.cs` (`IsPaperPrinted`, `PaperPrintedText`), `ViewModels/TikTok/OrdersTabViewModel.cs` (`TogglePaperPrintedCommand`, `MarkPaperPrintedCommand`), `Views/TikTokOrdersWindow.xaml`, tests (`SqliteTikTokRepositoryOrderTests`, `SqliteTikTokRepositoryTests`, `OrdersTabViewModelTests`, test doubles), `docs/tiktok/PRD.md`, `UI_SPEC.md`, `TECH_SPEC.md`, `USER_GUIDE.md`.
+Verification: build không warning; 392/392 test passed (gồm test lưu / bỏ dấu, dấu còn sau import, test ViewModel từng dòng và hàng loạt, test mở cửa sổ không lỗi binding).
+Notes: Database lên v7; bản Release 1.3.3 cũ sẽ báo database mới hơn và không mở được. Đã sao lưu `tiktok.backup-20261109-before-v7.db` trước khi nâng cấp.

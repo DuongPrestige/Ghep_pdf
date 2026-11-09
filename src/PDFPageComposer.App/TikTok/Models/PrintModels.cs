@@ -32,8 +32,12 @@ public sealed record PrintPlanCopy(
     PdfAsset Asset,
     bool DuplicateImage,
     bool IsManualChoice = false,
-    int FirstPage = 1)
+    int FirstPage = 1,
+    bool IsManualProduct = false)
 {
+    /// <summary>"bộ 2/3" is shown only for automatic sets; manual products print one shared set per order.</summary>
+    public bool ShowsCopyNumber => Quantity > 1 && !IsManualProduct;
+
     public int LastPage => FirstPage + PageCount - 1;
 
     /// <summary>True when only some pages of the library file are printed.</summary>

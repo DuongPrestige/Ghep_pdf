@@ -4,6 +4,8 @@ namespace PDFPageComposer.App.TikTok.Models;
 /// A persisted TikTok order. Never contains recipient name, phone or address (AC-T07).
 /// SourceRow is the CSV row of the order's first line in the last import that contained it (0 = unknown);
 /// with LastSeenImportId it keeps the Seller Center file order (see TikTokOrderOrdering).
+/// PaperPrintedAt is set by "Đã in": the user printed the order on paper (2026-11-09). It is only a mark for the user;
+/// it does not change the classification. Imports never change it.
 /// </summary>
 public sealed record TikTokOrder(
     string OrderId,
@@ -22,7 +24,8 @@ public sealed record TikTokOrder(
     bool ChangedAfterPrint,
     string? NoteReviewedHash,
     IReadOnlyList<TikTokOrderLine> Lines,
-    int SourceRow = 0);
+    int SourceRow = 0,
+    DateTimeOffset? PaperPrintedAt = null);
 
 /// <summary>Order of the CSV files: import by import, then CSV row; CreatedAt and OrderId break ties.</summary>
 public static class TikTokOrderOrdering

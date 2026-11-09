@@ -2,6 +2,16 @@
 
 Mỗi phiên bản là một GitHub Release `vX.Y.Z` có file `PDFPageComposer-vX.Y.Z.zip`. Máy người dùng nhận bản mới qua nút **Check update** (xem `docs/update/`).
 
+## 1.3.4 — 2026-11-09
+
+- Đơn TikTok **Thủ công** (card A4/A5, photobooth, mini album, in theo yêu cầu, 2 mặt…): nút **Chọn file** để tự thêm file PDF, mọi món thủ công của đơn chung một ô. Có file thì đơn thành **Sẵn sàng** và được gộp chung file in với card 1 mặt.
+- File PDF ngoài kho được chép vào thư mục `_ThuCong` trong kho PDF, nên xóa hoặc di chuyển file gốc vẫn in được. **Quét kho** bỏ qua thư mục này.
+- Gợi ý SKU: photobooth và mini album là **Thủ công** (trước là Bỏ qua).
+- Tab Đơn hàng: tô màu cả dòng theo nhóm (đã tạo file in xanh da trời, thủ công tím, có ghi chú cam, đã in giấy xanh lá; dòng bôi đen màu vàng).
+- Nút **Đã in** trên từng dòng và **Đánh dấu đã in** cho nhiều dòng để đánh dấu đơn đã in ra giấy.
+- Cột File in hẹp lại, cột nút **Thao tác** không còn bị che ở mép phải.
+- Database TikTok lên phiên bản 7 (tự nâng cấp khi mở app; bản cũ 1.3.3 không mở được database mới).
+
 ## 1.3.3 — 2026-10-18
 
 - Đơn TikTok: đơn có nhiều bộ card được tách theo từng bộ trong **Xem trước file in**, mỗi bộ có nút **Đổi file bộ này**.

@@ -21,6 +21,9 @@ Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
 5. Bấm **Xem trước file in** để xem mọi trang sẽ in: **Đổi file** để chọn lại trang cho đơn, **Bỏ khỏi lô** để không in đơn đó lần này, **Copy mã tất cả đơn**.
 6. Bấm **Tạo file in**. File được mở bằng Foxit để in.
 7. Dùng **Xuất CSV** với phạm vi "Đơn chưa làm file in" để lấy danh sách mã đơn còn lại.
+8. In xong ra giấy: bấm **Đã in** ở cuối dòng đơn, hoặc bôi đen nhiều dòng (bấm dòng đầu, giữ Shift bấm dòng cuối; giữ Ctrl để chọn lẻ) rồi bấm **Đánh dấu đã in** ở thanh dưới. Dòng chuyển xanh lá. Bấm lại để bỏ đánh dấu.
+
+Màu dòng: xanh dương nhạt = đã tạo file in · xanh tím = thủ công · cam = có ghi chú · xanh lá = đã in giấy.
 
 ## Cách chọn file ảnh
 
@@ -37,9 +40,19 @@ Bấm **Đơn TikTok** trên thanh công cụ để mở cửa sổ đơn hàng.
 - Bấm **Lưu lựa chọn**. **Dùng lại chọn tự động** để bỏ lựa chọn tay.
 - Nếu file kho đã bị xóa khỏi ổ đĩa, bấm **Quét kho** rồi chọn lại.
 
+## Thêm file cho đơn Thủ công
+
+Card A4/A5, photobooth, mini album, card in theo yêu cầu, card 2 mặt… là SKU **Thủ công**: bạn tự làm file PDF rồi thêm vào đơn, và app gộp các món này chung file in với card 1 mặt.
+
+1. Ở tab **Cấu hình SKU**, đặt loại xử lý của các SKU này là **Thủ công** rồi xác nhận. SKU photobooth / mini album trước đây đặt **Bỏ qua** thì cần đổi lại.
+2. Ở tab **Đơn hàng**, bấm chip **Thủ công**, rồi bấm **Chọn file** ở đơn cần làm.
+3. Mọi món thủ công của đơn nằm chung **một ô Thủ công**, dù mua 1 hay nhiều cái. Bấm **Thêm file PDF ngoài…**, chọn file đã làm (đủ số lượng khách mua), rồi bấm **Lấy cả file** hoặc bấm từng trang.
+4. Bấm **Lưu lựa chọn**. App chép file vào thư mục `_ThuCong` trong kho PDF, nên sau đó xóa hay di chuyển file gốc cũng không sao.
+5. Đơn chuyển sang **Sẵn sàng** và được tick để tạo file in như đơn thường.
+
 ## Trang phân cách
 
-- Giữa các đơn phức tạp có một trang trắng để dễ tách đơn. Đổi ở **Trang trắng giữa đơn** (không chèn / chỉ đơn phức tạp / mọi đơn).
+- Giữa các đơn phức tạp có một trang trắng để dễ tách đơn. Đổi ở **Trang trắng giữa đơn** (không chèn / chỉ đơn phức tạp / mọi đơn). Món thủ công không làm đơn thành đơn phức tạp.
 
 ## Xóa dữ liệu
 

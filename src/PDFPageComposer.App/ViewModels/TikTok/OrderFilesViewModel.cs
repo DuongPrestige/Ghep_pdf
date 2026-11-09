@@ -76,39 +76,49 @@ public sealed partial class OrderFilesViewModel : ObservableObject
             .Select(asset => new LibraryFileRowViewModel(asset))
             .ToList();
 
-        foreach (var line in order.Lines.OrderBy(line => line.LineNo))
+        var orderedLines = order.Lines.OrderBy(line => line.LineNo).ToList();
+        // Manual products (A4/A5 cards, photobooth, mini album…, any quantity) share one set: the user adds the
+        // files as usual and they are printed once. The set is stored on the first manual line, copy 1 (2026-11-08).
+        var manualLines = orderedLines
+            .Where(line => skus.TryGetValue(line.SkuId, out var sku) && PrintPlanBuilder.IsManual(sku))
+            .ToList();
+        foreach (var line in orderedLines)
         {
-            if (!skus.TryGetValue(line.SkuId, out var sku) || !PdfAssetMatcher.IsUsableAuto(sku))
+            if (!skus.TryGetValue(line.SkuId, out var sku))
             {
                 continue;
             }
 
-            var idol = PdfAssetMatcher.ResolveIdol(sku.Idol!, aliases);
+            if (PrintPlanBuilder.IsManual(sku))
+            {
+                if (ReferenceEquals(line, manualLines[0]))
+                {
+                    var idol = string.IsNullOrWhiteSpace(sku.Idol) ? string.Empty : PdfAssetMatcher.ResolveIdol(sku.Idol, aliases);
+                    var items = string.Join(
+                        " + ",
+                        manualLines.Select(manual => $"{TextNormalizer.TrimCell(manual.VariationName) ?? manual.SkuId} x{manual.Quantity}"));
+                    AddSlot(line, 1, $"Thủ công · {items}", null, idol, currentCopies);
+                }
+
+                continue;
+            }
+
+            if (!PdfAssetMatcher.IsUsableAuto(sku))
+            {
+                continue;
+            }
+
+            var autoIdol = PdfAssetMatcher.ResolveIdol(sku.Idol!, aliases);
             var pages = PdfAssetMatcher.PagesForCards(sku.CardCount!.Value);
             for (var copyIndex = 1; copyIndex <= line.Quantity; copyIndex++)
             {
-                var title = $"{idol} · {sku.CardCount} card = {pages} trang";
+                var title = $"{autoIdol} · {sku.CardCount} card = {pages} trang";
                 if (line.Quantity > 1)
                 {
                     title += $" · bộ {copyIndex}/{line.Quantity}";
                 }
 
-                var slot = new FileSlotViewModel(line.SkuId, copyIndex, title, pages, idol)
-                {
-                    Number = Slots.Count + 1,
-                    ProductName = TextNormalizer.TrimCell(line.ProductName) ?? line.SkuId,
-                };
-                foreach (var copy in currentCopies.Where(copy =>
-                    copy.CopyIndex == copyIndex && string.Equals(copy.SkuId, line.SkuId, StringComparison.Ordinal)))
-                {
-                    for (var page = copy.FirstPage; page <= copy.LastPage; page++)
-                    {
-                        slot.Pages.Add(new PageThumbViewModel(copy.Asset, page));
-                    }
-                }
-
-                slot.Pages.CollectionChanged += OnSlotPagesChanged;
-                Slots.Add(slot);
+                AddSlot(line, copyIndex, title, pages, autoIdol, currentCopies);
             }
         }
 
@@ -128,6 +138,33 @@ public sealed partial class OrderFilesViewModel : ObservableObject
                            && slot.CopyIndex == initialSet.CopyIndex
                            && string.Equals(slot.SkuId, initialSet.SkuId, StringComparison.Ordinal))
                        ?? Slots.FirstOrDefault();
+    }
+
+    /// <summary>Adds one set, filled with the pages the order prints now for that line copy.</summary>
+    private void AddSlot(
+        TikTokOrderLine line,
+        int copyIndex,
+        string title,
+        int? requiredPages,
+        string idolFilter,
+        IReadOnlyList<PrintPlanCopy> currentCopies)
+    {
+        var slot = new FileSlotViewModel(line.SkuId, copyIndex, title, requiredPages, idolFilter)
+        {
+            Number = Slots.Count + 1,
+            ProductName = TextNormalizer.TrimCell(line.ProductName) ?? line.SkuId,
+        };
+        foreach (var copy in currentCopies.Where(copy =>
+            copy.CopyIndex == copyIndex && string.Equals(copy.SkuId, line.SkuId, StringComparison.Ordinal)))
+        {
+            for (var page = copy.FirstPage; page <= copy.LastPage; page++)
+            {
+                slot.Pages.Add(new PageThumbViewModel(copy.Asset, page));
+            }
+        }
+
+        slot.Pages.CollectionChanged += OnSlotPagesChanged;
+        Slots.Add(slot);
     }
 
     /// <summary>Raised when the dialog should close; <see cref="Result"/> says how.</summary>
@@ -197,7 +234,7 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         {
             if (Slots.Count == 0)
             {
-                return "Đơn không có món ghép tự động nào.";
+                return "Đơn không có món nào cần chọn file in.";
             }
 
             if (Slots.FirstOrDefault(slot => slot.Pages.Count == 0) is { } empty)
@@ -216,7 +253,7 @@ public sealed partial class OrderFilesViewModel : ObservableObject
         string.Join(
             " ",
             Slots
-                .Where(slot => slot.Pages.Count > 0 && !slot.IsComplete)
+                .Where(slot => slot.RequiredPages is not null && slot.Pages.Count > 0 && !slot.IsComplete)
                 .Select(slot => slot.Pages.Count > slot.RequiredPages
                     ? $"{slot.Title}: đang chọn {slot.StatusText} (in nhiều hơn {slot.Pages.Count - slot.RequiredPages} tờ)."
                     : $"{slot.Title}: đang chọn {slot.StatusText} (in ít hơn {slot.RequiredPages - slot.Pages.Count} tờ)."));
@@ -496,7 +533,7 @@ public sealed partial class OrderFilesViewModel : ObservableObject
 /// <summary>One printed set of the order (a line copy) and the pages chosen for it, in print order.</summary>
 public sealed class FileSlotViewModel : ObservableObject
 {
-    public FileSlotViewModel(string skuId, int copyIndex, string title, int requiredPages, string idolFilter)
+    public FileSlotViewModel(string skuId, int copyIndex, string title, int? requiredPages, string idolFilter)
     {
         SkuId = skuId;
         CopyIndex = copyIndex;
@@ -522,16 +559,17 @@ public sealed class FileSlotViewModel : ObservableObject
     /// <summary>Product name of the line, shown under the set title so sets of one idol can be told apart.</summary>
     public string ProductName { get; init; } = string.Empty;
 
-    public int RequiredPages { get; }
+    /// <summary>Pages expected from the card count; null for a manual product without a card count (A4/A5, photobooth…).</summary>
+    public int? RequiredPages { get; }
 
-    /// <summary>Library filter used when this set is selected (the idol after aliases).</summary>
+    /// <summary>Library filter used when this set is selected (the idol after aliases; empty for most manual sets).</summary>
     public string IdolFilter { get; }
 
     public ObservableCollection<PageThumbViewModel> Pages { get; } = [];
 
-    public bool IsComplete => Pages.Count == RequiredPages;
+    public bool IsComplete => RequiredPages is int required ? Pages.Count == required : Pages.Count > 0;
 
-    public string StatusText => $"{Pages.Count}/{RequiredPages} trang";
+    public string StatusText => RequiredPages is int required ? $"{Pages.Count}/{required} trang" : $"{Pages.Count} trang";
 }
 
 /// <summary>One library file: a row of page thumbnails.</summary>

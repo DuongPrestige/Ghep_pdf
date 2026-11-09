@@ -123,7 +123,7 @@ PrintBatchItem(BatchId, Seq, OrderId, SkuId, CopyIndex, Quantity, PdfAssetPath, 
                PRIMARY KEY(BatchId, Seq))
 ```
 
-Migration hiện tại: **v6** (v3 `Order.SourceRow`; v4 bảng `OrderFileOverride`; v5 `FirstPage`; v6 `OrderFileOverride.FilePageCount`).
+Migration hiện tại: **v7** (v3 `Order.SourceRow`; v4 bảng `OrderFileOverride`; v5 `FirstPage`; v6 `OrderFileOverride.FilePageCount`; v7 `Order.PaperPrintedAt TEXT NULL`: thời điểm người dùng đánh dấu "Đã in" giấy, ghi bởi `ITikTokRepository.SetPaperPrintedAsync`, không có trong `OrderColumns` nên import không ghi đè, `UnmarkPrintedAsync` xóa luôn). App cũ (v6) không mở được database v7.
 
 - **Không có** cột người nhận, số điện thoại hay địa chỉ (AC-T07).
 - `PrintBatchItem.Quantity` là snapshot số lượng tại thời điểm in, dùng để phát hiện `ChangedAfterPrint`.
@@ -136,6 +136,7 @@ Migration hiện tại: **v6** (v3 `Order.SourceRow`; v4 bảng `OrderFileOverri
 - Regex tên file: `^(?<idol>.+?)\s*-\s*(?<pages>\d+)\s*PAGES?\s*-\s*(?<d>\d{1,2})\.(?<m>\d{1,2})(?:\s*\(\d+\))?\.pdf$`, không phân biệt hoa thường (cho phép hậu tố ` (2)` khi trùng tên).
 - Suy ra năm: nếu ngày lớn hơn hôm nay thì lấy năm trước.
 - Số trang thật đọc qua `IPdfMetadataService` có sẵn. Cache theo `LastWriteTime`.
+- Quét đệ quy mọi thư mục con, trừ `_ThuCong` ngay dưới thư mục kho (bản sao file tự thêm cho đơn, xem 5.3).
 
 ### 5.2. `SkuConfigSuggester`
 
@@ -146,7 +147,8 @@ P = Normalize(ProductName), V = Normalize(VariationName)
 CardCount : regex \b(\d+)\s*CARD\b trên V              ("20 CARD, 1 Mặt" → 20)
 Sides     : regex \b(\d+)\s*MAT\b trên V               ("2 MẶT (MẶT ẢNH + CHỮ KÝ)" → 2)
 ProcessType (xét theo thứ tự):
-  P không chứa "BO GOC"                   → Ignore   (móc khóa, nhãn vở, PTB, polaroid…)
+  P chứa "PHOTOBOOTH", "ALBUM MINI" hoặc "MINI ALBUM" → Manual, không idol, không số card (2026-11-08)
+  P không chứa "BO GOC"                   → Ignore   (móc khóa, nhãn vở, polaroid…)
   CardCount = null                        → Manual   ("1 mặt, A4 (decal bóc dán)")
   Sides = 2 hoặc V chứa "THEO YEU CAU"    → Manual
   Sides = 1                               → Auto
@@ -171,9 +173,9 @@ Test bắt buộc (kỳ vọng):
 | `[CARD BO GÓC IVAN] - …` | `20 CARD, 2 MẶT (MẶT ẢNH + CHỮ KÝ)` | Manual |
 | `[CARD BO GÓC TINH HÀ SAY HI] - …` | `20 CARD, 1 MẶT, IN THEO YÊU CẦU (GỬI ẢNH CHO SHOP)` | Manual |
 | `CARD BO GÓC A4 A5 KHỔNG LỒ - …` | `1 mặt, A4 (decal bóc dán)` | Manual |
-| `[MÓC KHÓA ALBUM MINI] - …` | `Tất Cả Các Khung, IVan` | Ignore |
+| `[MÓC KHÓA ALBUM MINI] - …` | `Tất Cả Các Khung, IVan` | Manual (2026-11-08) |
 | `[Ảnh Polar IG] - …` | `18 CARD, QUANG HÙNG MASTER-D, khung ngẫu nhiên (tổng hợp)` | Ignore |
-| `[PTB Tinh Hà Say Hi 2026] - …` | `10 PHOTOBOOTH, Quang Hùng MasterD, Dọc 1x4 ảnh` | Ignore |
+| `[PTB Tinh Hà Say Hi 2026] - …` | `10 PHOTOBOOTH, Quang Hùng MasterD, Dọc 1x4 ảnh` | Manual (2026-11-08) |
 | `[CARD BO GÓC TINH HÀ SAY HI] - …` | `50 CARD, 1 MẶT, COMBO 24 ANH TRAI` + alias `COMBO 24 ANH TRAI`→`24AT` | Auto, 50, idol `24AT` |
 | `[CARD BO GÓC TINH HÀ SAY HI] - …` | `20 CARD, 1 MẶT, Jaysonlei` | Auto, 20, idol `JAYSONLEI` |
 
@@ -194,7 +196,19 @@ for Auto line: pages = ceil(CardCount/9)
 FileOverrides (OrderFileOverride) của một copy thay hoàn toàn kết quả tự động:
     mỗi đoạn trang FirstPage..FirstPage+PagesUsed-1, IsManualChoice = true;
     đường dẫn ngoài kho + FilePageCount → PrintPlanBuilder.ExternalAsset; thiếu FilePageCount → chặn đơn
+Manual lines (Confirmed, 2026-11-08; một bộ chung từ 2026-11-09):
+    mọi dòng Manual của đơn chung một bộ, khóa = (dòng Manual đầu tiên theo LineNo).SkuId, CopyIndex 1
+    OrderClassifier: bộ chung chưa có FileOverride → Manual (mỗi dòng Manual một lý do);
+                     có FileOverride → dòng Manual không chặn và không xét MissingFile
+    PrintPlanBuilder.PlanManualSet: in FileOverrides của bộ chung một lần, tại vị trí dòng Manual đầu tiên;
+        Quantity giữ số lượng thật (lịch sử dùng để phát hiện ChangedAfterPrint), IsManualProduct = true
+        (ShowsCopyNumber = false: không hiện "bộ x/y"); Idol = SKU idol hoặc PrintPlanBuilder.ManualIdol ("THỦ CÔNG")
+    dòng Auto và bộ Manual xếp chung theo LineNo; isComplex chỉ đếm dòng Auto
+PrintPlanBuilder.PlanOrderCopies(order): như trên nhưng không phân loại, bỏ qua dòng chưa lập được
+    (dùng cho dialog chọn file, để bộ tự động vẫn hiện file khi dòng thủ công chưa có file)
 ```
+
+`ManualFileStore` (2026-11-08): khi lưu lựa chọn, `OrdersTabViewModel.StoreExternalFile` chép mỗi file có `FilePageCount` (ngoài kho) vào `ManualFileStore.RootFor(PdfLibraryFolder)` = `<kho>\_ThuCong\<OrderId>\` (chưa đặt kho: `%LOCALAPPDATA%\PDFPageComposer\_ThuCong`), rồi lưu `OrderFileOverride.PdfAssetPath` trỏ tới bản sao. File đã nằm trong kho `_ThuCong` giữ nguyên; bản sao trùng tên, cùng kích thước và thời gian sửa được dùng lại; khác thì thêm hậu tố ` (2)`, không ghi đè. `PdfLibraryScanner` bỏ qua `<kho>\_ThuCong\` (`ManualFileStore.IsInStore`).
 
 Khi tắt cài đặt trên, dùng thuật toán cũ (file đúng số trang, xoay vòng):
 

@@ -5,6 +5,7 @@ namespace PDFPageComposer.App.TikTok.Matching;
 /// <summary>
 /// Classifies one order (PRD_TIKTOK TT-08, TT-10). Categories are evaluated in priority order:
 /// Printed → NoCardNeeded → HasNote → NeedsConfig → Manual → MissingFile → Ready.
+/// Manual lines stop blocking the order once the order's manual set has files chosen by hand (2026-11-08).
 /// </summary>
 public sealed class OrderClassifier : IOrderClassifier
 {
@@ -56,18 +57,26 @@ public sealed class OrderClassifier : IOrderClassifier
             return Result(order, OrderCategory.NeedsConfig, configReasons);
         }
 
-        var manualReasons = cardLines
-            .Where(entry => entry.Sku!.ProcessType == SkuProcessType.Manual)
-            .Select(entry => $"Card thủ công: {DescribeLine(entry.Line)}")
-            .ToList();
-        if (manualReasons.Count > 0)
+        // All manual lines of an order share one set of files chosen by hand (stored on the first manual line,
+        // copy 1); once it has files the manual lines no longer block the order (2026-11-08).
+        var manualLines = cardLines.Where(entry => entry.Sku!.ProcessType == SkuProcessType.Manual).ToList();
+        if (manualLines.Count > 0
+            && FileOverrides.For(options.FileOverrides, order.OrderId, manualLines[0].Line.SkuId, 1).Count == 0)
         {
-            return Result(order, OrderCategory.Manual, manualReasons);
+            return Result(
+                order,
+                OrderCategory.Manual,
+                manualLines.Select(entry => $"Card thủ công: {DescribeLine(entry.Line)}").ToList());
         }
 
         var missingReasons = new List<string>();
         foreach (var (line, sku) in cardLines)
         {
+            if (sku!.ProcessType == SkuProcessType.Manual)
+            {
+                continue;
+            }
+
             if (Enumerable.Range(1, line.Quantity)
                 .All(copy => FileOverrides.For(options.FileOverrides, order.OrderId, line.SkuId, copy).Count > 0))
             {

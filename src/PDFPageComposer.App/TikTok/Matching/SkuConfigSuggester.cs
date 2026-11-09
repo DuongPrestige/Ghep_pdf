@@ -18,6 +18,12 @@ public sealed partial class SkuConfigSuggester : ISkuConfigSuggester
         var product = TextNormalizer.Normalize(productName);
         var variation = TextNormalizer.Normalize(variationName);
 
+        // Photobooth and mini album are printed with the cards from files the user adds by hand (2026-11-08).
+        if (IsManualPrintProduct(product))
+        {
+            return new SkuSuggestion(SkuProcessType.Manual, null, null, null);
+        }
+
         if (!IsCardProduct(product))
         {
             return new SkuSuggestion(SkuProcessType.Ignore, null, null, null);
@@ -36,6 +42,12 @@ public sealed partial class SkuConfigSuggester : ISkuConfigSuggester
         product.Contains("BO GOC", StringComparison.Ordinal)
         || product.Contains("THE GOC", StringComparison.Ordinal)
         || product.Contains("PHOTOCARD", StringComparison.Ordinal);
+
+    /// <summary>"PHOTOBOOTH" or "ALBUM MINI" / "MINI ALBUM" in the product title.</summary>
+    private static bool IsManualPrintProduct(string product) =>
+        product.Contains("PHOTOBOOTH", StringComparison.Ordinal)
+        || product.Contains("ALBUM MINI", StringComparison.Ordinal)
+        || product.Contains("MINI ALBUM", StringComparison.Ordinal);
 
     private static SkuProcessType SuggestProcessType(string product, string variation, int? cardCount, int? sides)
     {

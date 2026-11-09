@@ -72,6 +72,9 @@ internal sealed class RecordingTikTokRepository : ITikTokRepository
 
     public Task UnmarkPrintedAsync(string orderId, CancellationToken cancellationToken) => throw new NotSupportedException();
 
+    public Task SetPaperPrintedAsync(IReadOnlyCollection<string> orderIds, DateTimeOffset? printedAt, CancellationToken cancellationToken) =>
+        throw new NotSupportedException();
+
     public Task<int> DeleteImportAsync(long importId, CancellationToken cancellationToken) => throw new NotSupportedException();
 
     public Task<int> DeleteAllOrdersAsync(CancellationToken cancellationToken) => throw new NotSupportedException();

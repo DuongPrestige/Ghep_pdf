@@ -33,7 +33,9 @@ Mở từ nút **Đơn TikTok** trên thanh công cụ màn hình chính; `TikTo
 
 - **Chip nhóm** theo thứ tự: Sẵn sàng, Thiếu file, Cần cấu hình, Thủ công, Có ghi chú, Đã tạo file in, Không cần in card. Mỗi chip là một màu riêng; lọc thêm theo shop.
 - **Ô Tìm mã đơn / sản phẩm:** gõ một phần mã đơn hoặc tên sản phẩm / phân loại, không cần dấu (`cody nam vo`, `43768581`). Khi ô có chữ, đơn ở **mọi nhóm** đều được tìm (kể cả nhóm đang tắt); lọc shop vẫn áp dụng. Nút **Xóa** trả về bộ lọc theo chip.
-- **Lưới đơn** theo đúng thứ tự dòng trong file CSV (`TikTokOrderOrdering.InFileOrder`). Cột: chọn, Nhóm, Mã đơn (nút copy), Sản phẩm, Phân loại, Số tờ, File in (nút xem / chọn file), Ghi chú. Dòng chọn tô xanh nhạt.
+- **Lưới đơn** theo đúng thứ tự dòng trong file CSV (`TikTokOrderOrdering.InFileOrder`). Cột: chọn, Nhóm, Mã đơn (nút copy), Sản phẩm, Phân loại, Số tờ, File in (nút xem / chọn file), Ghi chú (dòng đầu xanh lá "Đã in giấy lúc …" khi đã đánh dấu), nút **Đã in** (bật/tắt, mọi dòng) và **In lại** (đơn đã tạo file in). Dòng bôi đen tô vàng `#FDE047`. Cột File in rộng cố định 230px; cột nút cuối (**Thao tác**) rộng cố định 175px để không bị che ở mép phải; Sản phẩm / Phân loại / Ghi chú co giãn với độ rộng tối thiểu 160 / 130 / 180px (cửa sổ quá hẹp thì lưới có thanh cuộn ngang).
+- **Màu cả dòng** (2026-11-09, màu đậm khác tông để dễ phân biệt): Đã tạo file in `#7DD3FC` (xanh da trời), Thủ công `#C4B5FD` (tím), Có ghi chú `#FDBA74` (cam), đã in giấy `#4ADE80` (xanh lá, ưu tiên cao nhất); nhóm khác nền trắng. Chữ trong cột Ghi chú dùng màu đậm (`#7C2D12`, `#14532D`, `#991B1B`) để đọc được trên nền màu.
+- Thanh dưới có **Đánh dấu đã in**: đánh dấu các dòng đang bôi đen (không bôi đen thì các đơn đang tick); nếu tất cả đã đánh dấu thì bỏ đánh dấu.
 - Nháy đúp ô mã đơn để copy. **Copy mã đơn** copy các đơn đang tick, không tick thì copy mọi đơn đang hiển thị.
 - Đơn nhóm *Có ghi chú* có nút **Cho phép ghép** (đã xem ghi chú).
 - Cột File in mô tả từng bộ: `· bộ i/q` khi mua nhiều bộ, `· x/y trang` hoặc `tr a-b` khi chỉ lấy một phần file, `· tự chọn` khi người dùng đã chọn tay.
@@ -91,7 +93,8 @@ Mở từ nút xem ở cột File in. Mỗi bộ card cần in là một ô (slo
 - Bên phải: trang của từng bộ theo thứ tự in; đổi thứ tự bằng **◀ Lên / Xuống ▶**, bỏ trang bằng **✕**.
 - Được chọn nhiều hoặc ít trang hơn số card; dialog hiện cảnh báo nhưng vẫn cho lưu.
 - **Lưu lựa chọn** chỉ bật khi mọi bộ có ít nhất một trang và không trang nào thuộc file đã mất; file kho đã bị xóa khỏi ổ đĩa bị ẩn, trang lỗi render hiển thị "Không mở được file".
-- **Dùng lại chọn tự động** xóa lựa chọn tay của đơn.
+- **Dùng lại chọn tự động** xóa lựa chọn tay của đơn (đơn thủ công quay về nhóm Thủ công).
+- **Đơn Thủ công** (2026-11-08): nút **Chọn file** cũng hiện ở dòng nhóm Thủ công. Mọi món thủ công của đơn chung **một** ô `Bộ n: Thủ công · <phân loại> x<số lượng> + … · x trang` (không chia theo số lượng, không có số trang yêu cầu). Chọn ô này thì ô lọc theo idol của SKU nếu có, không thì để trống. Lưu được khi mọi ô có ít nhất một trang. File ngoài kho được chép vào `<kho>\_ThuCong\<mã đơn>\` khi lưu.
 
 ## Dialog "Xem trước file in" (`PrintPreviewWindow`)
 

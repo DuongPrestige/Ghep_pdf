@@ -248,6 +248,32 @@ public sealed class SqliteTikTokRepositoryOrderTests
     }
 
     [Fact]
+    public async Task SetPaperPrintedAsync_marks_orders_survives_a_new_import_and_is_cleared_by_unmark()
+    {
+        using var fixture = await CreateAsync();
+        var repository = fixture.Repository;
+        var shop = await repository.AddShopAsync("Shop A", CancellationToken.None);
+        var first = Order("1", shop.ShopId, VnTime(15, 9));
+        await repository.ApplyImportAsync(
+            ChangeSet(shop.ShopId, insert: [first, Order("2", shop.ShopId, VnTime(15, 10))]),
+            CancellationToken.None);
+
+        await repository.SetPaperPrintedAsync(["1", "2"], VnTime(16, 8), CancellationToken.None);
+        await repository.SetPaperPrintedAsync(["2"], null, CancellationToken.None);
+        // A later import updates the order from the CSV; the paper mark is not a CSV field and must stay.
+        await repository.ApplyImportAsync(ChangeSet(shop.ShopId, update: [first with { SellerNote = "mới" }]), CancellationToken.None);
+
+        var orders = await repository.GetOrdersByIdsAsync(["1", "2"], CancellationToken.None);
+        Assert.Equal(VnTime(16, 8), orders.Single(order => order.OrderId == "1").PaperPrintedAt);
+        Assert.Null(orders.Single(order => order.OrderId == "2").PaperPrintedAt);
+
+        await repository.UnmarkPrintedAsync("1", CancellationToken.None);
+        Assert.Null((await repository.GetOrdersByIdsAsync(["1"], CancellationToken.None))[0].PaperPrintedAt);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => repository.SetPaperPrintedAsync(["missing"], VnTime(16, 8), CancellationToken.None));
+    }
+
+    [Fact]
     public async Task CommitPrintBatchAsync_replay_of_outdated_quantities_keeps_changed_after_print()
     {
         using var fixture = await CreateAsync();

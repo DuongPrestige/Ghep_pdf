@@ -184,6 +184,44 @@ public sealed class OrderFilesViewModelTests
             viewModel.BuildOverrides());
     }
 
+    [Fact]
+    public void All_manual_lines_share_one_set_without_a_page_target_whatever_the_quantity()
+    {
+        var order = Order("O1", 0, [("CODY20", 1), ("A5", 2), ("PTB", 1)]);
+        var outside = App.TikTok.Matching.PrintPlanBuilder.ExternalAsset(@"D:\ngoai\a5.pdf", "FILE NGOÀI", 3);
+        var viewModel = new OrderFilesViewModel(
+            order,
+            Skus(
+                Auto("CODY20", "CODY", 20),
+                Sku("A5", SkuProcessType.Manual, SkuConfigStatus.Confirmed, null, null, "1 mặt, A5"),
+                Sku("PTB", SkuProcessType.Manual, SkuConfigStatus.Confirmed, null, null, "10 PHOTOBOOTH")),
+            [Cody1, Cody2],
+            [],
+            [
+                new PrintPlanCopy("O1", "CODY20", 1, 1, 1, "CODY", 1, Cody1, DuplicateImage: false),
+                new PrintPlanCopy("O1", "CODY20", 1, 1, 1, "CODY", 2, Cody2, DuplicateImage: false),
+            ],
+            renderer: null,
+            fileExists: _ => true);
+
+        Assert.Equal(2, viewModel.Slots.Count);
+        var manual = viewModel.Slots[1];
+        Assert.Equal(("A5", 1), (manual.SkuId, manual.CopyIndex));
+        Assert.Null(manual.RequiredPages);
+        // Test lines have no variation name, so the SKU id is shown instead.
+        Assert.Equal("Thủ công · A5 x2 + PTB x1", manual.Title);
+        Assert.Equal("0 trang", manual.StatusText);
+        Assert.False(viewModel.CanSave);
+
+        viewModel.SelectedSlot = manual;
+        Assert.Equal(string.Empty, viewModel.FilterText);
+        viewModel.AddWholeFileCommand.Execute(new LibraryFileRowViewModel(outside, isExternal: true));
+
+        Assert.True(viewModel.CanSave);
+        Assert.Equal(string.Empty, viewModel.WarningText);
+        Assert.Contains(new FileOverride("O1", "A5", 1, 1, outside.FilePath, 3, 1, FilePageCount: 3), viewModel.BuildOverrides());
+    }
+
     private static OrderFilesViewModel Create(
         TikTokOrder order,
         PdfAsset[] current,

@@ -473,6 +473,34 @@ public sealed class OrdersTabViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Paper_printed_mark_is_saved_per_row_and_for_highlighted_rows_and_toggles_back()
+    {
+        await harness.SeedExampleAsync();
+        var viewModel = harness.CreateViewModel();
+        await viewModel.LoadCommand.ExecuteAsync(null);
+        var orders = viewModel.Orders;
+
+        await orders.TogglePaperPrintedCommand.ExecuteAsync(orders.AllRows.Single(row => row.OrderId == "O1"));
+        var o1 = orders.AllRows.Single(row => row.OrderId == "O1");
+        Assert.True(o1.IsPaperPrinted);
+        Assert.StartsWith("Đã in giấy lúc", o1.PaperPrintedText);
+
+        // Highlighted O1 (marked) + O3 (not marked): marks both; pressing again clears both.
+        var highlighted = new System.Collections.ArrayList
+        {
+            orders.AllRows.Single(row => row.OrderId == "O1"),
+            orders.AllRows.Single(row => row.OrderId == "O3"),
+        };
+        await orders.MarkPaperPrintedCommand.ExecuteAsync(highlighted);
+        Assert.All(orders.AllRows.Where(row => row.OrderId is "O1" or "O3"), row => Assert.True(row.IsPaperPrinted));
+
+        highlighted = [orders.AllRows.Single(row => row.OrderId == "O1"), orders.AllRows.Single(row => row.OrderId == "O3")];
+        await orders.MarkPaperPrintedCommand.ExecuteAsync(highlighted);
+        Assert.All(orders.AllRows, row => Assert.False(row.IsPaperPrinted));
+        Assert.Null(viewModel.Workspace.ErrorText);
+    }
+
+    [Fact]
     public async Task Choosing_files_by_hand_is_saved_and_can_go_back_to_automatic()
     {
         await harness.SeedExampleAsync();
@@ -516,7 +544,8 @@ public sealed class OrdersTabViewModelTests : IDisposable
         Assert.Empty(await harness.Repository.GetFileOverridesAsync(CancellationToken.None));
         o1 = orders.AllRows.Single(row => row.OrderId == "O1");
         await WaitUntilAsync(() => o1.PlannedFilesText.Length > 0 && !o1.PlannedFilesText.Contains("tự chọn", StringComparison.Ordinal));
-        Assert.False(orders.AllRows.Single(row => row.OrderId == "O3").CanChooseFiles);
+        // Manual orders get "Chọn file" too: their products are printed from files added by hand (2026-11-08).
+        Assert.True(orders.AllRows.Single(row => row.OrderId == "O3").CanChooseFiles);
     }
 
     [Fact]
