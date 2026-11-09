@@ -1,6 +1,6 @@
 # Tài liệu PDF Page Composer
 
-Phiên bản ứng dụng hiện tại: **1.3.4**. Mã task tiếp theo: **TASK-082**.
+Phiên bản ứng dụng hiện tại: **1.3.4**. Mã task tiếp theo: **TASK-083**.
 
 ## Cấu trúc
 

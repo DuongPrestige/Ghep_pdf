@@ -17,7 +17,7 @@ Notes: ...
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Done | 8 |
+| Done | 9 |
 | Chưa xong (Backlog/Blocked) | 0 |
 | Đã hủy | 0 |
 
@@ -108,3 +108,10 @@ Verification: 380/380 test passed; publish `win-x64` self-contained chạy đư�
 Completed: 2026-10-18
 Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.3), `latest.json`, `docs/CHANGELOG.md`, dòng phiên bản trong `README.md`, `docs/README.md`, `docs/update/RELEASE.md`, các `USER_GUIDE.md`.
 Verification: 381/381 test passed; publish `win-x64` self-contained chạy được (FileVersion 1.3.3.0); release `v1.3.3` (id 416532775), asset tải lại khớp SHA256 `6CDC3126660C681389A50036F79D98A80EFD53FB1FEF0274D8A9EC71367E827A`.
+
+### - [x] TASK-082 — Publish v1.3.4
+
+Completed: 2026-11-09
+Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.3.4), `latest.json`, `docs/CHANGELOG.md`, dòng phiên bản trong `README.md`, `docs/README.md`, `docs/update/RELEASE.md`, các `USER_GUIDE.md`.
+Verification: 392/392 test passed; publish `win-x64` self-contained chạy được (ProductVersion 1.3.4+80c4ba5); release `v1.3.4` (id 439277895), asset tải lại khớp SHA256 `3D733D3CA8A64A33C412DA23588A649453C1637CA8C949A307589A0D7FC9CB9F`.
+Notes: Bản này nâng database TikTok lên v7; máy còn chạy 1.3.3 sẽ không mở được database sau khi một bản 1.3.4 đã mở nó. Build bằng `-p:OutputPath=artifacts\build-v1.3.4\` vì bản 1.3.3 đang chạy khóa `bin\Release`.
