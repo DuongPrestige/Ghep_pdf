@@ -1,6 +1,6 @@
 {
-  "version": "1.3.4",
-  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.3.4/PDFPageComposer-v1.3.4.zip",
-  "sha256": "3D733D3CA8A64A33C412DA23588A649453C1637CA8C949A307589A0D7FC9CB9F",
-  "notes": "Don TikTok: tu them file cho don Thu cong (A4/A5, photobooth, mini album), to mau ca dong theo nhom, danh dau don da in giay"
+  "version": "1.4.0",
+  "downloadUrl": "https://github.com/DuongPrestige/Ghep_pdf/releases/download/v1.4.0/PDFPageComposer-v1.4.0.zip",
+  "sha256": "3C3BAA7B248619220DF59BF678BA6DF63D5282E68062009AC9784B5D159C1443",
+  "notes": "Ghep le: che do Ghep 2 mat - them mat 1 / mat 2 theo cap, chu ky tu lap, xuat 1 file mat 1 roi mat 2"
 }
