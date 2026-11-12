@@ -125,4 +125,4 @@ Notes: Bản này nâng database TikTok lên v7; máy còn chạy 1.3.3 sẽ kh�
 Completed: 2026-11-12
 Files changed: `src/PDFPageComposer.App/PDFPageComposer.App.csproj` (1.4.0), `latest.json`, `docs/CHANGELOG.md`, dòng phiên bản trong `README.md`, `docs/README.md`, `docs/update/RELEASE.md`, các `USER_GUIDE.md`.
 Verification: 404/404 test passed; publish `win-x64` self-contained chạy được (ProductVersion 1.4.0+5620427); release `v1.4.0` (id 443106393), asset tải lại khớp SHA256 `3C3BAA7B248619220DF59BF678BA6DF63D5282E68062009AC9784B5D159C1443`.
-Notes: Build bằng `-p:OutputPath=artifactsuild-v1.4.0\` vì bản đang chạy khóa `bin`. Project tự lưu có thêm `DuplexPairs` / `IsDuplexMode`; bản 1.3.4 mở project mới chỉ bỏ qua khay 2 mặt.
+Notes: Build bằng `-p:OutputPath=artifacts\build-v1.4.0\` vì bản đang chạy khóa `bin`. Project tự lưu có thêm `DuplexPairs` / `IsDuplexMode`; bản 1.3.4 mở project mới chỉ bỏ qua khay 2 mặt.
