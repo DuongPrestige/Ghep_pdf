@@ -8,6 +8,9 @@ public sealed class ProjectState
 
     public List<ProjectOutputGroup> OutputGroups { get; set; } = [];
 
+    /// <summary>Pairs of the "Ghép 2 mặt" mode; missing in projects saved before v1.4 (read as empty).</summary>
+    public List<ProjectDuplexPair> DuplexPairs { get; set; } = [];
+
     public ProjectUiState UiState { get; set; } = new();
 
     public string? LastExportPath { get; set; }
@@ -45,6 +48,17 @@ public sealed class ProjectOutputGroup
     public List<ProjectOutputPageItem> Items { get; set; } = [];
 }
 
+public sealed class ProjectDuplexPair
+{
+    public Guid Id { get; set; }
+
+    public string ColorHex { get; set; } = string.Empty;
+
+    public List<ProjectOutputPageItem> FrontItems { get; set; } = [];
+
+    public List<ProjectOutputPageItem> BackItems { get; set; } = [];
+}
+
 public sealed class ProjectOutputPageItem
 {
     public Guid Id { get; set; }
@@ -59,4 +73,6 @@ public sealed class ProjectUiState
     public double ThumbnailZoom { get; set; } = 1.0;
 
     public double OutputPanelWidth { get; set; }
+
+    public bool IsDuplexMode { get; set; }
 }

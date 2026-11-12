@@ -359,7 +359,8 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        var hasOutputItems = OutputGroups.Any(group => group.Items.Any(item => item.SourceFileId == sourceFile.Id));
+        var hasOutputItems = OutputGroups.Any(group => group.Items.Any(item => item.SourceFileId == sourceFile.Id))
+            || DuplexPairs.Any(pair => pair.AllItems.Any(item => item.SourceFileId == sourceFile.Id));
         if (hasOutputItems)
         {
             RenderStatus = $"{sourceFile.DisplayName}: đang có trang trong đầu ra";
@@ -495,19 +496,16 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(HasSelectedPages))]
     private void AddSelectionToOutput()
     {
-        var selectedPages = SourceFiles
-            .SelectMany((file, fileIndex) => file.Pages
-                .Where(page => page.IsSelected)
-                .OrderBy(page => page.PageNumber)
-                .Select(page => new { FileIndex = fileIndex, Page = page }))
-            .OrderBy(selection => selection.FileIndex)
-            .ThenBy(selection => selection.Page.PageNumber)
-            .Select(selection => selection.Page)
-            .ToList();
-
+        var selectedPages = GetSelectedPagesInOrder();
         if (selectedPages.Count == 0)
         {
             RenderStatus = "Chưa có trang nào được chọn";
+            return;
+        }
+
+        if (IsDuplexMode)
+        {
+            AddSelectionToDuplex(selectedPages);
             return;
         }
 
@@ -530,6 +528,32 @@ public partial class MainViewModel : ObservableObject
         selectionAnchor = null;
         NotifyStatisticsChanged();
         RenderStatus = $"Đã thêm {selectedPages.Count} trang vào đầu ra";
+    }
+
+    /// <summary>Selected pages in workspace file order, then page number.</summary>
+    private List<SourcePdfPage> GetSelectedPagesInOrder()
+    {
+        return SourceFiles
+            .SelectMany((file, fileIndex) => file.Pages
+                .Where(page => page.IsSelected)
+                .Select(page => new { FileIndex = fileIndex, Page = page }))
+            .OrderBy(selection => selection.FileIndex)
+            .ThenBy(selection => selection.Page.PageNumber)
+            .Select(selection => selection.Page)
+            .ToList();
+    }
+
+    /// <summary>After pages were put in the output: clear the selection and refresh counts.</summary>
+    private void FinishAddingSelection()
+    {
+        foreach (var page in SourceFiles.SelectMany(file => file.Pages).Where(page => page.IsSelected))
+        {
+            page.IsSelected = false;
+        }
+
+        selectionAnchor = null;
+        RecalculateOutputOccurrences();
+        NotifyStatisticsChanged();
     }
 
     [RelayCommand]
@@ -751,7 +775,7 @@ public partial class MainViewModel : ObservableObject
         NotifyPreviewNavigationChanged();
     }
 
-    [RelayCommand(CanExecute = nameof(HasOutputPages))]
+    [RelayCommand(CanExecute = nameof(CanPreviewOutput))]
     private async Task PreviewOutputAsync(CancellationToken cancellationToken)
     {
         var items = OutputTrayItems
@@ -1367,6 +1391,12 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task ExportPdfAsync(CancellationToken cancellationToken)
     {
+        if (IsDuplexMode)
+        {
+            await ExportDuplexAsync(cancellationToken);
+            return;
+        }
+
         if (OutputPageCount == 0)
         {
             RenderStatus = "Khay đầu ra đang trống";
@@ -1514,12 +1544,18 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedPageCount));
         OnPropertyChanged(nameof(SelectedPageSummary));
         OnPropertyChanged(nameof(OutputPageCount));
-        OnPropertyChanged(nameof(OutputTrayItems));
+        if (!IsDuplexMode)
+        {
+            // The normal tray is hidden in "Ghép 2 mặt" mode; it is rebuilt when the mode is switched back.
+            OnPropertyChanged(nameof(OutputTrayItems));
+        }
+
         OnPropertyChanged(nameof(HasSelectedPages));
         OnPropertyChanged(nameof(HasOutputPages));
         OnPropertyChanged(nameof(HasSourceFiles));
         OnPropertyChanged(nameof(FilteredSourceFiles));
         AddSelectionToOutputCommand.NotifyCanExecuteChanged();
+        NotifyDuplexChanged();
         PreviewOutputCommand.NotifyCanExecuteChanged();
         NotifyHistoryChanged();
         ScheduleAutoSave();
@@ -1768,6 +1804,13 @@ public partial class MainViewModel : ObservableObject
             OutputGroups.Add(outputGroup);
         }
 
+        DuplexPairs.Clear();
+        foreach (var pair in snapshot.DuplexPairs ?? [])
+        {
+            DuplexPairs.Add(pair);
+        }
+
+        IsDuplexMode = snapshot.IsDuplexMode;
         ThumbnailZoom = Math.Clamp(snapshot.ThumbnailZoom, 0.6, 1.6);
         RecalculateOutputOccurrences();
         undoHistory.Clear();
@@ -1778,12 +1821,17 @@ public partial class MainViewModel : ObservableObject
 
     private void ScheduleAutoSave()
     {
-        if (SourceFiles.Count == 0 && OutputGroups.Count == 0)
+        if (SourceFiles.Count == 0 && OutputGroups.Count == 0 && DuplexPairs.Count == 0)
         {
             return;
         }
 
-        autoSaveService.Schedule(ProjectStateMapper.FromSession(SourceFiles, OutputGroups, ThumbnailZoom));
+        autoSaveService.Schedule(ProjectStateMapper.FromSession(
+            SourceFiles,
+            OutputGroups,
+            ThumbnailZoom,
+            duplexPairs: DuplexPairs,
+            isDuplexMode: IsDuplexMode));
     }
 
     private void SelectRange(SourcePdfPage page)
@@ -1818,7 +1866,11 @@ public partial class MainViewModel : ObservableObject
             page.OutputOccurrenceCount = 0;
         }
 
-        foreach (var item in OutputGroups.SelectMany(group => group.Items))
+        // The ×N badge counts the tray of the current mode.
+        var items = IsDuplexMode
+            ? DuplexPairs.SelectMany(pair => pair.AllItems)
+            : OutputGroups.SelectMany(group => group.Items);
+        foreach (var item in items)
         {
             var page = SourceFiles
                 .FirstOrDefault(file => file.Id == item.SourceFileId)?
@@ -1925,6 +1977,12 @@ public partial class MainViewModel : ObservableObject
                     item.GroupId,
                     item.SourceFileId,
                     item.SourcePageNumber)).ToList())).ToList(),
+            // Output items are immutable, so the snapshot can keep the same instances.
+            DuplexPairs.Select(pair => new DuplexPairSnapshot(
+                pair.Id,
+                pair.ColorHex,
+                pair.FrontItems.ToList(),
+                pair.BackItems.ToList())).ToList(),
             SourceFiles
                 .SelectMany(file => file.Pages)
                 .Where(page => page.IsSelected)
@@ -1953,6 +2011,12 @@ public partial class MainViewModel : ObservableObject
             OutputGroups.Add(group);
         }
 
+        DuplexPairs.Clear();
+        foreach (var pairSnapshot in snapshot.DuplexPairs)
+        {
+            DuplexPairs.Add(new DuplexPair(pairSnapshot.Id, pairSnapshot.ColorHex, pairSnapshot.FrontItems, pairSnapshot.BackItems));
+        }
+
         foreach (var page in SourceFiles.SelectMany(file => file.Pages))
         {
             page.IsSelected = snapshot.SelectedPageIds.Contains(page.Id);
@@ -1975,6 +2039,7 @@ public partial class MainViewModel : ObservableObject
 
     private sealed record AppHistorySnapshot(
         IReadOnlyList<OutputGroupSnapshot> OutputGroups,
+        IReadOnlyList<DuplexPairSnapshot> DuplexPairs,
         IReadOnlySet<Guid> SelectedPageIds);
 
     private sealed record OutputGroupSnapshot(

@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng PDF Page Composer
 
-Áp dụng cho phiên bản 1.3.4.
+Áp dụng cho phiên bản 1.4.0.
 
 Ứng dụng có hai phần:
 

@@ -48,6 +48,23 @@ ProjectState    Version, SourceFiles, OutputGroups, UiState, LastExportPath
 - Thứ tự collection trong group và thứ tự group là nguồn sự thật; số thứ tự đầu ra được suy ra.
 - `OutputItemMoveRequest(SourceItem, TargetItem, PlaceAfter)`: kéo thả đặt trước hoặc sau trang đích.
 
+## Ghép 2 mặt (TASK-083, PRD mục 25)
+
+```text
+Models/DuplexPair.cs                  DuplexPair (Id, ColorHex, FrontItems, BackItems, IsComplete), enum DuplexSide
+Models/DuplexPairRowView.cs           DuplexPairRowView / DuplexPageView: dòng hiển thị, Position = thứ tự trong file mặt
+Services/DuplexLayout.cs              logic thuần: CreateBackItems (lặp 1 trang), DescribeProblem/DescribePair,
+                                      ToSideGroups (cặp → OutputGroup theo mặt), ToExportGroups (mặt 1 rồi mặt 2)
+ViewModels/MainViewModel.Duplex.cs    partial: IsDuplexMode, DuplexPairs, DuplexRows, lệnh cặp, ExportDuplexAsync
+```
+
+- `AddSelectionToOutputCommand` (và phím Enter) gọi `AddSelectionToDuplex` khi `IsDuplexMode`: cặp cuối chưa có mặt 2 thì điền mặt 2, không thì tạo cặp mới. `OutputPageItem.GroupId` của trang trong cặp là `DuplexPair.Id`.
+- Xuất: `DuplexLayout.ToExportGroups` dựng một `OutputGroup` mỗi cặp cho mặt 1, tiếp theo một group mỗi cặp cho mặt 2 (id mới), rồi gọi `IPdfExportService.ExportAsync` một lần vào đúng file đã chọn. Không đổi `PdfExportService`.
+- Undo/redo: `AppHistorySnapshot` có thêm danh sách `DuplexPairSnapshot` (giữ nguyên `OutputPageItem` vì bất biến).
+- `RecalculateOutputOccurrences` đếm khay của chế độ đang bật. Ở chế độ 2 mặt không phát `OutputTrayItems` changed (khay thường đang ẩn), tránh dựng lại container và lỗi binding `ListBoxItem`; đổi chế độ sẽ phát lại.
+- Khay 2 mặt dùng `ItemsControl` trong `ScrollViewer` (không cần chọn dòng); thumbnail dùng `RenderWhenVisibleBehavior` như khay thường.
+- Persistence: `ProjectState.DuplexPairs` (`ProjectDuplexPair`: Id, ColorHex, FrontItems, BackItems) và `ProjectUiState.IsDuplexMode`. Trường mới có giá trị mặc định nên project cũ vẫn mở được; `ProjectState.Version` giữ 1.
+
 ## Quy tắc thêm file nguồn
 
 - File trùng đường dẫn hoặc trùng `Fingerprint` với file đã có bị bỏ qua; status bar báo "bỏ qua N file đã có".
@@ -67,6 +84,7 @@ ProjectState    Version, SourceFiles, OutputGroups, UiState, LastExportPath
 ## Testing
 
 - `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`: tạo group từ selection, nhân bản item/group, sắp xếp, kéo thả trước/sau, xóa, ví dụ 10 trang `A3, A4, B1, B2, B3, B4, B5, B1, B2, B3`, chặn file trùng, tìm không dấu.
+- `tests/PDFPageComposer.Tests/ViewModels/MainViewModelDuplexTests.cs`: luồng thêm mặt 1/mặt 2, xuất 1 file mặt 1 rồi mặt 2, Thay/Thêm, chặn cặp lệch, Thay, thao tác cặp + hoàn tác, tách khỏi khay thường, lưu/phục hồi. `MainWindowDuplexSmokeTests.cs` mở cửa sổ chính thật ở cả hai chế độ và bắt lỗi binding. `Services/DuplexLayoutTests.cs`: logic thuần.
 - `tests/PDFPageComposer.Tests/Services/*`: metadata, render, export (thứ tự, page size, rotation), cache LRU, render queue, project round-trip, auto-save, Foxit.
 - `tests/PDFPageComposer.Tests/Behaviors/RenderWhenVisibleBehaviorTests.cs`.
 - Số liệu hiệu năng: `docs/composer/PERFORMANCE.md`.

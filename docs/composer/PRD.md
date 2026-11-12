@@ -198,6 +198,8 @@ Một trang nguồn có thể xuất hiện không giới hạn số lần trong
 
 File PDF xuất phải được tạo theo đúng thứ tự hiển thị trong khay đầu ra.
 
+Ở chế độ **Ghép 2 mặt** (mục 25), file xuất gồm cột mặt 1 từ trên xuống rồi cột mặt 2 từ trên xuống của khay 2 mặt (2026-11-12).
+
 ### BR-05 — Thứ tự chọn trang
 
 Khi thêm nhiều trang cùng lúc, mặc định sắp xếp theo:
@@ -1114,3 +1116,40 @@ Tên tạm dùng trong tài liệu này: **PDF Page Composer**.
 ## 24. Mở rộng: Tạo file in theo đơn TikTok Shop
 
 Yêu cầu chi tiết nằm trong `docs/tiktok/PRD.md`; đặc tả kỹ thuật trong `docs/tiktok/TECH_SPEC.md`. Các quy tắc BR-01, BR-02, BR-07, BR-08 của tài liệu này tiếp tục áp dụng cho module TikTok.
+
+---
+
+## 25. Ghép 2 mặt (thêm 2026-11-12, TASK-083)
+
+### 25.1. Bối cảnh
+
+Card 2 mặt (mặt ảnh + mặt chữ ký) được in bằng cách in xấp giấy mặt 1, lật xấp giấy rồi in mặt 2. Thường người dùng ghép riêng mặt 1 và mặt 2; app gộp lại thành **một file**: toàn bộ mặt 1 rồi toàn bộ mặt 2 (chốt 2026-11-12, thay phương án 2 file). Trước đây phải tự nhớ đơn nào có mấy trang, tự nhân bản trang chữ ký và kéo thả cho khối mặt 2 đúng thứ tự khối mặt 1; lệch một trang là mọi tờ phía sau in sai mặt.
+
+Ví dụ: CONGB 2 mặt / 20 card (3 trang), QUANG HÙNG 2 mặt / 30 card (4 trang), DƯƠNG DOMIC 2 mặt / 50 card (6 trang):
+
+| Trang trong file xuất | Nội dung |
+|---|---|
+| 1–13 | CONGB mặt 1 (1–3), QUANG HÙNG mặt 1 (4–7), DƯƠNG DOMIC mặt 1 (8–13) |
+| 14–26 | CONGB mặt 2 (14–16), QUANG HÙNG mặt 2 (17–20), DƯƠNG DOMIC mặt 2 (21–26) |
+
+### 25.2. Quy tắc
+
+- **BR-11 — Chế độ riêng.** Nút **Ghép 2 mặt** bật/tắt chế độ. Khay 2 mặt tách biệt với Khay đầu ra thường; đổi chế độ không xóa dữ liệu của khay kia.
+- **BR-12 — Cặp.** Mỗi đơn là một **cặp** gồm mặt 1 và mặt 2. Thêm theo lượt: **Thêm mặt 1** tạo cặp mới ở cuối khay; khi cặp cuối chưa có mặt 2, nút (và phím Enter) thành **Thêm mặt 2** và điền mặt 2 cho cặp đó.
+- **BR-13 — Tự lặp trang chữ ký.** Mặt 2 chỉ chọn 1 trang thì trang đó được lặp cho bằng số trang mặt 1. Chọn từ 2 trang trở lên thì giữ nguyên như đã chọn.
+- **BR-14 — Khớp số trang.** Một cặp chỉ hợp lệ khi mặt 1 có trang và mặt 2 có **cùng số trang**. Cặp thiếu mặt 2 hoặc lệch số trang được tô đỏ và **chặn xuất** cho tới khi sửa bằng nút **Thay** (thay cả mặt) hoặc **Thêm** (nối trang vào cuối mặt, giữ trang cũ) của mặt đó.
+- **BR-15 — Thao tác theo cặp.** Đưa lên / ra sau, nhân bản, xóa đều áp dụng cho cả cặp để hai file luôn cùng thứ tự. **Hoàn tác / Làm lại** áp dụng cho mọi thao tác trên khay 2 mặt.
+- **BR-16 — Xuất 1 file.** **Xuất PDF** tạo một file đúng tên đã chọn: mặt 1 của mọi cặp theo thứ tự cặp, tiếp theo mặt 2 của mọi cặp cùng thứ tự (N tờ: trang N + k in sau lưng trang k), rồi mở bằng Foxit. Mặt 2 giữ **cùng thứ tự** với mặt 1 (không đảo). (Đổi 2026-11-12 từ phương án 2 file `- MAT 1` / `- MAT 2` theo yêu cầu người dùng.)
+- **BR-17 — Không sửa nội dung trang.** App chỉ sắp trang; căn lề / lật gương mặt sau phải có sẵn trong file nguồn (BR-01, BR-08).
+
+### 25.3. Ngoài phạm vi
+
+- Kéo thả cặp và kéo thả trang trong khay 2 mặt (dùng nút ▲ ▼ và **Thay**).
+- **Xem trước đầu ra** ở chế độ 2 mặt (khay 2 mặt đã hiện mọi trang theo cặp).
+- Đảo thứ tự mặt 2 cho máy in xuất giấy ngược.
+
+### 25.4. Tiêu chí nghiệm thu
+
+- **AC-13:** Với ví dụ 25.1, chọn 3 trang CONGB → Thêm mặt 1, chọn 1 trang chữ ký → Thêm mặt 2, lặp lại cho 2 đơn còn lại; Xuất PDF cho một file 26 trang đúng bảng trên, trang chữ ký được lặp 3, 4, 6 lần.
+- **AC-14:** Cặp có mặt 1 3 trang và mặt 2 2 trang hiện "Lệch: mặt 1 có 3 trang, mặt 2 có 2 trang"; bấm Xuất không tạo file nào.
+- **AC-15:** Tắt rồi bật lại chế độ, đóng và **Phục hồi** phiên: khay thường và khay 2 mặt giữ nguyên.

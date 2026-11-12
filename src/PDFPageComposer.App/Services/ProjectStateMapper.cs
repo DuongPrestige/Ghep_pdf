@@ -9,7 +9,9 @@ public static class ProjectStateMapper
         IEnumerable<SourcePdfFile> sourceFiles,
         IEnumerable<OutputGroup> outputGroups,
         double thumbnailZoom,
-        string? lastExportPath = null)
+        string? lastExportPath = null,
+        IEnumerable<DuplexPair>? duplexPairs = null,
+        bool isDuplexMode = false)
     {
         return new ProjectState
         {
@@ -37,9 +39,17 @@ public static class ProjectStateMapper
                     SourcePageNumber = item.SourcePageNumber
                 }).ToList()
             }).ToList(),
+            DuplexPairs = (duplexPairs ?? []).Select(pair => new ProjectDuplexPair
+            {
+                Id = pair.Id,
+                ColorHex = pair.ColorHex,
+                FrontItems = pair.FrontItems.Select(ToProjectItem).ToList(),
+                BackItems = pair.BackItems.Select(ToProjectItem).ToList()
+            }).ToList(),
             UiState = new ProjectUiState
             {
-                ThumbnailZoom = thumbnailZoom
+                ThumbnailZoom = thumbnailZoom,
+                IsDuplexMode = isDuplexMode
             },
             LastExportPath = lastExportPath
         };
@@ -85,11 +95,30 @@ public static class ProjectStateMapper
             return outputGroup;
         }).ToList();
 
+        var duplexPairs = (projectState.DuplexPairs ?? []).Select((pair, index) => new DuplexPair(
+            pair.Id,
+            string.IsNullOrWhiteSpace(pair.ColorHex) ? GetDefaultGroupColor(index) : pair.ColorHex,
+            pair.FrontItems.Select(item => new OutputPageItem(item.Id, pair.Id, item.SourceFileId, item.SourcePageNumber)),
+            pair.BackItems.Select(item => new OutputPageItem(item.Id, pair.Id, item.SourceFileId, item.SourcePageNumber))))
+            .ToList();
+
         return new ProjectSessionSnapshot(
             sourceFiles,
             outputGroups,
             projectState.UiState.ThumbnailZoom,
-            projectState.LastExportPath);
+            projectState.LastExportPath,
+            duplexPairs,
+            projectState.UiState.IsDuplexMode);
+    }
+
+    private static ProjectOutputPageItem ToProjectItem(OutputPageItem item)
+    {
+        return new ProjectOutputPageItem
+        {
+            Id = item.Id,
+            SourceFileId = item.SourceFileId,
+            SourcePageNumber = item.SourcePageNumber
+        };
     }
 
     private static string GetDefaultGroupColor(int index)
@@ -116,4 +145,6 @@ public sealed record ProjectSessionSnapshot(
     IReadOnlyList<SourcePdfFile> SourceFiles,
     IReadOnlyList<OutputGroup> OutputGroups,
     double ThumbnailZoom,
-    string? LastExportPath);
+    string? LastExportPath,
+    IReadOnlyList<DuplexPair>? DuplexPairs = null,
+    bool IsDuplexMode = false);

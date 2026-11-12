@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng — Ghép lẻ PDF
 
-Áp dụng cho phiên bản 1.3.4. Đây là màn hình chính khi mở ứng dụng (mở ở chế độ toàn màn hình).
+Áp dụng cho phiên bản 1.4.0. Đây là màn hình chính khi mở ứng dụng (mở ở chế độ toàn màn hình).
 
 ## Mở file PDF
 
@@ -39,6 +39,24 @@
 
 - Bấm **Xem trước đầu ra** để xem mọi trang sẽ xuất. **Lưới tất cả trang** xem dạng lưới, **Xem 1 trang** xem lớn trang đang chọn.
 - Trong màn xem trước có thể kéo thả đổi vị trí, nhân bản, đưa lên trước / ra sau, hoặc xóa trang.
+
+## Ghép 2 mặt
+
+Dùng khi in card 2 mặt: in xấp giấy mặt 1, lật xấp giấy rồi in mặt 2.
+
+1. Bấm **Ghép 2 mặt** trên thanh công cụ. Khay bên phải đổi thành **Khay 2 mặt** (khay đầu ra thường vẫn được giữ, bấm lại nút để quay về).
+2. Chọn các trang ảnh của đơn thứ nhất, bấm **Thêm mặt 1** (hoặc Enter).
+3. Chọn trang chữ ký, bấm **Thêm mặt 2** (hoặc Enter). Chỉ chọn 1 trang thì app tự lặp cho bằng số trang mặt 1.
+4. Làm tiếp đơn thứ hai, thứ ba… theo cùng cách.
+5. Bấm **Xuất PDF** và đặt tên file. File gồm mặt 1 của mọi cặp trước, sau đó mặt 2 cùng thứ tự. Ví dụ 13 tờ: trang 1–13 là mặt 1, trang 14–26 là mặt 2. Thanh trạng thái ghi rõ khoảng trang của từng mặt để in.
+
+Lưu ý:
+
+- Số tròn trên mỗi trang là số tờ; trang cùng số ở cột Mặt 1 và Mặt 2 sẽ in chung một tờ.
+- Cặp thiếu mặt 2 hoặc hai mặt khác số trang có viền đỏ và chưa xuất được.
+- Sửa một mặt bằng nút **Thay** của mặt đó: nếu đang chọn trang thì thay ngay; nếu chưa chọn, nút thành **Hủy thay** (màu cam) và nút trên thanh công cụ thành **Thay mặt X · cặp N** — chọn trang rồi bấm nút đó hoặc Enter. Bấm **Hủy thay** để thôi.
+- Nút **Thêm** cạnh **Thay** dùng giống hệt, nhưng **thêm trang vào cuối** mặt đó và giữ các trang đang có (nút toolbar thành **Thêm vào mặt X · cặp N**, bấm **Hủy thêm** để thôi). Mặt 2 đang trống mà thêm 1 trang thì trang đó tự lặp cho đủ số trang mặt 1.
+- **▲ / ▼** đổi thứ tự cặp, **Nhân bản** thêm bản sao cả cặp, **Xóa** bỏ cả cặp. **Hoàn tác / Làm lại** dùng được như bình thường.
 
 ## File nguồn bị thiếu
 

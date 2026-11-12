@@ -2,6 +2,13 @@
 
 Mỗi phiên bản là một GitHub Release `vX.Y.Z` có file `PDFPageComposer-vX.Y.Z.zip`. Máy người dùng nhận bản mới qua nút **Check update** (xem `docs/update/`).
 
+## 1.4.0 — 2026-11-12
+
+- Ghép lẻ: chế độ mới **Ghép 2 mặt** cho card 2 mặt. Mỗi đơn là một cặp: chọn trang ảnh → **Thêm mặt 1**, chọn trang chữ ký → **Thêm mặt 2** (chọn 1 trang chữ ký thì tự lặp cho đủ số trang mặt 1).
+- **Xuất PDF** ở chế độ này cho một file: mặt 1 của mọi cặp trước, rồi mặt 2 cùng thứ tự; thanh trạng thái ghi khoảng trang của từng mặt.
+- Cặp thiếu mặt 2 hoặc hai mặt khác số trang có viền đỏ và chặn xuất. Mỗi mặt có nút **Thay** và **Thêm**; mỗi cặp có **▲ ▼**, **Nhân bản**, **Xóa**, dùng được **Hoàn tác**.
+- Khay đầu ra thường được giữ nguyên khi bật/tắt chế độ; khay 2 mặt được tự lưu và phục hồi như khay thường.
+
 ## 1.3.4 — 2026-11-09
 
 - Đơn TikTok **Thủ công** (card A4/A5, photobooth, mini album, in theo yêu cầu, 2 mặt…): nút **Chọn file** để tự thêm file PDF, mọi món thủ công của đơn chung một ô. Có file thì đơn thành **Sẵn sàng** và được gộp chung file in với card 1 mặt.

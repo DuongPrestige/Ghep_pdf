@@ -34,6 +34,14 @@
             <Setter Property="Margin" Value="2,0" />
             <Setter Property="MinWidth" Value="28" />
         </Style>
+        <!-- Visible only in the normal (ghép lẻ) mode. -->
+        <Style x:Key="SingleModeOnly" TargetType="FrameworkElement">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDuplexMode}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="NumberBadge" TargetType="Border">
             <Setter Property="Background" Value="#2563EB" />
             <Setter Property="CornerRadius" Value="11" />
@@ -44,6 +52,33 @@
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
+        <!-- A page in the "Ghép 2 mặt" tray; the badge is its sheet number (side 2 page k is printed on the back of side 1 page k). -->
+        <DataTemplate x:Key="DuplexPageTemplate">
+            <Border Width="86" Margin="0,0,4,4" BorderBrush="#CBD5E1" BorderThickness="1" Background="#F8FAFD"
+                    ToolTip="{Binding Caption}">
+                <StackPanel>
+                    <Grid Height="112" Margin="2"
+                          behaviors:RenderWhenVisibleBehavior.Command="{Binding DataContext.RenderThumbnailCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                          behaviors:RenderWhenVisibleBehavior.CommandParameter="{Binding SourcePage}">
+                        <Image Stretch="Uniform">
+                            <Image.Source>
+                                <MultiBinding Converter="{StaticResource BgraImageConverter}">
+                                    <Binding Path="SourcePage.ThumbnailPixels" />
+                                    <Binding Path="SourcePage.ThumbnailPixelWidth" />
+                                    <Binding Path="SourcePage.ThumbnailPixelHeight" />
+                                    <Binding Path="SourcePage.ThumbnailStride" />
+                                </MultiBinding>
+                            </Image.Source>
+                        </Image>
+                        <Border Style="{StaticResource NumberBadge}" ToolTip="Số tờ: trang mặt 2 cùng số in sau lưng trang mặt 1">
+                            <TextBlock Text="{Binding Position}" Foreground="#FFFFFF" FontSize="11" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="{Binding Caption}" FontSize="11" TextTrimming="CharacterEllipsis" Margin="3,0,3,2" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
     <Grid PreviewMouseWheel="OnPreviewMouseWheel">
     <DockPanel Background="#F6F7F9">
@@ -74,10 +109,16 @@
                            HorizontalAlignment="Center"
                            Margin="0,0,0,2" />
                 <Button Command="{Binding AddSelectionToOutputCommand}"
-                        Content="Thêm vào đầu ra"
-                        ToolTip="Thêm các trang đang chọn vào khay đầu ra (phím Enter)"
+                        Content="{Binding AddSelectionButtonText}"
+                        ToolTip="{Binding AddSelectionToolTip}"
+                        MinWidth="130"
                         Padding="12,6" />
             </StackPanel>
+            <ToggleButton IsChecked="{Binding IsDuplexMode}"
+                          Content="Ghép 2 mặt"
+                          ToolTip="Bật: mỗi đơn là một cặp mặt 1 + mặt 2, xuất 1 file: mặt 1 của mọi cặp rồi mặt 2 cùng thứ tự. Tắt: quay về ghép lẻ, khay cũ vẫn giữ nguyên."
+                          Padding="12,6"
+                          Margin="0,0,8,0" />
             <Separator />
             <TextBlock Text="Zoom"
                        VerticalAlignment="Center"
@@ -101,7 +142,7 @@
                     Padding="14,6"
                     Margin="0,0,8,0" />
             <Button Command="{Binding ExportPdfCommand}"
-                    Content="Xuất PDF"
+                    Content="{Binding ExportButtonText}"
                     Padding="14,6"
                     Margin="0,0,8,0" />
             <Button Command="{Binding CheckForUpdateCommand}"
@@ -141,7 +182,7 @@
             <StatusBarItem>
                 <TextBlock>
                     <Run Text="Đầu ra: " />
-                    <Run Text="{Binding OutputPageCount, Mode=OneWay}" />
+                    <Run Text="{Binding OutputStatusText, Mode=OneWay}" />
                 </TextBlock>
             </StatusBarItem>
             <Separator />
@@ -427,14 +468,27 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <DockPanel Margin="0,0,0,12">
+                    <DockPanel Margin="0,0,0,12" Style="{StaticResource SingleModeOnly}">
                         <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#475569">
                             <Run Text="{Binding OutputPageCount, Mode=OneWay}" /><Run Text=" trang" />
                         </TextBlock>
                         <TextBlock Text="Khay đầu ra" FontSize="18" FontWeight="SemiBold" />
                     </DockPanel>
+                    <StackPanel Margin="0,0,0,12"
+                                Visibility="{Binding IsDuplexMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="#475569"
+                                       Text="{Binding DuplexSummary}" />
+                            <TextBlock Text="Khay 2 mặt" FontSize="18" FontWeight="SemiBold" />
+                        </DockPanel>
+                        <TextBlock Foreground="#475569" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Chọn trang ảnh → Thêm mặt 1, chọn trang chữ ký → Thêm mặt 2 (1 trang tự lặp cho đủ). Xuất PDF ra 1 file: mặt 1 của mọi cặp, rồi mặt 2 cùng thứ tự." />
+                        <TextBlock Text="{Binding DuplexProblemText}" Foreground="#B91C1C" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Visibility="{Binding HasDuplexProblem, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </StackPanel>
                     <ListBox x:Name="OutputTrayList"
                              Grid.Row="1"
+                             Style="{StaticResource SingleModeOnly}"
                              ItemsSource="{Binding OutputTrayItems}"
                              SelectionMode="Extended"
                              Background="#E2E8F0"
@@ -528,7 +582,180 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    <Border Grid.Row="1"
+                            Visibility="{Binding IsDuplexMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Background="#E2E8F0"
+                            BorderBrush="#CBD5E1"
+                            BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Padding="4">
+                            <ItemsControl ItemsSource="{Binding DuplexRows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#FFFFFF" BorderThickness="2" CornerRadius="6" Padding="8,6" Margin="2,3">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="BorderBrush" Value="#CBD5E1" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasProblem}" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#F87171" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <DockPanel>
+                                                <Border DockPanel.Dock="Left" Width="6" CornerRadius="3" Margin="0,0,8,0" Background="{Binding Pair.ColorHex}" />
+                                                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                        <Button Content="▲" Style="{StaticResource IconButton}" ToolTip="Đưa cặp lên trước"
+                                                                Command="{Binding DataContext.MoveDuplexPairUpCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" />
+                                                        <Button Content="▼" Style="{StaticResource IconButton}" ToolTip="Đưa cặp ra sau"
+                                                                Command="{Binding DataContext.MoveDuplexPairDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" />
+                                                        <Button Content="Nhân bản" FontSize="12" Padding="8,0" Margin="2,0" ToolTip="Thêm bản sao cả cặp ngay sau cặp này"
+                                                                Command="{Binding DataContext.DuplicateDuplexPairCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" />
+                                                        <Button Content="Xóa" FontSize="12" Padding="8,0" Margin="2,0" Foreground="#B91C1C" ToolTip="Xóa cả cặp"
+                                                                Command="{Binding DataContext.DeleteDuplexPairCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" />
+                                                    </StackPanel>
+                                                    <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                                        <Run Text="{Binding Header, Mode=OneWay}" FontWeight="SemiBold" Foreground="{Binding Pair.ColorHex}" />
+                                                        <Run Text="  " />
+                                                        <Run Text="{Binding StatusText, Mode=OneWay}" FontSize="12">
+                                                            <Run.Style>
+                                                                <Style TargetType="Run">
+                                                                    <Setter Property="Foreground" Value="#15803D" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasProblem}" Value="True">
+                                                                            <Setter Property="Foreground" Value="#B91C1C" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Run.Style>
+                                                        </Run>
+                                                    </TextBlock>
+                                                </DockPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="10" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <DockPanel Grid.Column="0">
+                                                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                                <Button Content="{Binding FrontAppendText}" FontSize="12" Padding="8,0" Margin="0,0,4,0"
+                                                                        ToolTip="Thêm trang vào cuối mặt 1 của cặp này, giữ trang đang có. Đã chọn trang: thêm ngay. Chưa chọn: chọn trang rồi bấm nút Thêm trên thanh công cụ (hoặc Enter)."
+                                                                        Command="{Binding DataContext.AppendDuplexFrontCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}">
+                                                                    <Button.Style>
+                                                                        <Style TargetType="Button">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsAppendingFront}" Value="True">
+                                                                                    <Setter Property="Background" Value="#FDBA74" />
+                                                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Button.Style>
+                                                                </Button>
+                                                                <Button Content="{Binding FrontReplaceText}" FontSize="12" Padding="8,0" Margin="0"
+                                                                        ToolTip="Thay mặt 1 của cặp này. Đã chọn trang: thay ngay. Chưa chọn: chọn trang rồi bấm nút Thay trên thanh công cụ (hoặc Enter)."
+                                                                        Command="{Binding DataContext.ReplaceDuplexFrontCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}">
+                                                                    <Button.Style>
+                                                                        <Style TargetType="Button">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsReplacingFront}" Value="True">
+                                                                                    <Setter Property="Background" Value="#FDBA74" />
+                                                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Button.Style>
+                                                                </Button>
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding FrontHeader}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                        </DockPanel>
+                                                        <ItemsControl ItemsSource="{Binding FrontPages}" ItemTemplate="{StaticResource DuplexPageTemplate}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <WrapPanel />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                        </ItemsControl>
+                                                    </DockPanel>
+                                                    <Border Grid.Column="1" Width="1" Background="#CBD5E1" HorizontalAlignment="Center" />
+                                                    <DockPanel Grid.Column="2">
+                                                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                                <Button Content="{Binding BackAppendText}" FontSize="12" Padding="8,0" Margin="0,0,4,0"
+                                                                        ToolTip="Thêm trang vào cuối mặt 2 của cặp này, giữ trang đang có (mặt 2 đang trống thì 1 trang tự lặp). Đã chọn trang: thêm ngay. Chưa chọn: chọn trang rồi bấm nút Thêm trên thanh công cụ (hoặc Enter)."
+                                                                        Command="{Binding DataContext.AppendDuplexBackCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}">
+                                                                    <Button.Style>
+                                                                        <Style TargetType="Button">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsAppendingBack}" Value="True">
+                                                                                    <Setter Property="Background" Value="#FDBA74" />
+                                                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Button.Style>
+                                                                </Button>
+                                                                <Button Content="{Binding BackReplaceText}" FontSize="12" Padding="8,0" Margin="0"
+                                                                        ToolTip="Thay mặt 2 của cặp này (1 trang tự lặp cho đủ số trang mặt 1). Đã chọn trang: thay ngay. Chưa chọn: chọn trang rồi bấm nút Thay trên thanh công cụ (hoặc Enter)."
+                                                                        Command="{Binding DataContext.ReplaceDuplexBackCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}">
+                                                                    <Button.Style>
+                                                                        <Style TargetType="Button">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsReplacingBack}" Value="True">
+                                                                                    <Setter Property="Background" Value="#FDBA74" />
+                                                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Button.Style>
+                                                                </Button>
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding BackHeader}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                        </DockPanel>
+                                                        <TextBlock Text="Chọn trang mặt 2 (chữ ký) rồi bấm Thêm mặt 2"
+                                                                   Foreground="#B45309" FontSize="12" TextWrapping="Wrap" Margin="0,8">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasBack}" Value="False">
+                                                                            <Setter Property="Visibility" Value="Visible" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <ItemsControl ItemsSource="{Binding BackPages}" ItemTemplate="{StaticResource DuplexPageTemplate}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <WrapPanel />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                        </ItemsControl>
+                                                    </DockPanel>
+                                                </Grid>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
                     <StackPanel Grid.Row="2"
+                                Style="{StaticResource SingleModeOnly}"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Right"
                                 Margin="0,12,0,0">

@@ -13,7 +13,7 @@ PDF Page Composer là ứng dụng desktop Windows dùng để:
 
 ## Trạng thái dự án
 
-Phiên bản hiện tại: **1.3.4** (2026-11-09). Ứng dụng đang được sử dụng thực tế; máy người dùng cập nhật bằng nút **Check update** (xem [docs/CHANGELOG.md](docs/CHANGELOG.md)).
+Phiên bản hiện tại: **1.4.0** (2026-11-12). Ứng dụng đang được sử dụng thực tế; máy người dùng cập nhật bằng nút **Check update** (xem [docs/CHANGELOG.md](docs/CHANGELOG.md)).
 
 ## Cài đặt cho người dùng
 

@@ -7,7 +7,7 @@ using PDFPageComposer.App.ViewModels;
 
 namespace PDFPageComposer.Tests.ViewModels;
 
-public sealed class MainViewModelTests
+public sealed partial class MainViewModelTests
 {
     [Fact]
     public async Task ImportPdfFilesAsync_imports_only_pdf_paths()
@@ -1301,6 +1301,9 @@ public sealed class MainViewModelTests
 
         public int GroupCount { get; private set; }
 
+        /// <summary>Every export: output path and the (file id, page number) of each page in order.</summary>
+        public List<(string Path, List<(Guid FileId, int Page)> Pages)> Exports { get; } = [];
+
         public Task ExportAsync(
             IReadOnlyCollection<SourcePdfFile> sourceFiles,
             IReadOnlyCollection<OutputGroup> groups,
@@ -1311,6 +1314,7 @@ public sealed class MainViewModelTests
             SourceFileCount = sourceFiles.Count;
             GroupCount = groups.Count;
             OutputPath = outputPath;
+            Exports.Add((outputPath, groups.SelectMany(group => group.Items).Select(item => (item.SourceFileId, item.SourcePageNumber)).ToList()));
             var total = groups.Sum(group => group.Items.Count);
             for (var page = 1; page <= total; page++)
             {
@@ -1324,6 +1328,8 @@ public sealed class MainViewModelTests
     private sealed class FakeFoxitLauncherService : IFoxitLauncherService
     {
         public string? OpenedPath { get; private set; }
+
+        public List<string> OpenedPaths { get; } = [];
 
         public Exception? OpenException { get; init; }
 
@@ -1342,6 +1348,7 @@ public sealed class MainViewModelTests
             }
 
             OpenedPath = pdfPath;
+            OpenedPaths.Add(pdfPath);
             return Task.CompletedTask;
         }
     }

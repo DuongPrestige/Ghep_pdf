@@ -110,6 +110,26 @@ Hỗ trợ:
 - Thêm file đã có (cùng đường dẫn hoặc cùng fingerprint) bị bỏ qua và báo ở status bar.
 - Thumbnail chỉ render khi nằm trong khoảng một màn hình quanh vùng đang xem (`RenderWhenVisibleBehavior`).
 
+### Ghép 2 mặt (thêm 2026-11-12, PRD mục 25)
+
+```text
+Toolbar: … | [Thêm mặt 1 / Thêm mặt 2] | [Ghép 2 mặt]▣ | … | Xuất PDF
+┌ Khay 2 mặt ─────────────────────────────── 3 cặp · mặt 1: 13 trang · mặt 2: 13 trang ┐
+│ Chưa xuất được: thiếu mặt 2: cặp 3                                       (chữ đỏ)  │
+│ ▌Cặp 1 · CONGB.pdf  Khớp                                  ▲ ▼ Nhân bản Xóa │
+│ ▌Mặt 1 · 3 trang                  [Thay] │ Mặt 2 · 3 trang                  [Thay] │
+│ ▌[1][2][3]                               │ [1][2][3]                               │
+│ ▌Cặp 2 · QUANG HUNG.pdf  Khớp …  Mặt 1 [4]…[7]  │  Mặt 2 [4]…[7]                    │
+│ ▌Cặp 3 · DUONG DOMIC.pdf  Chờ mặt 2 (viền đỏ) … "Chọn trang mặt 2 (chữ ký) rồi bấm Thêm mặt 2" │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- Nút bật/tắt **Ghép 2 mặt** nằm cạnh nút thêm. Khi bật: nút thêm đổi thành **Thêm mặt 1** / **Thêm mặt 2** (Enter cũng vậy), **Xuất PDF** xuất một file mặt 1 rồi mặt 2, **Xem trước đầu ra** bị tắt, status bar hiện "Đầu ra: N cặp, M tờ".
+- Khay đầu ra thường được ẩn (không xóa) và thay bằng **Khay 2 mặt**: mỗi cặp một thẻ, vạch màu bên trái, tiêu đề `Cặp N · <file của trang mặt 1 đầu tiên>` và trạng thái (*Khớp* xanh lá; *Chờ mặt 2*, *Thiếu mặt 1*, *Lệch: mặt 1 có X trang, mặt 2 có Y trang* đỏ, viền thẻ đỏ).
+- Hai cột **Mặt 1 · N trang** và **Mặt 2 · N trang**, mỗi cột có nút **Thay** (đang chọn trang: thay ngay; chưa chọn: nút thành **Hủy thay** nền cam và nút thêm trên toolbar thành **Thay mặt X · cặp N**, lần thêm kế tiếp/Enter sẽ thay mặt đó; mặt 2 chọn 1 trang thì tự lặp) và nút **Thêm** đặt trước nút Thay (cùng cách dùng nhưng nối trang vào cuối mặt, giữ trang cũ; nút đổi thành **Hủy thêm**, toolbar thành **Thêm vào mặt X · cặp N**; mặt 2 đang trống thì 1 trang tự lặp). Thumbnail nhỏ có số tròn là số tờ, nên trang cùng số ở hai cột in chung một tờ (trong file xuất, mặt 2 của tờ k là trang N + k).
+- Nút của cặp: **▲** / **▼** (đổi thứ tự cặp), **Nhân bản** (chèn bản sao ngay sau), **Xóa**.
+- Badge `×N` trên thumbnail nguồn đếm số lần trang có trong khay của chế độ đang bật.
+
 ## Group
 
 - Mỗi lần bấm **Thêm vào đầu ra** tạo một group mới ở cuối tray.

@@ -611,3 +611,16 @@ Notes: Added a short Vietnamese guide for importing PDFs, selecting pages, previ
 Completed: 2026-10-17
 Files changed: `MainWindow.xaml(.cs)`, `ViewModels/MainViewModel.cs`, `Models/OutputItemMoveRequest.cs` (`PlaceAfter`), `Converters/NonZeroToVisibilityConverter.cs` (mới), `Behaviors/RenderWhenVisibleBehavior.cs`, `TikTok/TextNormalizer.cs` (`MatchesSearch`); `tests/PDFPageComposer.Tests/ViewModels/MainViewModelTests.cs`, `Behaviors/RenderWhenVisibleBehaviorTests.cs`.
 Verification: 378/378 test passed; đo với 115 trang trong khay chỉ render 33 trang đang hiển thị.
+
+## Phase 12 — Ghép 2 mặt
+
+### - [x] TASK-083 — Chế độ Ghép 2 mặt
+
+- **Mục tiêu:** PRD mục 25: chế độ riêng ghép card 2 mặt theo cặp (Thêm mặt 1 → Thêm mặt 2), xuất một file: mặt 1 của mọi cặp rồi mặt 2 cùng thứ tự (ban đầu là 2 file, đổi theo phản hồi).
+- **Dependency:** TASK-074.
+- **Acceptance criteria:** AC-13 → AC-15 của `docs/composer/PRD.md`; mặt 2 một trang tự lặp; cặp thiếu mặt 2 hoặc lệch số trang bị tô đỏ và chặn xuất; ▲ ▼ / Nhân bản / Xóa / Thay theo cặp, có hoàn tác; khay thường giữ nguyên khi đổi chế độ; lưu và phục hồi phiên; mở cửa sổ thật không lỗi binding.
+
+Completed: 2026-11-12
+Files changed: `Models/DuplexPair.cs`, `Models/DuplexPairRowView.cs`, `Services/DuplexLayout.cs`, `ViewModels/MainViewModel.Duplex.cs` (mới); `ViewModels/MainViewModel.cs` (thêm theo chế độ, xuất, undo snapshot, đếm `×N`, chặn xóa file nguồn đang dùng trong cặp, `CanPreviewOutput`), `Models/ProjectState.cs` (`ProjectDuplexPair`, `IsDuplexMode`), `Services/ProjectStateMapper.cs`, `MainWindow.xaml`; `tests/PDFPageComposer.Tests/Services/DuplexLayoutTests.cs`, `ViewModels/MainViewModelDuplexTests.cs`, `ViewModels/MainWindowDuplexSmokeTests.cs` (mới), `ViewModels/MainViewModelTests.cs` (partial, fake ghi mọi lần xuất / mở file); `docs/composer/PRD.md`, `UI_SPEC.md`, `TECH_SPEC.md`, `USER_GUIDE.md`.
+Verification: build 0 warning; 406/406 test passed (14 test mới: logic thuần, luồng ViewModel theo ví dụ PRD, chặn xuất khi lệch, thao tác cặp + hoàn tác, lưu/phục hồi, cửa sổ thật không lỗi binding); chụp màn hình cửa sổ ở chế độ 2 mặt kiểm tra bố cục.
+Notes: 2026-11-12 (phản hồi dùng thử): bấm **Thay** khi chưa chọn trang chỉ báo ở status bar nên tưởng nút không chạy; đổi thành chờ thay (nút **Hủy thay** màu cam, nút toolbar **Thay mặt X · cặp N**, Enter); 407/407 test. Thêm nút **Thêm** cạnh Thay (nối trang vào cuối mặt, `DuplexEditMode.Append`); 408/408 test. Xuất đổi từ 2 file (`- MAT 1` / `- MAT 2`) sang 1 file mặt 1 rồi mặt 2 (`DuplexLayout.ToExportGroups`, bỏ `GetOutputPaths`); 404/404 test. Ngoài phạm vi: kéo thả cặp, xem trước đầu ra ở chế độ 2 mặt, đảo thứ tự mặt 2. Ở chế độ 2 mặt không phát `OutputTrayItems` changed vì khay thường đang ẩn (dựng lại container ẩn gây lỗi binding `ListBoxItem`).
